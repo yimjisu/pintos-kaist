@@ -54,7 +54,7 @@ static unsigned thread_ticks;   /* # of timer ticks since last yield. */
    Controlled by kernel command-line option "-o mlfqs". */
 bool thread_mlfqs;
 
-static void kernel_thread (thread_func *, void *aux);
+static void kernel_thread (thread_func *, void *aux); 
 
 static void idle (void *aux UNUSED);
 static struct thread *next_thread_to_run (void);
