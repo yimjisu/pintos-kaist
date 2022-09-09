@@ -27,6 +27,7 @@
 /* List of processes in THREAD_READY state, that is, processes
    that are ready to run but not actually running. */
 static struct list ready_list;
+static struct list sleep_list;
 
 /* Idle thread. */
 static struct thread *idle_thread;
@@ -79,6 +80,19 @@ static tid_t allocate_tid (void);
 // setup temporal gdt first.
 static uint64_t gdt[3] = { 0, 0x00af9a000000ffff, 0x00cf92000000ffff };
 
+bool
+thread_priority_compare (struct list_elem *a, struct list_elem *b, void UNUSED(*aux)){
+	return list_entry(a, struct thread, elem) -> priority > list_entry(b, struct thread, elem) -> priority;
+}
+
+void
+thread_preemption (void) {
+	struct thread *curr = thread_current();
+	struct thread *ready = list_entry(list_begin(&ready_list), struct thread, elem);
+	if (curr->priority < ready->priority) {
+		thread_yield();
+	}
+}
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
    general and it is possible in this case only because loader.S
@@ -108,6 +122,7 @@ thread_init (void) {
 	/* Init the globla thread context */
 	lock_init (&tid_lock);
 	list_init (&ready_list);
+	list_init (&sleep_list);
 	list_init (&destruction_req);
 
 	/* Set up a thread structure for the running thread. */
@@ -115,6 +130,8 @@ thread_init (void) {
 	init_thread (initial_thread, "main", PRI_DEFAULT);
 	initial_thread->status = THREAD_RUNNING;
 	initial_thread->tid = allocate_tid ();
+	
+	thread_preemption();
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -206,6 +223,7 @@ thread_create (const char *name, int priority,
 
 	/* Add to run queue. */
 	thread_unblock (t);
+	thread_preemption();
 
 	return tid;
 }
@@ -240,7 +258,7 @@ thread_unblock (struct thread *t) {
 
 	old_level = intr_disable ();
 	ASSERT (t->status == THREAD_BLOCKED);
-	list_push_back (&ready_list, &t->elem);
+	list_insert_ordered (&ready_list, &t->elem, thread_priority_compare, NULL);
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
 }
@@ -294,6 +312,7 @@ thread_exit (void) {
 
 /* Yields the CPU.  The current thread is not put to sleep and
    may be scheduled again immediately at the scheduler's whim. */
+
 void
 thread_yield (void) {
 	struct thread *curr = thread_current ();
@@ -303,15 +322,61 @@ thread_yield (void) {
 
 	old_level = intr_disable ();
 	if (curr != idle_thread)
-		list_push_back (&ready_list, &curr->elem);
+		list_insert_ordered (&ready_list, &curr->elem, thread_priority_compare, NULL);
 	do_schedule (THREAD_READY);
 	intr_set_level (old_level);
+}
+
+/* Put the current thread to sleep */
+
+bool thread_wake_up_compare(struct list_elem *a, struct list_elem *b, void UNUSED(*aux)){
+	return list_entry(a, struct thread, elem) -> wake_tick  < list_entry(b, struct thread, elem) -> wake_tick;
+}
+
+void
+thread_sleep (int64_t ticks) {
+	struct thread *curr = thread_current ();
+	enum intr_level old_level;
+	ASSERT (idle_thread != curr);
+
+	old_level = intr_disable ();
+
+	curr->wake_tick = ticks;
+	list_insert_ordered(&sleep_list, &curr->elem, thread_wake_up_compare, NULL);
+	thread_block();
+
+	intr_set_level (old_level);
+}
+
+/* Awake thread */
+void
+thread_wake_up (int64_t ticks) {
+	struct list_elem *e = list_begin(&sleep_list);
+	while (e != list_end(&sleep_list)) {
+		struct thread *t = list_entry(e, struct thread, elem);
+		if (t -> wake_tick <= ticks) {
+			e = list_remove(e);
+			thread_unblock(t);
+		}else{
+			break;
+		}
+	}
 }
 
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) {
-	thread_current ()->priority = new_priority;
+	struct thread *curr = thread_current();
+	curr->init_priority = new_priority;
+	if (!list_empty(&curr->donate)){
+		int donate_priority = 
+			list_entry(list_begin(&curr->donate), struct thread, donate_elem)->priority;
+		if (donate_priority > new_priority)
+			new_priority = donate_priority;
+	}
+	curr->priority = new_priority;
+
+	thread_preemption ();
 }
 
 /* Returns the current thread's priority. */
@@ -409,6 +474,9 @@ init_thread (struct thread *t, const char *name, int priority) {
 	t->tf.rsp = (uint64_t) t + PGSIZE - sizeof (void *);
 	t->priority = priority;
 	t->magic = THREAD_MAGIC;
+	t->init_priority = priority;
+	list_init(&t->donate);
+	t->waiting_lock = NULL;
 }
 
 /* Chooses and returns the next thread to be scheduled.  Should

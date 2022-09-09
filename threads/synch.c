@@ -57,6 +57,7 @@ sema_init (struct semaphore *sema, unsigned value) {
    interrupts disabled, but if it sleeps then the next scheduled
    thread will probably turn interrupts back on. This is
    sema_down function. */
+
 void
 sema_down (struct semaphore *sema) {
 	enum intr_level old_level;
@@ -109,10 +110,13 @@ sema_up (struct semaphore *sema) {
 	ASSERT (sema != NULL);
 
 	old_level = intr_disable ();
-	if (!list_empty (&sema->waiters))
+	if (!list_empty (&sema->waiters)){
+		list_sort(&sema->waiters, thread_priority_compare, NULL);
 		thread_unblock (list_entry (list_pop_front (&sema->waiters),
 					struct thread, elem));
+	}
 	sema->value++;
+	thread_preemption();
 	intr_set_level (old_level);
 }
 
@@ -182,13 +186,37 @@ lock_init (struct lock *lock) {
    interrupt handler.  This function may be called with
    interrupts disabled, but interrupts will be turned back on if
    we need to sleep. */
+
+bool
+thread_donate_priority_compare(struct list_elem *a, struct list_elem *b, void UNUSED(*aux)){
+	return list_entry(a, struct thread, donate_elem)->priority > list_entry(b, struct thread, donate_elem)->priority;
+}
+
+void
+donate_nest (struct lock *lock) {
+	struct thread *curr = thread_current();
+	curr->waiting_lock = lock;
+	list_insert_ordered(&lock->holder->donate, &curr->donate_elem, thread_donate_priority_compare, NULL);
+		
+	while(curr->waiting_lock != NULL){
+		struct thread *next = curr->waiting_lock->holder;
+		next->priority = curr->priority;
+		curr = next;
+	}
+}
+
 void
 lock_acquire (struct lock *lock) {
 	ASSERT (lock != NULL);
 	ASSERT (!intr_context ());
 	ASSERT (!lock_held_by_current_thread (lock));
 
+	if (lock->holder != NULL){
+		donate_nest(lock);		
+	}
+
 	sema_down (&lock->semaphore);
+	thread_current()->waiting_lock = NULL;
 	lock->holder = thread_current ();
 }
 
@@ -217,11 +245,32 @@ lock_try_acquire (struct lock *lock) {
    An interrupt handler cannot acquire a lock, so it does not
    make sense to try to release a lock within an interrupt
    handler. */
+
 void
 lock_release (struct lock *lock) {
 	ASSERT (lock != NULL);
 	ASSERT (lock_held_by_current_thread (lock));
 
+	struct thread *curr = thread_current();
+	struct list *donate = &curr->donate;
+	struct list_elem *e = list_begin(donate);
+	while( e != list_end(donate) ){
+		struct thread *donate_thread = list_entry(e, struct thread, donate_elem);
+		if (donate_thread -> waiting_lock == lock) {
+			e = list_remove(e);
+		}else{
+			e = list_next(e);
+		}
+	}
+	
+	int new_priority;
+	if (list_empty(donate)){
+		new_priority = curr -> init_priority;
+	}else {
+		new_priority = list_entry(list_begin(donate), struct thread, donate_elem)->priority;
+	}
+	curr -> priority = new_priority;
+	
 	lock->holder = NULL;
 	sema_up (&lock->semaphore);
 }
@@ -272,6 +321,19 @@ cond_init (struct condition *cond) {
    interrupt handler.  This function may be called with
    interrupts disabled, but interrupts will be turned back on if
    we need to sleep. */
+
+bool
+sema_priority_compare (struct list_elem *a, struct list_elem *b, void UNUSED(*aux)){
+	struct semaphore_elem *sema_a = list_entry (a, struct semaphore_elem, elem);
+	struct semaphore_elem *sema_b = list_entry (b, struct semaphore_elem, elem);
+
+	struct list_elem *elem_a = list_begin(&(sema_a->semaphore.waiters));
+	struct list_elem *elem_b = list_begin(&(sema_b->semaphore.waiters));
+
+	return list_entry (elem_a, struct thread, elem)->priority > list_entry (elem_b, struct thread, elem)->priority;
+}
+
+
 void
 cond_wait (struct condition *cond, struct lock *lock) {
 	struct semaphore_elem waiter;
@@ -302,9 +364,11 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED) {
 	ASSERT (!intr_context ());
 	ASSERT (lock_held_by_current_thread (lock));
 
-	if (!list_empty (&cond->waiters))
+	if (!list_empty (&cond->waiters)){
+		list_sort (&cond->waiters, sema_priority_compare, NULL);
 		sema_up (&list_entry (list_pop_front (&cond->waiters),
-					struct semaphore_elem, elem)->semaphore);
+					struct semaphore_elem, elem)->semaphore);	
+	}
 }
 
 /* Wakes up all threads, if any, waiting on COND (protected by

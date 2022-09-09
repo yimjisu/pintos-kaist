@@ -12,19 +12,13 @@ Executing 'mlfqs-block':
 (mlfqs-block) Main thread creating block thread, sleeping 25 seconds...
 (mlfqs-block) Block thread spinning for 20 seconds...
 (mlfqs-block) Block thread acquiring lock...
-Interrupt 0x0e (#PF Page-Fault Exception) at rip=8004209ddc
- cr2=0000000000008fd7 error=               0
-rax 0000000000008fbf rbx 0000000000000000 rcx 000000000000900f rdx 000000000000001f
-rsp 0000008004234ef8 rbp 0000008004234f10 rsi 000000000000900f rdi 0000008004234050
-rip 0000008004209ddc r8 0000008004209dad  r9 0000000000000000 r10 0000000000000000
-r11 0000000000000000 r12 0000000000000000 r13 0000000000000000 r14 0000000000000000
-r15 0000000000000000 rflags 00000212
-es: 0010 ds: 0010 cs: 0008 ss: 0010
-Kernel PANIC at ../../threads/interrupt.c:361 in intr_handler(): Unexpected interrupt
-Call stack: 0x800421377b 0x8004208a92 0x8004208e44 0x8004214aff 0x8004209f4d 0x800421adff 0x8004207488.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 2042 ticks
-Thread: 0 idle ticks, 2042 kernel ticks, 0 user ticks
-Console: 1
+(mlfqs-block) Main thread spinning for 5 seconds...
+(mlfqs-block) Main thread releasing lock.
+(mlfqs-block) Block thread should have already acquired lock.
+(mlfqs-block) end
+Execution of 'mlfqs-block' complete.
+Timer: 3042 ticks
+Thread: 500 idle ticks, 2542 kernel ticks, 0 user ticks
+Console: 794 characters output
+Keyboard: 0 keys pressed
+Powering off...
