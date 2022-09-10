@@ -27,6 +27,8 @@
 /* List of processes in THREAD_READY state, that is, processes
    that are ready to run but not actually running. */
 static struct list ready_list;
+// Sleep 상태에 있는 thread list
+static struct list sleep_list;
 
 /* Idle thread. */
 static struct thread *idle_thread;
@@ -108,6 +110,7 @@ thread_init (void) {
 	/* Init the globla thread context */
 	lock_init (&tid_lock);
 	list_init (&ready_list);
+	list_init (&sleep_list);
 	list_init (&destruction_req);
 
 	/* Set up a thread structure for the running thread. */
@@ -244,7 +247,7 @@ thread_unblock (struct thread *t) {
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
 }
-
+ 
 /* Returns the name of the running thread. */
 const char *
 thread_name (void) {
@@ -299,13 +302,46 @@ thread_yield (void) {
 	struct thread *curr = thread_current ();
 	enum intr_level old_level;
 
-	ASSERT (!intr_context ());
+	ASSERT (!intr_context ()); // Returns true during processing of an external interrupt and false at all other times. 
 
 	old_level = intr_disable ();
 	if (curr != idle_thread)
 		list_push_back (&ready_list, &curr->elem);
 	do_schedule (THREAD_READY);
 	intr_set_level (old_level);
+}
+
+void
+thread_sleep (int64_t ticks) {
+	struct thread *curr = thread_current ();
+	enum intr_level old_level;
+
+	ASSERT (!intr_context ()); // Returns true during processing of an external interrupt and false at all other times. 
+
+	old_level = intr_disable (); // 잠시 인터럽트를 끈다. 아래 코드가 실행되는 중 인터럽트가 들어오면 곤란하기 때문
+	if (curr != idle_thread) {
+		curr->wakeup_time = ticks;
+		list_push_back (&sleep_list, &curr->elem);
+		thread_block ();
+	}
+
+	intr_set_level (old_level);
+}
+
+void
+thread_awake (int64_t ticks) {
+	struct list_elem *e = list_begin (&sleep_list);
+	
+	while (e != list_end (&sleep_list)){
+		struct thread *t = list_entry (e, struct thread, elem);
+		if (t->wakeup_time <= ticks){
+			e = list_remove (e);
+			thread_unblock (t);
+		}
+		else {
+			e = list_next (e);
+		}
+	}
 }
 
 /* Sets the current thread's priority to NEW_PRIORITY. */
