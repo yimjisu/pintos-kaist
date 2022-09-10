@@ -353,7 +353,6 @@ reset_priority (void) {
 	struct thread * curr = thread_current ();
 	curr->priority = curr->original_priority;
 	if (!list_empty (&curr->donate)) {
-		list_sort (&curr->donate, donate_desc_priority, NULL);
 		struct thread * max = list_entry (list_front (&curr->donate), struct thread, donate_elem);
 		if (max->priority > curr->priority) {
 			curr->priority = max->priority;
