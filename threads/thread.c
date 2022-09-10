@@ -349,7 +349,6 @@ thread_awake (int64_t ticks) {
 	}
 }
 
-/* Sets the current thread's priority to NEW_PRIORITY. */
 void
 reset_priority (void) {
 	struct thread * curr = thread_current ();
@@ -362,6 +361,7 @@ reset_priority (void) {
 	}
 }
 
+/* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) {
 	thread_current ()->original_priority = new_priority;
