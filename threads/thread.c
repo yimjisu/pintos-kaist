@@ -209,6 +209,7 @@ thread_create (const char *name, int priority,
 
 	/* Add to run queue. */
 	thread_unblock (t);
+	thread_comp_priority ();
 
 	return tid;
 }
@@ -243,7 +244,8 @@ thread_unblock (struct thread *t) {
 
 	old_level = intr_disable ();
 	ASSERT (t->status == THREAD_BLOCKED);
-	list_push_back (&ready_list, &t->elem);
+	// list_push_back (&ready_list, &t->elem);
+	list_insert_ordered (&ready_list, &t->elem, thread_desc_priority, NULL);
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
 }
@@ -306,7 +308,8 @@ thread_yield (void) {
 
 	old_level = intr_disable ();
 	if (curr != idle_thread)
-		list_push_back (&ready_list, &curr->elem);
+		// list_push_back (&ready_list, &curr->elem);
+		list_insert_ordered (&ready_list, &curr->elem, thread_desc_priority, NULL);
 	do_schedule (THREAD_READY);
 	intr_set_level (old_level);
 }
@@ -346,8 +349,23 @@ thread_awake (int64_t ticks) {
 
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
+reset_priority (void) {
+	struct thread * curr = thread_current ();
+	curr->priority = curr->original_priority;
+	if (!list_empty (&curr->donate)) {
+		list_sort (&curr->donate, donate_desc_priority, NULL);
+		struct thread * max = list_entry (list_front (&curr->donate), struct thread, donate_elem);
+		if (max->priority > curr->priority) {
+			curr->priority = max->priority;
+		}
+	}
+}
+
+void
 thread_set_priority (int new_priority) {
-	thread_current ()->priority = new_priority;
+	thread_current ()->original_priority = new_priority;
+	reset_priority ();
+	thread_comp_priority ();
 }
 
 /* Returns the current thread's priority. */
@@ -355,6 +373,24 @@ int
 thread_get_priority (void) {
 	return thread_current ()->priority;
 }
+
+// Thread들을 priority에 따른 내림차순으로 정렬하기 위해서 필요한 비교문
+bool
+thread_desc_priority (struct list_elem *l1, struct list_elem *l2, void *aux) {
+	return list_entry (l1, struct thread, elem)->priority > list_entry (l2, struct thread, elem)->priority;
+}
+
+// 현재 실행중인 thread의 priority와 ready_list에 있는 priority가 가장 높은 thread의 priority 비교
+void
+thread_comp_priority (void) {
+	// ASSERT (!list_empty (&ready_list));
+	if (!list_empty (&ready_list)) {
+		if (thread_current ()->priority < list_entry (list_front (&ready_list), struct thread, elem)->priority) {
+		thread_yield ();
+		}
+	}
+}
+
 
 /* Sets the current thread's nice value to NICE. */
 void
@@ -444,6 +480,9 @@ init_thread (struct thread *t, const char *name, int priority) {
 	strlcpy (t->name, name, sizeof t->name);
 	t->tf.rsp = (uint64_t) t + PGSIZE - sizeof (void *);
 	t->priority = priority;
+	t->original_priority = priority;
+	list_init (&t->donate);
+	t->lock = NULL;
 	t->magic = THREAD_MAGIC;
 }
 

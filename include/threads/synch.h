@@ -24,9 +24,12 @@ struct lock {
 
 void lock_init (struct lock *);
 void lock_acquire (struct lock *);
+void donate_priority (void);
 bool lock_try_acquire (struct lock *);
+void remove_lock (struct lock *);
 void lock_release (struct lock *);
 bool lock_held_by_current_thread (const struct lock *);
+bool donate_desc_priority (struct list_elem *, struct list_elem *, void *);
 
 /* Condition variable. */
 struct condition {
@@ -37,6 +40,7 @@ void cond_init (struct condition *);
 void cond_wait (struct condition *, struct lock *);
 void cond_signal (struct condition *, struct lock *);
 void cond_broadcast (struct condition *, struct lock *);
+bool sema_desc_priority (struct list_elem *, struct list_elem *, void *);
 
 /* Optimization barrier.
  *

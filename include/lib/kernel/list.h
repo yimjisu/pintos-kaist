@@ -127,6 +127,7 @@ void list_push_back (struct list *, struct list_elem *);
 
 /* List removal. */
 struct list_elem *list_remove (struct list_elem *);
+struct list_elem *list_remove_ret_curr (struct list_elem *);
 struct list_elem *list_pop_front (struct list *);
 struct list_elem *list_pop_back (struct list *);
 

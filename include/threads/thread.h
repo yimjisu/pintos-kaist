@@ -90,10 +90,14 @@ struct thread {
 	tid_t tid;                          /* Thread identifier. */
 	enum thread_status status;          /* Thread state. */
 	char name[16];                      /* Name (for debugging purposes). */
+	int original_priority;
 	int priority;                       /* Priority. */
 
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
+	struct lock * lock;
+	struct list donate;
+	struct list_elem donate_elem;
 
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
@@ -136,8 +140,11 @@ void thread_yield (void);
 void thread_sleep (int64_t ticks);
 void thread_awake (int64_t ticks);
 
+void reset_priority (void);
 int thread_get_priority (void);
 void thread_set_priority (int);
+bool thread_desc_priority (struct list_elem *, struct list_elem *, void *);
+void thread_comp_priority (void);
 
 int thread_get_nice (void);
 void thread_set_nice (int);
