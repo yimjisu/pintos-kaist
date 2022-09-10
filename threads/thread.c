@@ -324,26 +324,28 @@ thread_sleep (int64_t ticks) {
 	old_level = intr_disable (); // 잠시 인터럽트를 끈다. 아래 코드가 실행되는 중 인터럽트가 들어오면 곤란하기 때문
 	if (curr != idle_thread) {
 		curr->wakeup_time = ticks;
-		list_push_back (&sleep_list, &curr->elem);
+		// list_push_back (&sleep_list, &curr->elem);
+		list_insert_ordered (&sleep_list, &curr->elem, time_asc, NULL);
 		thread_block ();
 	}
-
 	intr_set_level (old_level);
+}
+
+bool
+time_asc (struct list_elem *l1, struct list_elem *l2, void *aux) {
+	return list_entry (l1, struct thread, elem)->wakeup_time < list_entry (l2, struct thread, elem)->wakeup_time;
 }
 
 void
 thread_awake (int64_t ticks) {
 	struct list_elem *e = list_begin (&sleep_list);
-	
 	while (e != list_end (&sleep_list)){
 		struct thread *t = list_entry (e, struct thread, elem);
-		if (t->wakeup_time <= ticks){
-			e = list_remove (e);
-			thread_unblock (t);
+		if (t->wakeup_time > ticks) {
+			break;
 		}
-		else {
-			e = list_next (e);
-		}
+		e = list_remove (e);
+		thread_unblock (t);
 	}
 }
 
