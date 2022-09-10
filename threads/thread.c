@@ -331,6 +331,7 @@ thread_sleep (int64_t ticks) {
 	intr_set_level (old_level);
 }
 
+// wakeup_time에 대해 오름차순으로 thread들을 sleep list에 넣기 위해 필요한 비교문
 bool
 time_asc (struct list_elem *l1, struct list_elem *l2, void *aux) {
 	return list_entry (l1, struct thread, elem)->wakeup_time < list_entry (l2, struct thread, elem)->wakeup_time;
@@ -349,14 +350,22 @@ thread_awake (int64_t ticks) {
 	}
 }
 
+bool
+donate_desc_priority (struct list_elem *l1, struct list_elem *l2, void * aux) {
+	return list_entry (l1, struct thread, donate_elem)->priority > list_entry (l2, struct thread, donate_elem)->priority;
+}
+
+// Donate 부분. 원래 priority로 초기화하고, donate에 있는 thread중 가장 priority과 큰 것과 비교해서 새롭게 priority를 정해준다. 
 void
 reset_priority (void) {
 	struct thread * curr = thread_current ();
 	curr->priority = curr->original_priority;
+	struct list_elem * max_elem;
 	if (!list_empty (&curr->donate)) {
-		struct thread * max = list_entry (list_front (&curr->donate), struct thread, donate_elem);
-		if (max->priority > curr->priority) {
-			curr->priority = max->priority;
+		max_elem = list_min (&curr->donate, donate_desc_priority, NULL);
+		struct thread * max_thread = list_entry (max_elem, struct thread, donate_elem);
+		if (max_thread->priority > curr->priority) {
+			curr->priority = max_thread->priority;
 		}
 	}
 }
@@ -365,7 +374,7 @@ reset_priority (void) {
 void
 thread_set_priority (int new_priority) {
 	thread_current ()->original_priority = new_priority;
-	reset_priority ();
+	reset_priority (); // priority의 대소관계가 바뀔 수도 있기 때문에 해줘야 한다. 
 	thread_comp_priority ();
 }
 
@@ -384,14 +393,12 @@ thread_desc_priority (struct list_elem *l1, struct list_elem *l2, void *aux) {
 // 현재 실행중인 thread의 priority와 ready_list에 있는 priority가 가장 높은 thread의 priority 비교
 void
 thread_comp_priority (void) {
-	// ASSERT (!list_empty (&ready_list));
 	if (!list_empty (&ready_list)) {
 		if (thread_current ()->priority < list_entry (list_front (&ready_list), struct thread, elem)->priority) {
 		thread_yield ();
 		}
 	}
 }
-
 
 /* Sets the current thread's nice value to NICE. */
 void

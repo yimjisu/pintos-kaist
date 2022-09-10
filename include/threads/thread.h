@@ -141,6 +141,7 @@ void thread_sleep (int64_t ticks);
 bool time_asc (struct list_elem *, struct list_elem *, void *);
 void thread_awake (int64_t ticks);
 
+bool donate_desc_priority (struct list_elem *, struct list_elem *, void *);
 void reset_priority (void);
 int thread_get_priority (void);
 void thread_set_priority (int);

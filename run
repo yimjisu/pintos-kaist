@@ -1,28 +1,28 @@
 ### Thread ###
-pintos -- -q run alarm-single
-pintos -- -q run alarm-multiple
-pintos -- -q run alarm-simultaneous
-pintos -- -q run alarm-priority
-pintos -- -q run alarm-zero
-pintos -- -q run alarm-negative
-pintos -- -q run priority-change
-pintos -- -q run priority-donate-one
-pintos -- -q run priority-donate-multiple
-pintos -- -q run priority-donate-multiple2
-pintos -- -q run priority-donate-nest
-pintos -- -q run priority-donate-sema
-pintos -- -q run priority-donate-lower
-pintos -- -q run priority-fifo
-pintos -- -q run priority-preempt
-pintos -- -q run priority-sema
-pintos -- -q run priority-condvar
-pintos -- -q run priority-donate-chain
-pintos -- -q run mlfqs/mlfqs-load-1
-pintos -- -q run mlfqs/mlfqs-load-60
-pintos -- -q run mlfqs/mlfqs-load-avg
-pintos -- -q run mlfqs/mlfqs-recent-1
-pintos -- -q run mlfqs/mlfqs-fair-2
-pintos -- -q run mlfqs/mlfqs-fair-20
-pintos -- -q run mlfqs/mlfqs-nice-2
-pintos -- -q run mlfqs/mlfqs-nice-10
-pintos -- -q run mlfqs/mlfqs-block
+make tests/threads/alarm-single.result
+make tests/threads/alarm-multiple.result
+make tests/threads/alarm-simultaneous.result
+make tests/threads/alarm-priority.result
+make tests/threads/alarm-zero.result
+make tests/threads/alarm-negative.result
+make tests/threads/priority-change.result
+make tests/threads/priority-donate-one.result
+make tests/threads/priority-donate-multiple.result
+make tests/threads/priority-donate-multiple2.result
+make tests/threads/priority-donate-nest.result
+make tests/threads/priority-donate-sema.result
+make tests/threads/priority-donate-lower.result
+make tests/threads/priority-fifo.result
+make tests/threads/priority-preempt.result
+make tests/threads/priority-sema.result
+make tests/threads/priority-condvar.result
+make tests/threads/priority-donate-chain.result
+make tests/threads/mlfqs/mlfqs-load-1.result
+make tests/threads/mlfqs/mlfqs-load-60.result
+make tests/threads/mlfqs/mlfqs-load-avg.result
+make tests/threads/mlfqs/mlfqs-recent-1.result
+make tests/threads/mlfqs/mlfqs-fair-2.result
+make tests/threads/mlfqs/mlfqs-fair-20.result
+make tests/threads/mlfqs/mlfqs-nice-2.result
+make tests/threads/mlfqs/mlfqs-nice-10.result
+make tests/threads/mlfqs/mlfqs-block.result
