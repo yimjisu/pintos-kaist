@@ -1,0 +1,297 @@
+Kernel command line: -q -mlfqs run mlfqs-load-60
+0 ~ 9fc00 1
+100000 ~ 13e0000 1
+Pintos booting with: 
+	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
+	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+Calibrating timer...  157,081,600 loops/s.
+Boot complete.
+Executing 'mlfqs-load-60':
+(mlfqs-load-60) begin
+(mlfqs-load-60) Starting 60 niced load threads...
+(mlfqs-load-60) Starting threads took 0 seconds.
+ticks 100
+ticks 200
+ticks 300
+ticks 400
+ticks 500
+ticks 600
+ticks 700
+ticks 800
+ticks 900
+ticks 1000
+(mlfqs-load-60) After 0 seconds, load average=0.00.
+ticks 1100
+ticks 1200
+(mlfqs-load-60) After 2 seconds, load average=1.98.
+ticks 1300
+ticks 1400
+(mlfqs-load-60) After 4 seconds, load average=3.90.
+ticks 1500
+ticks 1600
+(mlfqs-load-60) After 6 seconds, load average=5.75.
+ticks 1700
+ticks 1800
+ticks 1900
+ticks 2000
+ticks 2100
+ticks 2200
+ticks 2300
+ticks 2400
+ticks 2500
+ticks 2600
+ticks 2700
+ticks 2800
+ticks 2900
+ticks 3000
+ticks 3100
+ticks 3200
+ticks 3300
+ticks 3400
+ticks 3500
+ticks 3600
+ticks 3700
+ticks 3800
+ticks 3900
+ticks 4000
+ticks 4100
+ticks 4200
+ticks 4300
+ticks 4400
+ticks 4500
+ticks 4600
+ticks 4700
+ticks 4800
+ticks 4900
+ticks 5000
+ticks 5100
+ticks 5200
+ticks 5300
+ticks 5400
+ticks 5500
+ticks 5600
+ticks 5700
+ticks 5800
+ticks 5900
+ticks 6000
+ticks 6100
+ticks 6200
+ticks 6300
+ticks 6400
+ticks 6500
+ticks 6600
+ticks 6700
+ticks 6800
+ticks 6900
+ticks 7000
+(mlfqs-load-60) After 8 seconds, load average=38.63.
+(mlfqs-load-60) After 10 seconds, load average=38.63.
+(mlfqs-load-60) After 12 seconds, load average=38.63.
+(mlfqs-load-60) After 14 seconds, load average=38.63.
+(mlfqs-load-60) After 16 seconds, load average=38.63.
+(mlfqs-load-60) After 18 seconds, load average=38.63.
+(mlfqs-load-60) After 20 seconds, load average=38.63.
+(mlfqs-load-60) After 22 seconds, load average=38.63.
+(mlfqs-load-60) After 24 seconds, load average=38.63.
+(mlfqs-load-60) After 26 seconds, load average=38.63.
+(mlfqs-load-60) After 28 seconds, load average=38.63.
+(mlfqs-load-60) After 30 seconds, load average=38.63.
+(mlfqs-load-60) After 32 seconds, load average=38.63.
+(mlfqs-load-60) After 34 seconds, load average=38.63.
+(mlfqs-load-60) After 36 seconds, load average=38.63.
+(mlfqs-load-60) After 38 seconds, load average=38.63.
+(mlfqs-load-60) After 40 seconds, load average=38.63.
+(mlfqs-load-60) After 42 seconds, load average=38.63.
+(mlfqs-load-60) After 44 seconds, load average=38.63.
+(mlfqs-load-60) After 46 seconds, load average=38.63.
+(mlfqs-load-60) After 48 seconds, load average=38.63.
+(mlfqs-load-60) After 50 seconds, load average=38.63.
+(mlfqs-load-60) After 52 seconds, load average=38.63.
+(mlfqs-load-60) After 54 seconds, load average=38.63.
+(mlfqs-load-60) After 56 seconds, load average=38.63.
+(mlfqs-load-60) After 58 seconds, load average=38.63.
+(mlfqs-load-60) After 60 seconds, load average=38.63.
+ticks 7100
+ticks 7200
+(mlfqs-load-60) After 62 seconds, load average=37.35.
+ticks 7300
+ticks 7400
+(mlfqs-load-60) After 64 seconds, load average=36.11.
+ticks 7500
+ticks 7600
+(mlfqs-load-60) After 66 seconds, load average=34.91.
+ticks 7700
+ticks 7800
+(mlfqs-load-60) After 68 seconds, load average=33.75.
+ticks 7900
+ticks 8000
+(mlfqs-load-60) After 70 seconds, load average=32.63.
+ticks 8100
+ticks 8200
+(mlfqs-load-60) After 72 seconds, load average=31.55.
+ticks 8300
+ticks 8400
+(mlfqs-load-60) After 74 seconds, load average=30.51.
+ticks 8500
+ticks 8600
+(mlfqs-load-60) After 76 seconds, load average=29.49.
+ticks 8700
+ticks 8800
+(mlfqs-load-60) After 78 seconds, load average=28.52.
+ticks 8900
+ticks 9000
+(mlfqs-load-60) After 80 seconds, load average=27.57.
+ticks 9100
+ticks 9200
+(mlfqs-load-60) After 82 seconds, load average=26.65.
+ticks 9300
+ticks 9400
+(mlfqs-load-60) After 84 seconds, load average=25.77.
+ticks 9500
+ticks 9600
+(mlfqs-load-60) After 86 seconds, load average=24.92.
+ticks 9700
+ticks 9800
+(mlfqs-load-60) After 88 seconds, load average=24.09.
+ticks 9900
+ticks 10000
+(mlfqs-load-60) After 90 seconds, load average=23.29.
+ticks 10100
+ticks 10200
+(mlfqs-load-60) After 92 seconds, load average=22.52.
+ticks 10300
+ticks 10400
+(mlfqs-load-60) After 94 seconds, load average=21.77.
+ticks 10500
+ticks 10600
+(mlfqs-load-60) After 96 seconds, load average=21.05.
+ticks 10700
+ticks 10800
+(mlfqs-load-60) After 98 seconds, load average=20.35.
+ticks 10900
+ticks 11000
+(mlfqs-load-60) After 100 seconds, load average=19.68.
+ticks 11100
+ticks 11200
+(mlfqs-load-60) After 102 seconds, load average=19.02.
+ticks 11300
+ticks 11400
+(mlfqs-load-60) After 104 seconds, load average=18.39.
+ticks 11500
+ticks 11600
+(mlfqs-load-60) After 106 seconds, load average=17.78.
+ticks 11700
+ticks 11800
+(mlfqs-load-60) After 108 seconds, load average=17.19.
+ticks 11900
+ticks 12000
+(mlfqs-load-60) After 110 seconds, load average=16.62.
+ticks 12100
+ticks 12200
+(mlfqs-load-60) After 112 seconds, load average=16.07.
+ticks 12300
+ticks 12400
+(mlfqs-load-60) After 114 seconds, load average=15.54.
+ticks 12500
+ticks 12600
+(mlfqs-load-60) After 116 seconds, load average=15.02.
+ticks 12700
+ticks 12800
+(mlfqs-load-60) After 118 seconds, load average=14.52.
+ticks 12900
+ticks 13000
+(mlfqs-load-60) After 120 seconds, load average=14.04.
+ticks 13100
+ticks 13200
+(mlfqs-load-60) After 122 seconds, load average=13.58.
+ticks 13300
+ticks 13400
+(mlfqs-load-60) After 124 seconds, load average=13.13.
+ticks 13500
+ticks 13600
+(mlfqs-load-60) After 126 seconds, load average=12.69.
+ticks 13700
+ticks 13800
+(mlfqs-load-60) After 128 seconds, load average=12.27.
+ticks 13900
+ticks 14000
+(mlfqs-load-60) After 130 seconds, load average=11.86.
+ticks 14100
+ticks 14200
+(mlfqs-load-60) After 132 seconds, load average=11.47.
+ticks 14300
+ticks 14400
+(mlfqs-load-60) After 134 seconds, load average=11.09.
+ticks 14500
+ticks 14600
+(mlfqs-load-60) After 136 seconds, load average=10.72.
+ticks 14700
+ticks 14800
+(mlfqs-load-60) After 138 seconds, load average=10.36.
+ticks 14900
+ticks 15000
+(mlfqs-load-60) After 140 seconds, load average=10.02.
+ticks 15100
+ticks 15200
+(mlfqs-load-60) After 142 seconds, load average=9.69.
+ticks 15300
+ticks 15400
+(mlfqs-load-60) After 144 seconds, load average=9.37.
+ticks 15500
+ticks 15600
+(mlfqs-load-60) After 146 seconds, load average=9.06.
+ticks 15700
+ticks 15800
+(mlfqs-load-60) After 148 seconds, load average=8.76.
+ticks 15900
+ticks 16000
+(mlfqs-load-60) After 150 seconds, load average=8.47.
+ticks 16100
+ticks 16200
+(mlfqs-load-60) After 152 seconds, load average=8.18.
+ticks 16300
+ticks 16400
+(mlfqs-load-60) After 154 seconds, load average=7.91.
+ticks 16500
+ticks 16600
+(mlfqs-load-60) After 156 seconds, load average=7.65.
+ticks 16700
+ticks 16800
+(mlfqs-load-60) After 158 seconds, load average=7.40.
+ticks 16900
+ticks 17000
+(mlfqs-load-60) After 160 seconds, load average=7.15.
+ticks 17100
+ticks 17200
+(mlfqs-load-60) After 162 seconds, load average=6.91.
+ticks 17300
+ticks 17400
+(mlfqs-load-60) After 164 seconds, load average=6.68.
+ticks 17500
+ticks 17600
+(mlfqs-load-60) After 166 seconds, load average=6.46.
+ticks 17700
+ticks 17800
+(mlfqs-load-60) After 168 seconds, load average=6.25.
+ticks 17900
+ticks 18000
+(mlfqs-load-60) After 170 seconds, load average=6.04.
+ticks 18100
+ticks 18200
+(mlfqs-load-60) After 172 seconds, load average=5.84.
+ticks 18300
+ticks 18400
+(mlfqs-load-60) After 174 seconds, load average=5.65.
+ticks 18500
+ticks 18600
+(mlfqs-load-60) After 176 seconds, load average=5.46.
+ticks 18700
+ticks 18800
+(mlfqs-load-60) After 178 seconds, load average=5.28.
+(mlfqs-load-60) end
+Execution of 'mlfqs-load-60' complete.
+Timer: 18843 ticks
+Thread: 12798 idle ticks, 6045 kernel ticks, 0 user ticks
+Console: 7557 characters output
+Keyboard: 0 keys pressed
+Powering off...

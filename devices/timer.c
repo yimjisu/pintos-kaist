@@ -93,8 +93,9 @@ timer_sleep (int64_t ticks) {
 	int64_t start = timer_ticks ();
 
 	ASSERT (intr_get_level () == INTR_ON);
-	while (timer_elapsed (start) < ticks)
-		thread_yield ();
+	// while (timer_elapsed (start) < ticks)
+	// 	thread_yield ();
+	thread_sleep(start + ticks);
 }
 
 /* Suspends execution for approximately MS milliseconds. */
@@ -126,6 +127,19 @@ static void
 timer_interrupt (struct intr_frame *args UNUSED) {
 	ticks++;
 	thread_tick ();
+	if(thread_mlfqs) {
+		increment_cur_recent_cpu();
+		if (ticks % TIMER_FREQ == 0) {
+			printf("ticks %d\n", ticks);
+			calculate_recent_cpu();
+			calculate_load_avg();
+		}
+		if (ticks % 4 == 0) {
+			calculate_priority();
+		}
+	}	
+	thread_wake_up (ticks);
+
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
@@ -176,6 +190,7 @@ real_time_sleep (int64_t num, int32_t denom) {
 		   timer_sleep() because it will yield the CPU to other
 		   processes. */
 		timer_sleep (ticks);
+
 	} else {
 		/* Otherwise, use a busy-wait loop for more accurate
 		   sub-tick timing.  We scale the numerator and denominator

@@ -91,7 +91,16 @@ struct thread {
 	enum thread_status status;          /* Thread state. */
 	char name[16];                      /* Name (for debugging purposes). */
 	int priority;                       /* Priority. */
+	int64_t wake_tick;					/* Tick to wake up */
+	
+	int init_priority;
+	struct lock *waiting_lock;
+	struct list donate;
+	struct list_elem donate_elem;
 
+	int nice;
+	int recent_cpu;
+	
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
 
@@ -114,6 +123,10 @@ struct thread {
    Controlled by kernel command-line option "-o mlfqs". */
 extern bool thread_mlfqs;
 
+bool thread_priority_compare(struct list_elem *, struct list_elem *, void *);
+bool thread_wake_up_compare(struct list_elem *, struct list_elem *, void *);
+void thread_preemption(void);
+
 void thread_init (void);
 void thread_start (void);
 
@@ -132,6 +145,9 @@ const char *thread_name (void);
 
 void thread_exit (void) NO_RETURN;
 void thread_yield (void);
+
+void thread_sleep(int64_t);
+void thread_awake(int64_t);
 
 int thread_get_priority (void);
 void thread_set_priority (int);

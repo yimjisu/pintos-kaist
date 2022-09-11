@@ -4,27 +4,11 @@ Kernel command line: -q -mlfqs run mlfqs-nice-10
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  157,081,600 loops/s.
-Boot complete.
-Executing 'mlfqs-nice-10':
-(mlfqs-nice-10) begin
-(mlfqs-nice-10) Starting 10 threads...
-(mlfqs-nice-10) Starting threads took 1 ticks.
-(mlfqs-nice-10) Sleeping 40 seconds to let threads run, please wait...
-(mlfqs-nice-10) Thread 0 received 300 ticks.
-(mlfqs-nice-10) Thread 1 received 300 ticks.
-(mlfqs-nice-10) Thread 2 received 301 ticks.
-(mlfqs-nice-10) Thread 3 received 301 ticks.
-(mlfqs-nice-10) Thread 4 received 301 ticks.
-(mlfqs-nice-10) Thread 5 received 301 ticks.
-(mlfqs-nice-10) Thread 6 received 300 ticks.
-(mlfqs-nice-10) Thread 7 received 301 ticks.
-(mlfqs-nice-10) Thread 8 received 300 ticks.
-(mlfqs-nice-10) Thread 9 received 300 ticks.
-(mlfqs-nice-10) end
-Execution of 'mlfqs-nice-10' complete.
-Timer: 4043 ticks
-Thread: 1000 idle ticks, 3044 kernel ticks, 0 user ticks
-Console: 1043 characters output
-Keyboard: 0 keys pressed
-Powering off...
+Calibrating timer...  Kernel PANIC at ../../threads/thread.c:338 in thread_yield(): assertion `!intr_context ()' failed.
+Call stack: 0x8004213d9d 0x80042070c8 0x80042068ca 0x800420746d 0x800420db4a 0x8004208eba 0x80042092d8 0x800420d7e7 0x80042060f7.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 4 ticks
+Thread: 0 idle ticks, 4 kernel ticks, 0 user ticks
+Console: 

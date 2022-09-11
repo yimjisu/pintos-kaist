@@ -4,17 +4,72 @@ Kernel command line: -q -mlfqs run mlfqs-load-1
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  104,755,200 loops/s.
+Calibrating timer...  156,876,800 loops/s.
 Boot complete.
 Executing 'mlfqs-load-1':
 (mlfqs-load-1) begin
 (mlfqs-load-1) spinning for up to 45 seconds, please wait...
-(mlfqs-load-1) FAIL: load average stayed below 0.5 for more than 45 seconds
-Kernel PANIC at ../../tests/threads/tests.c:93 in fail(): test failed
-Call stack: 0x80042137ac 0x8004216dae 0x8004219dea 0x8004216be8 0x8004206636 0x8004206783 0x8004206120.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 4638 ticks
-Thread: 0 idle ticks, 4638 kernel ticks, 0 user ticks
-Console: 
+ticks 100
+ticks 200
+ticks 300
+ticks 400
+ticks 500
+ticks 600
+ticks 700
+ticks 800
+ticks 900
+ticks 1000
+ticks 1100
+ticks 1200
+ticks 1300
+ticks 1400
+ticks 1500
+ticks 1600
+ticks 1700
+ticks 1800
+ticks 1900
+ticks 2000
+ticks 2100
+ticks 2200
+ticks 2300
+ticks 2400
+ticks 2500
+ticks 2600
+ticks 2700
+ticks 2800
+ticks 2900
+ticks 3000
+ticks 3100
+ticks 3200
+ticks 3300
+ticks 3400
+ticks 3500
+ticks 3600
+ticks 3700
+ticks 3800
+ticks 3900
+ticks 4000
+ticks 4100
+ticks 4200
+ticks 4300
+(mlfqs-load-1) load average rose to 0.5 after 42 seconds
+(mlfqs-load-1) sleeping for another 10 seconds, please wait...
+ticks 4400
+ticks 4500
+ticks 4600
+ticks 4700
+ticks 4800
+ticks 4900
+ticks 5000
+ticks 5100
+ticks 5200
+ticks 5300
+(mlfqs-load-1) load average fell back below 0.5 (to 0.43)
+(mlfqs-load-1) PASS
+(mlfqs-load-1) end
+Execution of 'mlfqs-load-1' complete.
+Timer: 5300 ticks
+Thread: 1000 idle ticks, 4301 kernel ticks, 0 user ticks
+Console: 1264 characters output
+Keyboard: 0 keys pressed
+Powering off...
