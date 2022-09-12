@@ -112,6 +112,8 @@ struct thread {
 	struct intr_frame tf;               /* Information for switching */
 	unsigned magic;                     /* Detects stack overflow. */
 	int64_t wakeup_time;
+	int nice;
+	int recent_cpu;
 };
 
 /* If false (default), use round-robin scheduler.
@@ -148,6 +150,10 @@ void thread_set_priority (int);
 bool thread_desc_priority (struct list_elem *, struct list_elem *, void *);
 void thread_comp_priority (void);
 
+void mlfqs_priority (struct thread *);
+void mlfqs_recent_cpu (struct thread *);
+void mlfqs_load_avg (void);
+void mlfqs_increment_recent_cpu (void);
 int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);

@@ -67,7 +67,8 @@ sema_down (struct semaphore *sema) {
 	old_level = intr_disable ();
 	while (sema->value == 0) {
 		// 내림차순으로 넣는 방법도 있지만, 어차피 donate를 하면서 priority가 수시로 바뀌기 때문에 계속 정렬을 해줘야 한다. 
-		list_push_back (&sema->waiters, &thread_current ()->elem); 
+		list_insert_ordered (&sema->waiters, &thread_current ()->elem, thread_desc_priority, NULL);
+		// list_push_back (&sema->waiters, &thread_current ()->elem); 
 		thread_block ();
 	}
 	sema->value--;
@@ -112,11 +113,17 @@ sema_up (struct semaphore *sema) {
 	old_level = intr_disable ();
 	struct list_elem * max_thread;
 	if (!list_empty (&sema->waiters)) {
-		// 정렬은 O(n lg n)의 시간 복잡도를 갖고 있다. 어차피 최대값만 찾으면 되기 때문에, O(n)의 시간 복잡도를 갖는 list_min을 사용해줬다. 
+		// 정렬은 O(n lg n)의 시간 복잡도를 갖고 있다. 어차피 최대값만 찾으면 되기 때문에, O(n)의 시간 복잡도를 갖는 list_min을 사용해주는 방법도 생각해 볼 수 있다. 
 		// list_max가 아니라 list_min인 이유는 thread.c에 정의되어 있는 thread_desc_priority를 확인해보면 왜 그런지 알 수 있다. 
-		max_thread = list_min (&sema->waiters, thread_desc_priority, NULL);
-		list_remove (max_thread);
-		thread_unblock (list_entry (max_thread, struct thread, elem));
+		// 하지만 sema->waiters를 sorted된 상태로 두는게 추후 project를 하는데에 더 도움이 될 수도 있을 것 같다는 생각이 들어서 그냥 sort를 이용해서 구현했다. 
+		// list_min을 사용하는 경우도 test case는 전부 통과했다. 
+
+		// max_thread = list_min (&sema->waiters, thread_desc_priority, NULL);
+		// list_remove (max_thread);
+		// thread_unblock (list_entry (max_thread, struct thread, elem));
+
+		list_sort (&sema->waiters, thread_desc_priority, NULL);
+		thread_unblock (list_entry (list_pop_front (&sema->waiters), struct thread, elem));
 	}
 
 	sema->value++;
@@ -199,12 +206,13 @@ lock_acquire (struct lock *lock) {
 
 	struct thread * curr = thread_current ();
 
-	if (lock->holder) {
-		curr->lock = lock;
-		// list_insert_ordered (&lock->holder->donate, &curr->donate_elem, donate_desc_priority, NULL);
-		// Semaphore과 동일한 이유로 위처럼 내림차순으로 넣는것보다 순서대로 넣고 나중에 최댓값만 찾는 것이 더 빠르다. 
-		list_push_back (&lock->holder->donate, &curr->donate_elem); 
-		update_priority ();
+	if (!thread_mlfqs) {
+		if (lock->holder) {
+			curr->lock = lock;
+			list_insert_ordered (&lock->holder->donate, &curr->donate_elem, donate_desc_priority, NULL);
+			// list_push_back (&lock->holder->donate, &curr->donate_elem); 
+			update_priority ();
+		}
 	}
 
 	sema_down (&lock->semaphore);
@@ -270,8 +278,10 @@ lock_release (struct lock *lock) {
 	ASSERT (lock != NULL);
 	ASSERT (lock_held_by_current_thread (lock));
 
-	remove_lock (lock);
-	reset_priority ();
+	if (!thread_mlfqs) {
+		remove_lock (lock);
+		reset_priority ();
+	}
 
 	lock->holder = NULL;
 	sema_up (&lock->semaphore);
@@ -333,8 +343,8 @@ cond_wait (struct condition *cond, struct lock *lock) {
 	ASSERT (lock_held_by_current_thread (lock));
 
 	sema_init (&waiter.semaphore, 0);
-	// 이 경우도 위와 같은 이유로 나중에 최댓값을 다시 찾아줘야된다. 
-	list_push_back (&cond->waiters, &waiter.elem);
+	list_insert_ordered (&cond->waiters, &waiter.elem, sema_desc_priority, NULL);
+	// list_push_back (&cond->waiters, &waiter.elem);
 	lock_release (lock);
 	sema_down (&waiter.semaphore);
 	lock_acquire (lock);
@@ -353,12 +363,15 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED) {
 	ASSERT (lock != NULL);
 	ASSERT (!intr_context ());
 	ASSERT (lock_held_by_current_thread (lock));
-	struct list_elem *max_thread;
 
 	if (!list_empty (&cond->waiters)) {
-		max_thread = list_min (&cond->waiters, sema_desc_priority, NULL);
-		list_remove (max_thread);
-		sema_up (&list_entry (max_thread, struct semaphore_elem, elem)->semaphore);
+		// struct list_elem *max_thread;
+		// max_thread = list_min (&cond->waiters, sema_desc_priority, NULL);
+		// list_remove (max_thread);
+		// sema_up (&list_entry (max_thread, struct semaphore_elem, elem)->semaphore);
+
+		list_sort(&cond->waiters, sema_desc_priority, 0);
+		sema_up (&list_entry (list_pop_front (&cond->waiters), struct semaphore_elem, elem)->semaphore);
 	}
 }
 
