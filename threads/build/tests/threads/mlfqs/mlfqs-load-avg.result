@@ -1,13 +1,93 @@
 FAIL
-Kernel panic in run: PANIC at ../../threads/thread.c:338 in thread_yield(): assertion `!intr_context ()' failed.
-Call stack: 0x8004213d9d 0x80042070c8 0x80042068ca 0x800420746d 0x800420db4a 0x8004208eba 0x80042092d8 0x800420d7e7 0x80042060f7
-Translation of call stack:
-0x0000008004213d9d: debug_panic (lib/kernel/debug.c:32)
-0x00000080042070c8: thread_yield (threads/thread.c:340)
-0x00000080042068ca: thread_preemption (threads/thread.c:110)
-0x000000800420746d: calculate_priority (threads/thread.c:411)
-0x000000800420db4a: timer_interrupt (devices/timer.c:141)
-0x0000008004208eba: intr_handler (threads/interrupt.c:352)
-0x00000080042092d8: intr_entry (threads/intr-stubs.o:?)
-0x000000800420d7e7: timer_calibrate (devices/timer.c:59)
-0x00000080042060f7: main (threads/init.c:119)
+Some load average values were missing or differed from those expected by more than 2.5.
+  time   actual <-> expected explanation
+------ -------- --- -------- ----------------------------------------
+     2     0.05  =  0.05     
+     4     0.16  =  0.16     
+     6     0.34  =  0.34     
+     8     0.58  =  0.58     
+    10     0.87  =  0.87     
+    12     1.22  =  1.22     
+    14     1.63  =  1.63     
+    16     2.09  =  2.09     
+    18     2.60  =  2.60     
+    20     3.15  =  3.16     
+    22     3.76  =  3.76     
+    24     4.41  =  4.42     
+    26    45.58 >>> 5.11     Too big, by 37.97.
+    28    45.58 >>> 5.85     Too big, by 37.23.
+    30    45.58 >>> 6.63     Too big, by 36.45.
+    32    45.58 >>> 7.46     Too big, by 35.62.
+    34    45.58 >>> 8.32     Too big, by 34.76.
+    36    45.58 >>> 9.22     Too big, by 33.86.
+    38    45.58 >>> 10.15    Too big, by 32.93.
+    40    45.58 >>> 11.12    Too big, by 31.96.
+    42    45.58 >>> 12.13    Too big, by 30.95.
+    44    45.58 >>> 13.16    Too big, by 29.92.
+    46    45.58 >>> 14.23    Too big, by 28.85.
+    48    45.58 >>> 15.33    Too big, by 27.75.
+    50    45.58 >>> 16.46    Too big, by 26.62.
+    52    45.58 >>> 17.62    Too big, by 25.46.
+    54    45.58 >>> 18.81    Too big, by 24.27.
+    56    44.93 >>> 20.02    Too big, by 22.41.
+    58    44.93 >>> 21.26    Too big, by 21.17.
+    60    44.93 >>> 22.52    Too big, by 19.91.
+    62    44.93 >>> 23.71    Too big, by 18.72.
+    64    44.93 >>> 24.80    Too big, by 17.63.
+    66    44.93 >>> 25.78    Too big, by 16.65.
+    68    44.93 >>> 26.66    Too big, by 15.77.
+    70    44.93 >>> 27.45    Too big, by 14.98.
+    72    44.93 >>> 28.14    Too big, by 14.29.
+    74    44.93 >>> 28.75    Too big, by 13.68.
+    76    44.93 >>> 29.27    Too big, by 13.16.
+    78    44.93 >>> 29.71    Too big, by 12.72.
+    80    44.93 >>> 30.06    Too big, by 12.37.
+    82    44.93 >>> 30.34    Too big, by 12.09.
+    84    44.93 >>> 30.55    Too big, by 11.88.
+    86    44.93 >>> 30.68    Too big, by 11.75.
+    88    44.93 >>> 30.74    Too big, by 11.69.
+    90    44.93 >>> 30.73    Too big, by 11.70.
+    92    44.93 >>> 30.66    Too big, by 11.77.
+    94    44.93 >>> 30.52    Too big, by 11.91.
+    96    44.93 >>> 30.32    Too big, by 12.11.
+    98    44.93 >>> 30.06    Too big, by 12.37.
+   100    44.93 >>> 29.74    Too big, by 12.69.
+   102    44.93 >>> 29.37    Too big, by 13.06.
+   104    44.93 >>> 28.95    Too big, by 13.48.
+   106    44.93 >>> 28.47    Too big, by 13.96.
+   108    44.93 >>> 27.94    Too big, by 14.49.
+   110    44.93 >>> 27.36    Too big, by 15.07.
+   112    44.93 >>> 26.74    Too big, by 15.69.
+   114    44.93 >>> 26.07    Too big, by 16.36.
+   116    44.93 >>> 25.36    Too big, by 17.07.
+   118    44.93 >>> 24.60    Too big, by 17.83.
+   120    44.18 >>> 23.81    Too big, by 17.87.
+   122    42.71 >>> 23.02    Too big, by 17.19.
+   124    41.30 >>> 22.26    Too big, by 16.54.
+   126    39.93 >>> 21.52    Too big, by 15.91.
+   128    38.60 >>> 20.81    Too big, by 15.29.
+   130    37.32 >>> 20.12    Too big, by 14.70.
+   132    36.08 >>> 19.46    Too big, by 14.12.
+   134    34.89 >>> 18.81    Too big, by 13.58.
+   136    33.73 >>> 18.19    Too big, by 13.04.
+   138    32.61 >>> 17.59    Too big, by 12.52.
+   140    31.53 >>> 17.01    Too big, by 12.02.
+   142    30.48 >>> 16.45    Too big, by 11.53.
+   144    29.47 >>> 15.90    Too big, by 11.07.
+   146    28.50 >>> 15.38    Too big, by 10.62.
+   148    27.55 >>> 14.87    Too big, by 10.18.
+   150    26.64 >>> 14.38    Too big, by 9.76.
+   152    25.75 >>> 13.90    Too big, by 9.35.
+   154    24.90 >>> 13.44    Too big, by 8.96.
+   156    24.07 >>> 13.00    Too big, by 8.57.
+   158    23.27 >>> 12.57    Too big, by 8.20.
+   160    22.50 >>> 12.15    Too big, by 7.85.
+   162    21.76 >>> 11.75    Too big, by 7.51.
+   164    21.03 >>> 11.36    Too big, by 7.17.
+   166    20.34 >>> 10.99    Too big, by 6.85.
+   168    19.66 >>> 10.62    Too big, by 6.54.
+   170    19.01 >>> 10.27    Too big, by 6.24.
+   172    18.38 >>> 9.93     Too big, by 5.95.
+   174    17.77 >>> 9.61     Too big, by 5.66.
+   176    17.18 >>> 9.29     Too big, by 5.39.
+   178    16.61 >>> 8.98     Too big, by 5.13.

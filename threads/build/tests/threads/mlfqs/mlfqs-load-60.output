@@ -4,294 +4,482 @@ Kernel command line: -q -mlfqs run mlfqs-load-60
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  157,081,600 loops/s.
+Calibrating timer...  98,201,600 loops/s.
 Boot complete.
 Executing 'mlfqs-load-60':
 (mlfqs-load-60) begin
 (mlfqs-load-60) Starting 60 niced load threads...
 (mlfqs-load-60) Starting threads took 0 seconds.
 ticks 100
+<1> load_avg 0
 ticks 200
+<1> load_avg 0
 ticks 300
+<1> load_avg 0
 ticks 400
+<1> load_avg 0
 ticks 500
+<1> load_avg 0
 ticks 600
+<1> load_avg 0
 ticks 700
+<1> load_avg 0
 ticks 800
+<1> load_avg 0
 ticks 900
+<1> load_avg 0
 ticks 1000
+<1> load_avg 0
 (mlfqs-load-60) After 0 seconds, load average=0.00.
 ticks 1100
+<1> load_avg 16380
 ticks 1200
+<1> load_avg 32486
 (mlfqs-load-60) After 2 seconds, load average=1.98.
 ticks 1300
+<1> load_avg 48322
 ticks 1400
+<1> load_avg 63893
 (mlfqs-load-60) After 4 seconds, load average=3.90.
 ticks 1500
+<1> load_avg 79204
 ticks 1600
+<1> load_avg 94259
 (mlfqs-load-60) After 6 seconds, load average=5.75.
 ticks 1700
+<1> load_avg 109062
 ticks 1800
+<1> load_avg 123618
 ticks 1900
+<1> load_avg 138203
 ticks 2000
+<1> load_avg 152544
 ticks 2100
+<1> load_avg 166645
 ticks 2200
+<1> load_avg 180511
 ticks 2300
+<1> load_avg 194145
 ticks 2400
+<1> load_avg 207551
 ticks 2500
+<1> load_avg 220732
 ticks 2600
+<1> load_avg 233693
 ticks 2700
+<1> load_avg 246437
 ticks 2800
+<1> load_avg 258968
 ticks 2900
+<1> load_avg 271290
 ticks 3000
+<1> load_avg 283406
 ticks 3100
+<1> load_avg 295319
 ticks 3200
+<1> load_avg 307033
 ticks 3300
+<1> load_avg 318551
 ticks 3400
+<1> load_avg 329876
 ticks 3500
+<1> load_avg 341012
 ticks 3600
+<1> load_avg 351962
 ticks 3700
+<1> load_avg 362728
 ticks 3800
+<1> load_avg 373314
+(mlfqs-load-60) After 8 seconds, load average=22.79.
+(mlfqs-load-60) After 10 seconds, load average=22.79.
+(mlfqs-load-60) After 12 seconds, load average=22.79.
+(mlfqs-load-60) After 14 seconds, load average=22.79.
+(mlfqs-load-60) After 16 seconds, load average=22.79.
+(mlfqs-load-60) After 18 seconds, load average=22.79.
+(mlfqs-load-60) After 20 seconds, load average=22.79.
+(mlfqs-load-60) After 22 seconds, load average=22.79.
+(mlfqs-load-60) After 24 seconds, load average=22.79.
+(mlfqs-load-60) After 26 seconds, load average=22.79.
+(mlfqs-load-60) After 28 seconds, load average=22.79.
 ticks 3900
+<1> load_avg 383450
 ticks 4000
+<1> load_avg 393417
 ticks 4100
+<1> load_avg 403490
 ticks 4200
+<1> load_avg 413395
 ticks 4300
+<1> load_avg 423134
 ticks 4400
+<1> load_avg 432710
 ticks 4500
+<1> load_avg 442126
 ticks 4600
-ticks 4700
+<1> load_avg 451385
+(mlfqs-load-60) ticks 4700
+<1> load_avg 460489
 ticks 4800
+<1> load_avg 469440
+After 30 seconds, load average=27.55.
+(mlfqs-load-60) After 32 seconds, load average=28.65.
+(mlfqs-load-60) After 34 seconds, load average=28.65.
+(mlfqs-load-60) After 36 seconds, load average=28.65.
+(mlfqs-load-60) After 38 seconds, load average=28.65.
 ticks 4900
+<1> load_avg 477969
 ticks 5000
+<1> load_avg 486355
 ticks 5100
+<1> load_avg 494874
 ticks 5200
+<1> load_avg 503250
 ticks 5300
+<1> load_avg 511486
 ticks 5400
+<1> load_avg 519585
 ticks 5500
+<1> load_avg 527548
 ticks 5600
+<1> load_avg 535378
 ticks 5700
+<1> load_avg 543077
 ticks 5800
+<1> load_avg 550647
 ticks 5900
+<1> load_avg 558091
 ticks 6000
+<1> load_avg 565410
 ticks 6100
+<1> load_avg 572607
 ticks 6200
+<1> load_avg 579683
 ticks 6300
+<1> load_avg 586641
 ticks 6400
-ticks 6500
+<1> load_avg 593483
+(mlfqs-load-60) ticks 6500
+<1> load_avg 600210
+After 40 seconds, load average=36.22.
+(mlfqs-load-60) After 42 seconds, load average=36.63.
+(mlfqs-load-60) After 44 seconds, load average=36.63.
+(mlfqs-load-60) After 46 seconds, load average=36.63.
+(mlfqs-load-60) After 48 seconds, load average=36.63.
+(mlfqs-load-60) After 50 seconds, load average=36.63.
+(mlfqs-load-60) After 52 seconds, load average=36.63.
+(mlfqs-load-60) After 54 seconds, load average=36.63.
 ticks 6600
+<1> load_avg 606552
 ticks 6700
+<1> load_avg 613061
 ticks 6800
+<1> load_avg 619461
+(mlfqs-load-60) After 56 seconds, load average=37.81.
+(mlfqs-load-60) After 58 seconds, load average=37.81.
 ticks 6900
+<1> load_avg 625481
 ticks 7000
-(mlfqs-load-60) After 8 seconds, load average=38.63.
-(mlfqs-load-60) After 10 seconds, load average=38.63.
-(mlfqs-load-60) After 12 seconds, load average=38.63.
-(mlfqs-load-60) After 14 seconds, load average=38.63.
-(mlfqs-load-60) After 16 seconds, load average=38.63.
-(mlfqs-load-60) After 18 seconds, load average=38.63.
-(mlfqs-load-60) After 20 seconds, load average=38.63.
-(mlfqs-load-60) After 22 seconds, load average=38.63.
-(mlfqs-load-60) After 24 seconds, load average=38.63.
-(mlfqs-load-60) After 26 seconds, load average=38.63.
-(mlfqs-load-60) After 28 seconds, load average=38.63.
-(mlfqs-load-60) After 30 seconds, load average=38.63.
-(mlfqs-load-60) After 32 seconds, load average=38.63.
-(mlfqs-load-60) After 34 seconds, load average=38.63.
-(mlfqs-load-60) After 36 seconds, load average=38.63.
-(mlfqs-load-60) After 38 seconds, load average=38.63.
-(mlfqs-load-60) After 40 seconds, load average=38.63.
-(mlfqs-load-60) After 42 seconds, load average=38.63.
-(mlfqs-load-60) After 44 seconds, load average=38.63.
-(mlfqs-load-60) After 46 seconds, load average=38.63.
-(mlfqs-load-60) After 48 seconds, load average=38.63.
-(mlfqs-load-60) After 50 seconds, load average=38.63.
-(mlfqs-load-60) After 52 seconds, load average=38.63.
-(mlfqs-load-60) After 54 seconds, load average=38.63.
-(mlfqs-load-60) After 56 seconds, load average=38.63.
-(mlfqs-load-60) After 58 seconds, load average=38.63.
-(mlfqs-load-60) After 60 seconds, load average=38.63.
+<1> load_avg 631400
+(mlfqs-load-60) After 60 seconds, load average=38.54.
 ticks 7100
+<1> load_avg 620840
 ticks 7200
-(mlfqs-load-60) After 62 seconds, load average=37.35.
+<1> load_avg 610457
+(mlfqs-load-60) After 62 seconds, load average=37.26.
 ticks 7300
+<1> load_avg 600247
 ticks 7400
-(mlfqs-load-60) After 64 seconds, load average=36.11.
+<1> load_avg 590208
+(mlfqs-load-60) After 64 seconds, load average=36.02.
 ticks 7500
+<1> load_avg 580337
 ticks 7600
-(mlfqs-load-60) After 66 seconds, load average=34.91.
+<1> load_avg 570631
+(mlfqs-load-60) After 66 seconds, load average=34.83.
 ticks 7700
+<1> load_avg 561087
 ticks 7800
-(mlfqs-load-60) After 68 seconds, load average=33.75.
+<1> load_avg 551703
+(mlfqs-load-60) After 68 seconds, load average=33.67.
 ticks 7900
+<1> load_avg 542476
 ticks 8000
-(mlfqs-load-60) After 70 seconds, load average=32.63.
+<1> load_avg 533403
+(mlfqs-load-60) After 70 seconds, load average=32.56.
 ticks 8100
+<1> load_avg 524482
 ticks 8200
-(mlfqs-load-60) After 72 seconds, load average=31.55.
+<1> load_avg 515710
+(mlfqs-load-60) After 72 seconds, load average=31.48.
 ticks 8300
+<1> load_avg 507085
 ticks 8400
-(mlfqs-load-60) After 74 seconds, load average=30.51.
+<1> load_avg 498604
+(mlfqs-load-60) After 74 seconds, load average=30.43.
 ticks 8500
+<1> load_avg 490265
 ticks 8600
-(mlfqs-load-60) After 76 seconds, load average=29.49.
+<1> load_avg 482065
+(mlfqs-load-60) After 76 seconds, load average=29.42.
 ticks 8700
+<1> load_avg 474003
 ticks 8800
-(mlfqs-load-60) After 78 seconds, load average=28.52.
+<1> load_avg 466075
+(mlfqs-load-60) After 78 seconds, load average=28.45.
 ticks 8900
+<1> load_avg 458280
 ticks 9000
-(mlfqs-load-60) After 80 seconds, load average=27.57.
+<1> load_avg 450615
+(mlfqs-load-60) After 80 seconds, load average=27.50.
 ticks 9100
+<1> load_avg 443079
 ticks 9200
-(mlfqs-load-60) After 82 seconds, load average=26.65.
+<1> load_avg 435669
+(mlfqs-load-60) After 82 seconds, load average=26.59.
 ticks 9300
+<1> load_avg 428383
 ticks 9400
-(mlfqs-load-60) After 84 seconds, load average=25.77.
+<1> load_avg 421218
+(mlfqs-load-60) After 84 seconds, load average=25.71.
 ticks 9500
+<1> load_avg 414173
 ticks 9600
-(mlfqs-load-60) After 86 seconds, load average=24.92.
+<1> load_avg 407246
+(mlfqs-load-60) After 86 seconds, load average=24.86.
 ticks 9700
+<1> load_avg 400435
 ticks 9800
-(mlfqs-load-60) After 88 seconds, load average=24.09.
+<1> load_avg 393738
+(mlfqs-load-60) After 88 seconds, load average=24.03.
 ticks 9900
+<1> load_avg 387153
 ticks 10000
-(mlfqs-load-60) After 90 seconds, load average=23.29.
+<1> load_avg 380678
+(mlfqs-load-60) After 90 seconds, load average=23.23.
 ticks 10100
+<1> load_avg 374311
 ticks 10200
-(mlfqs-load-60) After 92 seconds, load average=22.52.
+<1> load_avg 368051
+(mlfqs-load-60) After 92 seconds, load average=22.46.
 ticks 10300
+<1> load_avg 361895
 ticks 10400
-(mlfqs-load-60) After 94 seconds, load average=21.77.
+<1> load_avg 355842
+(mlfqs-load-60) After 94 seconds, load average=21.72.
 ticks 10500
+<1> load_avg 349891
 ticks 10600
-(mlfqs-load-60) After 96 seconds, load average=21.05.
+<1> load_avg 344039
+(mlfqs-load-60) After 96 seconds, load average=21.00.
 ticks 10700
+<1> load_avg 338285
 ticks 10800
-(mlfqs-load-60) After 98 seconds, load average=20.35.
+<1> load_avg 332627
+(mlfqs-load-60) After 98 seconds, load average=20.30.
 ticks 10900
+<1> load_avg 327064
 ticks 11000
-(mlfqs-load-60) After 100 seconds, load average=19.68.
+<1> load_avg 321594
+(mlfqs-load-60) After 100 seconds, load average=19.63.
 ticks 11100
+<1> load_avg 316215
 ticks 11200
-(mlfqs-load-60) After 102 seconds, load average=19.02.
+<1> load_avg 310926
+(mlfqs-load-60) After 102 seconds, load average=18.98.
 ticks 11300
+<1> load_avg 305726
 ticks 11400
-(mlfqs-load-60) After 104 seconds, load average=18.39.
+<1> load_avg 300613
+(mlfqs-load-60) After 104 seconds, load average=18.35.
 ticks 11500
+<1> load_avg 295585
 ticks 11600
-(mlfqs-load-60) After 106 seconds, load average=17.78.
+<1> load_avg 290641
+(mlfqs-load-60) After 106 seconds, load average=17.74.
 ticks 11700
+<1> load_avg 285780
 ticks 11800
-(mlfqs-load-60) After 108 seconds, load average=17.19.
+<1> load_avg 281000
+(mlfqs-load-60) After 108 seconds, load average=17.15.
 ticks 11900
+<1> load_avg 276300
 ticks 12000
-(mlfqs-load-60) After 110 seconds, load average=16.62.
+<1> load_avg 271679
+(mlfqs-load-60) After 110 seconds, load average=16.58.
 ticks 12100
+<1> load_avg 267135
 ticks 12200
-(mlfqs-load-60) After 112 seconds, load average=16.07.
+<1> load_avg 262667
+(mlfqs-load-60) After 112 seconds, load average=16.03.
 ticks 12300
+<1> load_avg 258274
 ticks 12400
-(mlfqs-load-60) After 114 seconds, load average=15.54.
+<1> load_avg 253954
+(mlfqs-load-60) After 114 seconds, load average=15.50.
 ticks 12500
+<1> load_avg 249706
 ticks 12600
-(mlfqs-load-60) After 116 seconds, load average=15.02.
+<1> load_avg 245530
+(mlfqs-load-60) After 116 seconds, load average=14.99.
 ticks 12700
+<1> load_avg 241423
 ticks 12800
-(mlfqs-load-60) After 118 seconds, load average=14.52.
+<1> load_avg 237385
+(mlfqs-load-60) After 118 seconds, load average=14.49.
 ticks 12900
+<1> load_avg 233415
 ticks 13000
-(mlfqs-load-60) After 120 seconds, load average=14.04.
+<1> load_avg 229511
+(mlfqs-load-60) After 120 seconds, load average=14.01.
 ticks 13100
+<1> load_avg 225672
 ticks 13200
-(mlfqs-load-60) After 122 seconds, load average=13.58.
+<1> load_avg 221897
+(mlfqs-load-60) After 122 seconds, load average=13.54.
 ticks 13300
+<1> load_avg 218186
 ticks 13400
-(mlfqs-load-60) After 124 seconds, load average=13.13.
+<1> load_avg 214537
+(mlfqs-load-60) After 124 seconds, load average=13.09.
 ticks 13500
+<1> load_avg 210949
 ticks 13600
-(mlfqs-load-60) After 126 seconds, load average=12.69.
+<1> load_avg 207421
+(mlfqs-load-60) After 126 seconds, load average=12.66.
 ticks 13700
+<1> load_avg 203952
 ticks 13800
-(mlfqs-load-60) After 128 seconds, load average=12.27.
+<1> load_avg 200541
+(mlfqs-load-60) After 128 seconds, load average=12.24.
 ticks 13900
+<1> load_avg 197187
 ticks 14000
-(mlfqs-load-60) After 130 seconds, load average=11.86.
+<1> load_avg 193889
+(mlfqs-load-60) After 130 seconds, load average=11.83.
 ticks 14100
+<1> load_avg 190646
 ticks 14200
-(mlfqs-load-60) After 132 seconds, load average=11.47.
+<1> load_avg 187457
+(mlfqs-load-60) After 132 seconds, load average=11.44.
 ticks 14300
+<1> load_avg 184322
 ticks 14400
-(mlfqs-load-60) After 134 seconds, load average=11.09.
+<1> load_avg 181239
+(mlfqs-load-60) After 134 seconds, load average=11.06.
 ticks 14500
+<1> load_avg 178208
 ticks 14600
-(mlfqs-load-60) After 136 seconds, load average=10.72.
+<1> load_avg 175227
+(mlfqs-load-60) After 136 seconds, load average=10.70.
 ticks 14700
+<1> load_avg 172296
 ticks 14800
-(mlfqs-load-60) After 138 seconds, load average=10.36.
+<1> load_avg 169414
+(mlfqs-load-60) After 138 seconds, load average=10.34.
 ticks 14900
+<1> load_avg 166580
 ticks 15000
-(mlfqs-load-60) After 140 seconds, load average=10.02.
+<1> load_avg 163794
+(mlfqs-load-60) After 140 seconds, load average=10.00.
 ticks 15100
+<1> load_avg 161054
 ticks 15200
-(mlfqs-load-60) After 142 seconds, load average=9.69.
+<1> load_avg 158360
+(mlfqs-load-60) After 142 seconds, load average=9.67.
 ticks 15300
+<1> load_avg 155711
 ticks 15400
-(mlfqs-load-60) After 144 seconds, load average=9.37.
+<1> load_avg 153106
+(mlfqs-load-60) After 144 seconds, load average=9.34.
 ticks 15500
+<1> load_avg 150545
 ticks 15600
-(mlfqs-load-60) After 146 seconds, load average=9.06.
+<1> load_avg 148027
+(mlfqs-load-60) After 146 seconds, load average=9.03.
 ticks 15700
+<1> load_avg 145551
 ticks 15800
-(mlfqs-load-60) After 148 seconds, load average=8.76.
+<1> load_avg 143116
+(mlfqs-load-60) After 148 seconds, load average=8.74.
 ticks 15900
+<1> load_avg 140722
 ticks 16000
-(mlfqs-load-60) After 150 seconds, load average=8.47.
+<1> load_avg 138368
+(mlfqs-load-60) After 150 seconds, load average=8.45.
 ticks 16100
+<1> load_avg 136053
 ticks 16200
-(mlfqs-load-60) After 152 seconds, load average=8.18.
+<1> load_avg 133777
+(mlfqs-load-60) After 152 seconds, load average=8.17.
 ticks 16300
+<1> load_avg 131539
 ticks 16400
-(mlfqs-load-60) After 154 seconds, load average=7.91.
+<1> load_avg 129339
+(mlfqs-load-60) After 154 seconds, load average=7.89.
 ticks 16500
+<1> load_avg 127175
 ticks 16600
-(mlfqs-load-60) After 156 seconds, load average=7.65.
+<1> load_avg 125048
+(mlfqs-load-60) After 156 seconds, load average=7.63.
 ticks 16700
+<1> load_avg 122956
 ticks 16800
-(mlfqs-load-60) After 158 seconds, load average=7.40.
+<1> load_avg 120899
+(mlfqs-load-60) After 158 seconds, load average=7.38.
 ticks 16900
+<1> load_avg 118877
 ticks 17000
-(mlfqs-load-60) After 160 seconds, load average=7.15.
+<1> load_avg 116888
+(mlfqs-load-60) After 160 seconds, load average=7.13.
 ticks 17100
+<1> load_avg 114933
 ticks 17200
-(mlfqs-load-60) After 162 seconds, load average=6.91.
+<1> load_avg 113010
+(mlfqs-load-60) After 162 seconds, load average=6.90.
 ticks 17300
+<1> load_avg 111120
 ticks 17400
-(mlfqs-load-60) After 164 seconds, load average=6.68.
+<1> load_avg 109261
+(mlfqs-load-60) After 164 seconds, load average=6.67.
 ticks 17500
+<1> load_avg 107433
 ticks 17600
-(mlfqs-load-60) After 166 seconds, load average=6.46.
+<1> load_avg 105636
+(mlfqs-load-60) After 166 seconds, load average=6.45.
 ticks 17700
+<1> load_avg 103869
 ticks 17800
-(mlfqs-load-60) After 168 seconds, load average=6.25.
+<1> load_avg 102131
+(mlfqs-load-60) After 168 seconds, load average=6.23.
 ticks 17900
+<1> load_avg 100422
 ticks 18000
-(mlfqs-load-60) After 170 seconds, load average=6.04.
+<1> load_avg 98742
+(mlfqs-load-60) After 170 seconds, load average=6.03.
 ticks 18100
+<1> load_avg 97090
 ticks 18200
-(mlfqs-load-60) After 172 seconds, load average=5.84.
+<1> load_avg 95466
+(mlfqs-load-60) After 172 seconds, load average=5.83.
 ticks 18300
+<1> load_avg 93869
 ticks 18400
-(mlfqs-load-60) After 174 seconds, load average=5.65.
+<1> load_avg 92299
+(mlfqs-load-60) After 174 seconds, load average=5.63.
 ticks 18500
+<1> load_avg 90755
 ticks 18600
-(mlfqs-load-60) After 176 seconds, load average=5.46.
+<1> load_avg 89237
+(mlfqs-load-60) After 176 seconds, load average=5.45.
 ticks 18700
+<1> load_avg 87744
 ticks 18800
-(mlfqs-load-60) After 178 seconds, load average=5.28.
+<1> load_avg 86276
+(mlfqs-load-60) After 178 seconds, load average=5.27.
 (mlfqs-load-60) end
 Execution of 'mlfqs-load-60' complete.
-Timer: 18843 ticks
-Thread: 12798 idle ticks, 6045 kernel ticks, 0 user ticks
-Console: 7557 characters output
+Timer: 18839 ticks
+Thread: 12798 idle ticks, 6041 kernel ticks, 0 user ticks
+Console: 11251 characters output
 Keyboard: 0 keys pressed
 Powering off...

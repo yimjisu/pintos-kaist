@@ -4,11 +4,107 @@ Kernel command line: -q -mlfqs run mlfqs-nice-10
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  Kernel PANIC at ../../threads/thread.c:338 in thread_yield(): assertion `!intr_context ()' failed.
-Call stack: 0x8004213d9d 0x80042070c8 0x80042068ca 0x800420746d 0x800420db4a 0x8004208eba 0x80042092d8 0x800420d7e7 0x80042060f7.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 4 ticks
-Thread: 0 idle ticks, 4 kernel ticks, 0 user ticks
-Console: 
+Calibrating timer...  78,540,800 loops/s.
+Boot complete.
+Executing 'mlfqs-nice-10':
+(mlfqs-nice-10) begin
+(mlfqs-nice-10) Starting 10 threads...
+(mlfqs-nice-10) Starting threads took 1 ticks.
+(mlfqs-nice-10) Sleeping 40 seconds to let threads run, please wait...
+ticks 100
+<1> load_avg 0
+ticks 200
+<1> load_avg 0
+ticks 300
+<1> load_avg 0
+ticks 400
+<1> load_avg 0
+ticks 500
+<1> load_avg 0
+ticks 600
+<1> load_avg 2730
+ticks 700
+<1> load_avg 5414
+ticks 800
+<1> load_avg 8053
+ticks 900
+<1> load_avg 10648
+ticks 1000
+<1> load_avg 13199
+ticks 1100
+<1> load_avg 15708
+ticks 1200
+<1> load_avg 18175
+ticks 1300
+<1> load_avg 20601
+ticks 1400
+<1> load_avg 22986
+ticks 1500
+<1> load_avg 25331
+ticks 1600
+<1> load_avg 27637
+ticks 1700
+<1> load_avg 29904
+ticks 1800
+<1> load_avg 32133
+ticks 1900
+<1> load_avg 34325
+ticks 2000
+<1> load_avg 36480
+ticks 2100
+<1> load_avg 38599
+ticks 2200
+<1> load_avg 40683
+ticks 2300
+<1> load_avg 42732
+ticks 2400
+<1> load_avg 44747
+ticks 2500
+<1> load_avg 46728
+ticks 2600
+<1> load_avg 48676
+ticks 2700
+<1> load_avg 50591
+ticks 2800
+<1> load_avg 52474
+ticks 2900
+<1> load_avg 54326
+ticks 3000
+<1> load_avg 56147
+ticks 3100
+<1> load_avg 57938
+ticks 3200
+<1> load_avg 59699
+ticks 3300
+<1> load_avg 61430
+ticks 3400
+<1> load_avg 63132
+ticks 3500
+<1> load_avg 64806
+ticks 3600
+<1> load_avg 63722
+ticks 3700
+<1> load_avg 62656
+ticks 3800
+<1> load_avg 61608
+ticks 3900
+<1> load_avg 60577
+ticks 4000
+<1> load_avg 59563
+(mlfqs-nice-10) Thread 0 received 153 ticks.
+(mlfqs-nice-10) Thread 1 received 124 ticks.
+(mlfqs-nice-10) Thread 2 received 197 ticks.
+(mlfqs-nice-10) Thread 3 received 181 ticks.
+(mlfqs-nice-10) Thread 4 received 61 ticks.
+(mlfqs-nice-10) Thread 5 received 52 ticks.
+(mlfqs-nice-10) Thread 6 received 45 ticks.
+(mlfqs-nice-10) Thread 7 received 676 ticks.
+(mlfqs-nice-10) Thread 8 received 1011 ticks.
+(mlfqs-nice-10) Thread 9 received 504 ticks.
+(mlfqs-nice-10) end
+Execution of 'mlfqs-nice-10' complete.
+Timer: 4045 ticks
+Thread: 1000 idle ticks, 3045 kernel ticks, 0 user ticks
+Console: 2208 characters output
+Keyboard: 0 keys pressed
+Powering off...

@@ -4,72 +4,125 @@ Kernel command line: -q -mlfqs run mlfqs-load-1
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  156,876,800 loops/s.
+Calibrating timer...  157,081,600 loops/s.
 Boot complete.
 Executing 'mlfqs-load-1':
 (mlfqs-load-1) begin
 (mlfqs-load-1) spinning for up to 45 seconds, please wait...
 ticks 100
+<1> load_avg 273
 ticks 200
+<1> load_avg 541
 ticks 300
+<1> load_avg 804
 ticks 400
+<1> load_avg 1063
 ticks 500
+<1> load_avg 1318
 ticks 600
+<1> load_avg 1568
 ticks 700
+<1> load_avg 1814
 ticks 800
+<1> load_avg 2056
 ticks 900
+<1> load_avg 2294
 ticks 1000
+<1> load_avg 2528
 ticks 1100
+<1> load_avg 2758
 ticks 1200
+<1> load_avg 2984
 ticks 1300
+<1> load_avg 3207
 ticks 1400
+<1> load_avg 3426
 ticks 1500
+<1> load_avg 3641
 ticks 1600
+<1> load_avg 3853
 ticks 1700
+<1> load_avg 4061
 ticks 1800
+<1> load_avg 4266
 ticks 1900
+<1> load_avg 4467
 ticks 2000
+<1> load_avg 4665
 ticks 2100
+<1> load_avg 4859
 ticks 2200
+<1> load_avg 5050
 ticks 2300
+<1> load_avg 5238
 ticks 2400
+<1> load_avg 5423
 ticks 2500
+<1> load_avg 5605
 ticks 2600
+<1> load_avg 5784
 ticks 2700
+<1> load_avg 5960
 ticks 2800
+<1> load_avg 6133
 ticks 2900
+<1> load_avg 6303
 ticks 3000
+<1> load_avg 6470
 ticks 3100
+<1> load_avg 6634
 ticks 3200
+<1> load_avg 6796
 ticks 3300
+<1> load_avg 6955
 ticks 3400
+<1> load_avg 7111
 ticks 3500
+<1> load_avg 7265
 ticks 3600
+<1> load_avg 7416
 ticks 3700
+<1> load_avg 7564
 ticks 3800
+<1> load_avg 7710
 ticks 3900
+<1> load_avg 7854
 ticks 4000
+<1> load_avg 7995
 ticks 4100
+<1> load_avg 8134
 ticks 4200
+<1> load_avg 8270
 ticks 4300
+<1> load_avg 8404
 (mlfqs-load-1) load average rose to 0.5 after 42 seconds
 (mlfqs-load-1) sleeping for another 10 seconds, please wait...
 ticks 4400
+<1> load_avg 8263
 ticks 4500
+<1> load_avg 8124
 ticks 4600
+<1> load_avg 7988
 ticks 4700
+<1> load_avg 7854
 ticks 4800
+<1> load_avg 7722
 ticks 4900
+<1> load_avg 7592
 ticks 5000
+<1> load_avg 7465
 ticks 5100
+<1> load_avg 7340
 ticks 5200
+<1> load_avg 7217
 ticks 5300
+<1> load_avg 7096
 (mlfqs-load-1) load average fell back below 0.5 (to 0.43)
 (mlfqs-load-1) PASS
 (mlfqs-load-1) end
 Execution of 'mlfqs-load-1' complete.
 Timer: 5300 ticks
-Thread: 1000 idle ticks, 4301 kernel ticks, 0 user ticks
-Console: 1264 characters output
+Thread: 1000 idle ticks, 4300 kernel ticks, 0 user ticks
+Console: 2215 characters output
 Keyboard: 0 keys pressed
 Powering off...

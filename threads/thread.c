@@ -146,7 +146,7 @@ thread_init (void) {
 	initial_thread->status = THREAD_RUNNING;
 	initial_thread->tid = allocate_tid ();
 	
-	thread_preemption();
+	//thread_preemption();
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -354,6 +354,7 @@ void
 thread_sleep (int64_t ticks) {
 	struct thread *curr = thread_current ();
 	ASSERT (idle_thread != curr);
+	ASSERT (!intr_context());
 
 	enum intr_level old_level = intr_disable ();
 
@@ -406,7 +407,10 @@ calculate_priority (void) {
 	struct list_elem *e;
 	for(e = list_begin(&ready_list); e != list_end(&ready_list); e = list_next(e)) {
 		struct thread *t = list_entry(e, struct thread, elem);
-		if (t == idle_thread) continue;
+		mlfqs_priority(t);
+	}
+	for(e = list_begin(&sleep_list); e != list_end(&sleep_list); e = list_next(e)) {
+		struct thread *t = list_entry(e, struct thread, elem);
 		mlfqs_priority(t);
 	}
 	mlfqs_priority(thread_current());
@@ -414,16 +418,17 @@ calculate_priority (void) {
 
 void 
 mlfqs_priority (struct thread *t) {
-	t->priority = - SUB_FIXED_INT(
-		DIV_FIXED_INT(t->recent_cpu, 4),
-		PRI_MAX + t->nice * 2
-	);
+	if(t == idle_thread) return;
+	t->priority = FIXED_TO_INT_ZERO(ADD_FIXED_INT(
+		DIV_FIXED_INT(t->recent_cpu, -4),
+		PRI_MAX - t->nice * 2
+	));
 }
 
 void
 increment_cur_recent_cpu (void) {
-	if (thread_current() != idle_thread)
-		thread_current() -> recent_cpu = ADD_FIXED_INT(thread_current() -> recent_cpu, 1);
+	if (thread_current() == idle_thread) return;
+	thread_current() -> recent_cpu = ADD_FIXED_INT(thread_current() -> recent_cpu, 1);
 }
 
 void
@@ -431,7 +436,10 @@ calculate_recent_cpu (void) {
 	struct list_elem *e;
 	for(e = list_begin(&ready_list); e != list_end(&ready_list); e = list_next(e)) {
 		struct thread *t = list_entry(e, struct thread, elem);
-		if (t == idle_thread) continue;
+		mlfqs_recent_cpu(t);
+	}
+	for(e = list_begin(&sleep_list); e != list_end(&sleep_list); e = list_next(e)) {
+		struct thread *t = list_entry(e, struct thread, elem);
 		mlfqs_recent_cpu(t);
 	}
 	mlfqs_recent_cpu(thread_current());
@@ -439,6 +447,7 @@ calculate_recent_cpu (void) {
 
 void
 mlfqs_recent_cpu (struct thread *t) {
+	if(t == idle_thread) return;
 	t->recent_cpu = ADD_FIXED_INT(
 		MULT_FIXED(
 			DIV_FIXED(
@@ -467,40 +476,53 @@ calculate_load_avg (void) {
 int
 thread_get_priority (void) {
 	enum intr_level old_level = intr_disable ();
-	int priority = thread_current ()->priority;
+	int val = thread_current ()->priority;
 	intr_set_level(old_level);
-	return priority;
+	return val;
 }
 
 /* Sets the current thread's nice value to NICE. */
 void
 thread_set_nice (int nice UNUSED) {
 	/* TODO: Your implementation goes here */
+	enum intr_level old_level = intr_disable ();
+
 	struct thread *curr = thread_current();
 	curr->nice = nice;
 	mlfqs_priority(curr);
 	thread_preemption();
+	
+	intr_set_level(old_level);
 }
 
 /* Returns the current thread's nice value. */
 int
 thread_get_nice (void) {
 	/* TODO: Your implementation goes here */
-	return thread_current()->nice;
+	enum intr_level old_level = intr_disable ();
+	int val = thread_current()->nice;
+	intr_set_level(old_level);
+	return val;
 }
 
 /* Returns 100 times the system load average. */
 int
 thread_get_load_avg (void) {
 	/* TODO: Your implementation goes here */
-	return FIXED_TO_INT_NEAR(MULT_FIXED_INT(load_avg, 100));
+	enum intr_level old_level = intr_disable ();
+	int val = FIXED_TO_INT_NEAR(MULT_FIXED_INT(load_avg, 100));
+	intr_set_level(old_level);
+	return val; 
 }
 
 /* Returns 100 times the current thread's recent_cpu value. */
 int
 thread_get_recent_cpu (void) {
 	/* TODO: Your implementation goes here */
-	return FIXED_TO_INT_NEAR(MULT_FIXED_INT(thread_current() -> recent_cpu, 100));
+	enum intr_level old_level = intr_disable ();
+	int val = FIXED_TO_INT_NEAR(MULT_FIXED_INT(thread_current() -> recent_cpu, 100));
+	intr_set_level(old_level);
+	return val; 
 }
 
 /* Idle thread.  Executes when no other thread is ready to run.
@@ -563,9 +585,11 @@ init_thread (struct thread *t, const char *name, int priority) {
 	t->status = THREAD_BLOCKED;
 	strlcpy (t->name, name, sizeof t->name);
 	t->tf.rsp = (uint64_t) t + PGSIZE - sizeof (void *);
-	t->priority = priority;
+	if(!thread_mlfqs){
+		t->priority = priority;
+		t->init_priority = priority;
+	}
 	t->magic = THREAD_MAGIC;
-	t->init_priority = priority;
 	list_init(&t->donate);
 	t->waiting_lock = NULL;
 	t->nice = 0;

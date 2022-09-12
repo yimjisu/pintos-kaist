@@ -1,13 +1,6 @@
 FAIL
-Kernel panic in run: PANIC at ../../threads/thread.c:338 in thread_yield(): assertion `!intr_context ()' failed.
-Call stack: 0x8004213d9d 0x80042070c8 0x80042068ca 0x800420746d 0x800420db4a 0x8004208eba 0x80042092d8 0x800420d7e7 0x80042060f7
-Translation of call stack:
-0x0000008004213d9d: debug_panic (lib/kernel/debug.c:32)
-0x00000080042070c8: thread_yield (threads/thread.c:340)
-0x00000080042068ca: thread_preemption (threads/thread.c:110)
-0x000000800420746d: calculate_priority (threads/thread.c:411)
-0x000000800420db4a: timer_interrupt (devices/timer.c:141)
-0x0000008004208eba: intr_handler (threads/interrupt.c:352)
-0x00000080042092d8: intr_entry (threads/intr-stubs.o:?)
-0x000000800420d7e7: timer_calibrate (devices/timer.c:59)
-0x00000080042060f7: main (threads/init.c:119)
+Some tick counts were missing or differed from those expected by more than 50.
+thread   actual <-> expected explanation
+------ -------- --- -------- ----------------------------------------
+     0     1696 <<< 1904     Too small, by 158.
+     1     1305 >>> 1096     Too big, by 159.

@@ -4,83 +4,482 @@ Kernel command line: -q -mlfqs run mlfqs-load-avg
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  157,081,600 loops/s.
+Calibrating timer...  91,545,600 loops/s.
 Boot complete.
 Executing 'mlfqs-load-avg':
 (mlfqs-load-avg) begin
 (mlfqs-load-avg) Starting 60 load threads...
 (mlfqs-load-avg) Starting threads took 0 seconds.
 ticks 100
+<1> load_avg 0
 ticks 200
+<1> load_avg 0
 ticks 300
+<1> load_avg 0
 ticks 400
+<1> load_avg 0
 ticks 500
+<1> load_avg 0
 ticks 600
+<1> load_avg 0
 ticks 700
+<1> load_avg 0
 ticks 800
+<1> load_avg 0
 ticks 900
+<1> load_avg 0
 ticks 1000
+<1> load_avg 0
 (mlfqs-load-avg) After 0 seconds, load average=0.00.
 ticks 1100
+<1> load_avg 273
 ticks 1200
+<1> load_avg 814
 (mlfqs-load-avg) After 2 seconds, load average=0.05.
 ticks 1300
+<1> load_avg 1619
 ticks 1400
+<1> load_avg 2683
 (mlfqs-load-avg) After 4 seconds, load average=0.16.
 ticks 1500
+<1> load_avg 4003
 ticks 1600
+<1> load_avg 5574
 (mlfqs-load-avg) After 6 seconds, load average=0.34.
 ticks 1700
+<1> load_avg 7391
 ticks 1800
+<1> load_avg 9451
 (mlfqs-load-avg) After 8 seconds, load average=0.58.
 ticks 1900
+<1> load_avg 11749
 ticks 2000
+<1> load_avg 14282
 (mlfqs-load-avg) After 10 seconds, load average=0.87.
 ticks 2100
+<1> load_avg 17046
 ticks 2200
+<1> load_avg 20036
 (mlfqs-load-avg) After 12 seconds, load average=1.22.
 ticks 2300
+<1> load_avg 23249
 ticks 2400
+<1> load_avg 26682
 (mlfqs-load-avg) After 14 seconds, load average=1.63.
 ticks 2500
+<1> load_avg 30330
 ticks 2600
+<1> load_avg 34190
 (mlfqs-load-avg) After 16 seconds, load average=2.09.
 ticks 2700
+<1> load_avg 38259
 ticks 2800
+<1> load_avg 42533
 (mlfqs-load-avg) After 18 seconds, load average=2.60.
 ticks 2900
+<1> load_avg 47008
 ticks 3000
+<1> load_avg 51681
 (mlfqs-load-avg) After 20 seconds, load average=3.15.
 ticks 3100
+<1> load_avg 56549
 ticks 3200
+<1> load_avg 61609
 (mlfqs-load-avg) After 22 seconds, load average=3.76.
 ticks 3300
+<1> load_avg 66857
 ticks 3400
+<1> load_avg 72290
 (mlfqs-load-avg) After 24 seconds, load average=4.41.
 ticks 3500
+<1> load_avg 77906
 ticks 3600
-(mlfqs-load-avg) After 26 seconds, load average=5.11.
+<1> load_avg 83701
 ticks 3700
+<1> load_avg 89945
 ticks 3800
-(mlfqs-load-avg) After 28 seconds, load average=5.85.
+<1> load_avg 96357
 ticks 3900
+<1> load_avg 102935
 ticks 4000
-(mlfqs-load-avg) After 30 seconds, load average=6.63.
+<1> load_avg 109676
 ticks 4100
+<1> load_avg 116577
 ticks 4200
-(mlfqs-load-avg) After 32 seconds, load average=7.45.
+<1> load_avg 123636
 ticks 4300
+<1> load_avg 130850
 ticks 4400
-(mlfqs-load-avg) After 34 seconds, load average=8.31.
+<1> load_avg 138216
 ticks 4500
+<1> load_avg 145732
 ticks 4600
-(mlfqs-load-avg) After 36 seconds, load average=9.21.
+<1> load_avg 153395
 ticks 4700
+<1> load_avg 161203
 ticks 4800
-(mlfqs-load-avg) After 38 seconds, load average=10.14.
+<1> load_avg 169154
 ticks 4900
+<1> load_avg 177245
 ticks 5000
-(mlfqs-load-avg) After 40 seconds, load average=11.11.
+<1> load_avg 185473
 ticks 5100
+<1> load_avg 193837
 ticks 5200
-(mlfqs-load-avg) After 42 seconds, load average=12.11.
+<1> load_avg 202334
+ticks 5300
+<1> load_avg 210962
+ticks 5400
+<1> load_avg 219718
+ticks 5500
+<1> load_avg 228601
+ticks 5600
+<1> load_avg 237608
+ticks 5700
+<1> load_avg 246738
+ticks 5800
+<1> load_avg 255988
+ticks 5900
+<1> load_avg 265356
+ticks 6000
+<1> load_avg 274841
+ticks 6100
+<1> load_avg 284440
+ticks 6200
+<1> load_avg 294152
+ticks 6300
+<1> load_avg 303974
+ticks 6400
+<1> load_avg 313905
+ticks 6500
+<1> load_avg 323943
+ticks 6600
+<1> load_avg 334086
+ticks 6700
+<1> load_avg 344332
+ticks 6800
+<1> load_avg 354680
+ticks 6900
+<1> load_avg 365128
+ticks 7000
+<1> load_avg 375674
+ticks 7100
+<1> load_avg 386044
+ticks 7200
+<1> load_avg 396240
+ticks 7300
+<1> load_avg 406266
+ticks 7400
+<1> load_avg 416124
+ticks 7500
+<1> load_avg 425817
+ticks 7600
+<1> load_avg 435348
+ticks 7700
+<1> load_avg 444720
+ticks 7800
+<1> load_avg 453935
+ticks 7900
+<1> load_avg 462996
+ticks 8000
+<1> load_avg 471906
+ticks 8100
+<1> load_avg 480667
+ticks 8200
+<1> load_avg 489281
+ticks 8300
+<1> load_avg 497751
+ticks 8400
+<1> load_avg 506079
+ticks 8500
+<1> load_avg 514268
+ticks 8600
+<1> load_avg 522320
+ticks 8700
+<1> load_avg 530237
+ticks 8800
+<1> load_avg 538022
+ticks 8900
+<1> load_avg 545677
+ticks 9000
+<1> load_avg 553204
+ticks 9100
+<1> load_avg 560605
+ticks 9200
+<1> load_avg 567882
+ticks 9300
+<1> load_avg 575037
+ticks 9400
+<1> load_avg 582073
+ticks 9500
+<1> load_avg 588991
+ticks 9600
+<1> load_avg 595793
+ticks 9700
+<1> load_avg 602482
+ticks 9800
+<1> load_avg 609059
+ticks 9900
+<1> load_avg 615526
+ticks 10000
+<1> load_avg 621885
+ticks 10100
+<1> load_avg 628137
+ticks 10200
+<1> load_avg 634285
+ticks 10300
+<1> load_avg 640330
+ticks 10400
+<1> load_avg 646274
+ticks 10500
+<1> load_avg 652118
+ticks 10600
+<1> load_avg 657865
+ticks 10700
+<1> load_avg 663516
+ticks 10800
+<1> load_avg 669072
+ticks 10900
+<1> load_avg 674535
+ticks 11000
+<1> load_avg 679907
+ticks 11100
+<1> load_avg 685189
+ticks 11200
+<1> load_avg 690383
+ticks 11300
+<1> load_avg 695490
+ticks 11400
+<1> load_avg 700511
+ticks 11500
+<1> load_avg 705448
+ticks 11600
+<1> load_avg 710303
+ticks 11700
+<1> load_avg 715077
+ticks 11800
+<1> load_avg 719771
+ticks 11900
+<1> load_avg 724113
+ticks 12000
+<1> load_avg 728383
+ticks 12100
+<1> load_avg 732854
+ticks 12200
+<1> load_avg 737251
+ticks 12300
+<1> load_avg 741028
+ticks 12400
+<1> load_avg 744469
+ticks 12500
+<1> load_avg 745668
+ticks 12600
+<1> load_avg 746301
+ticks 12700
+<1> load_avg 746651
+ticks 12800
+<1> load_avg 746722
+(mlfqs-load-avg) After 26 seconds, load average=45.58.
+(mlfqs-load-avg) After 28 seconds, load average=45.58.
+(mlfqs-load-avg) After 30 seconds, load average=45.58.
+(mlfqs-load-avg) After 32 seconds, load average=45.58.
+(mlfqs-load-avg) After 34 seconds, load average=45.58.
+(mlfqs-load-avg) After 36 seconds, load average=45.58.
+(mlfqs-load-avg) After 38 seconds, load average=45.58.
+(mlfqs-load-avg) After 40 seconds, load average=45.58.
+(mlfqs-load-avg) After 42 seconds, load average=45.58.
+(mlfqs-load-avg) After 44 seconds, load average=45.58.
+(mlfqs-load-avg) After 46 seconds, load average=45.58.
+(mlfqs-load-avg) After 48 seconds, load average=45.58.
+(mlfqs-load-avg) After 50 seconds, load average=45.58.
+(mlfqs-load-avg) After 52 seconds, load average=45.58.
+(mlfqs-load-avg) After 54 seconds, load average=45.58.
+ticks 12900
+<1> load_avg 736145
+(mlfqs-load-avg) After 56 seconds, load average=44.93.
+(mlfqs-load-avg) After 58 seconds, load average=44.93.
+(mlfqs-load-avg) After 60 seconds, load average=44.93.
+(mlfqs-load-avg) After 62 seconds, load average=44.93.
+(mlfqs-load-avg) After 64 seconds, load average=44.93.
+(mlfqs-load-avg) After 66 seconds, load average=44.93.
+(mlfqs-load-avg) After 68 seconds, load average=44.93.
+(mlfqs-load-avg) After 70 seconds, load average=44.93.
+(mlfqs-load-avg) After 72 seconds, load average=44.93.
+(mlfqs-load-avg) After 74 seconds, load average=44.93.
+(mlfqs-load-avg) After 76 seconds, load average=44.93.
+(mlfqs-load-avg) After 78 seconds, load average=44.93.
+(mlfqs-load-avg) After 80 seconds, load average=44.93.
+(mlfqs-load-avg) After 82 seconds, load average=44.93.
+(mlfqs-load-avg) After 84 seconds, load average=44.93.
+(mlfqs-load-avg) After 86 seconds, load average=44.93.
+(mlfqs-load-avg) After 88 seconds, load average=44.93.
+(mlfqs-load-avg) After 90 seconds, load average=44.93.
+(mlfqs-load-avg) After 92 seconds, load average=44.93.
+(mlfqs-load-avg) After 94 seconds, load average=44.93.
+(mlfqs-load-avg) After 96 seconds, load average=44.93.
+(mlfqs-load-avg) After 98 seconds, load average=44.93.
+(mlfqs-load-avg) After 100 seconds, load average=44.93.
+(mlfqs-load-avg) After 102 seconds, load average=44.93.
+(mlfqs-load-avg) After 104 seconds, load average=44.93.
+(mlfqs-load-avg) After 106 seconds, load average=44.93.
+(mlfqs-load-avg) After 108 seconds, load average=44.93.
+(mlfqs-load-avg) After 110 seconds, load average=44.93.
+(mlfqs-load-avg) After 112 seconds, load average=44.93.
+(mlfqs-load-avg) After 114 seconds, load average=44.93.
+(mlfqs-load-avg) After 116 seconds, load average=44.93.
+(mlfqs-load-avg) After 118 seconds, load average=44.93.
+ticks 13000
+<1> load_avg 723833
+(mlfqs-load-avg) After 120 seconds, load average=44.18.
+ticks 13100
+<1> load_avg 711727
+ticks 13200
+<1> load_avg 699824
+(mlfqs-load-avg) After 122 seconds, load average=42.71.
+ticks 13300
+<1> load_avg 688120
+ticks 13400
+<1> load_avg 676612
+(mlfqs-load-avg) After 124 seconds, load average=41.30.
+ticks 13500
+<1> load_avg 665296
+ticks 13600
+<1> load_avg 654169
+(mlfqs-load-avg) After 126 seconds, load average=39.93.
+ticks 13700
+<1> load_avg 643228
+ticks 13800
+<1> load_avg 632470
+(mlfqs-load-avg) After 128 seconds, load average=38.60.
+ticks 13900
+<1> load_avg 621892
+ticks 14000
+<1> load_avg 611491
+(mlfqs-load-avg) After 130 seconds, load average=37.32.
+ticks 14100
+<1> load_avg 601264
+ticks 14200
+<1> load_avg 591208
+(mlfqs-load-avg) After 132 seconds, load average=36.08.
+ticks 14300
+<1> load_avg 581320
+ticks 14400
+<1> load_avg 571598
+(mlfqs-load-avg) After 134 seconds, load average=34.89.
+ticks 14500
+<1> load_avg 562038
+ticks 14600
+<1> load_avg 552638
+(mlfqs-load-avg) After 136 seconds, load average=33.73.
+ticks 14700
+<1> load_avg 543395
+ticks 14800
+<1> load_avg 534307
+(mlfqs-load-avg) After 138 seconds, load average=32.61.
+ticks 14900
+<1> load_avg 525371
+ticks 15000
+<1> load_avg 516584
+(mlfqs-load-avg) After 140 seconds, load average=31.53.
+ticks 15100
+<1> load_avg 507944
+ticks 15200
+<1> load_avg 499449
+(mlfqs-load-avg) After 142 seconds, load average=30.48.
+ticks 15300
+<1> load_avg 491096
+ticks 15400
+<1> load_avg 482883
+(mlfqs-load-avg) After 144 seconds, load average=29.47.
+ticks 15500
+<1> load_avg 474807
+ticks 15600
+<1> load_avg 466866
+(mlfqs-load-avg) After 146 seconds, load average=28.50.
+ticks 15700
+<1> load_avg 459058
+ticks 15800
+<1> load_avg 451380
+(mlfqs-load-avg) After 148 seconds, load average=27.55.
+ticks 15900
+<1> load_avg 443831
+ticks 16000
+<1> load_avg 436408
+(mlfqs-load-avg) After 150 seconds, load average=26.64.
+ticks 16100
+<1> load_avg 429109
+ticks 16200
+<1> load_avg 421932
+(mlfqs-load-avg) After 152 seconds, load average=25.75.
+ticks 16300
+<1> load_avg 414875
+ticks 16400
+<1> load_avg 407936
+(mlfqs-load-avg) After 154 seconds, load average=24.90.
+ticks 16500
+<1> load_avg 401113
+ticks 16600
+<1> load_avg 394404
+(mlfqs-load-avg) After 156 seconds, load average=24.07.
+ticks 16700
+<1> load_avg 387808
+ticks 16800
+<1> load_avg 381322
+(mlfqs-load-avg) After 158 seconds, load average=23.27.
+ticks 16900
+<1> load_avg 374944
+ticks 17000
+<1> load_avg 368673
+(mlfqs-load-avg) After 160 seconds, load average=22.50.
+ticks 17100
+<1> load_avg 362507
+ticks 17200
+<1> load_avg 356444
+(mlfqs-load-avg) After 162 seconds, load average=21.76.
+ticks 17300
+<1> load_avg 350482
+ticks 17400
+<1> load_avg 344620
+(mlfqs-load-avg) After 164 seconds, load average=21.03.
+ticks 17500
+<1> load_avg 338856
+ticks 17600
+<1> load_avg 333189
+(mlfqs-load-avg) After 166 seconds, load average=20.34.
+ticks 17700
+<1> load_avg 327616
+ticks 17800
+<1> load_avg 322137
+(mlfqs-load-avg) After 168 seconds, load average=19.66.
+ticks 17900
+<1> load_avg 316749
+ticks 18000
+<1> load_avg 311451
+(mlfqs-load-avg) After 170 seconds, load average=19.01.
+ticks 18100
+<1> load_avg 306242
+ticks 18200
+<1> load_avg 301120
+(mlfqs-load-avg) After 172 seconds, load average=18.38.
+ticks 18300
+<1> load_avg 296084
+ticks 18400
+<1> load_avg 291132
+(mlfqs-load-avg) After 174 seconds, load average=17.77.
+ticks 18500
+<1> load_avg 286263
+ticks 18600
+<1> load_avg 281475
+(mlfqs-load-avg) After 176 seconds, load average=17.18.
+ticks 18700
+<1> load_avg 276767
+ticks 18800
+<1> load_avg 272138
+(mlfqs-load-avg) After 178 seconds, load average=16.61.
+(mlfqs-load-avg) end
+Execution of 'mlfqs-load-avg' complete.
+Timer: 18840 ticks
+Thread: 6896 idle ticks, 11944 kernel ticks, 0 user ticks
+Console: 11329 characters output
+Keyboard: 0 keys pressed
+Powering off...
