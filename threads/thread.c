@@ -131,8 +131,6 @@ thread_init (void) {
 	init_thread (initial_thread, "main", PRI_DEFAULT);
 	initial_thread->status = THREAD_RUNNING;
 	initial_thread->tid = allocate_tid ();
-	
-	//thread_preemption();
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -396,7 +394,7 @@ calculate_priority (void) {
 		mlfqs_priority(t);
 	}
 	for(e = list_begin(&sleep_list); e != list_end(&sleep_list); e = list_next(e)) {
-		struct thread *t = list_entry(e, struct thread, all_elem);
+		struct thread *t = list_entry(e, struct thread, elem);
 		mlfqs_priority(t);
 	}
 	mlfqs_priority(thread_current());
@@ -423,7 +421,7 @@ calculate_recent_cpu (void) {
 		mlfqs_recent_cpu(t);
 	}
 	for(e = list_begin(&sleep_list); e != list_end(&sleep_list); e = list_next(e)) {
-		struct thread *t = list_entry(e, struct thread, all_elem);
+		struct thread *t = list_entry(e, struct thread, elem);
 		mlfqs_recent_cpu(t);
 	}
 	mlfqs_recent_cpu(thread_current());
