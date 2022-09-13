@@ -405,17 +405,14 @@ calculate_priority (void) {
 void 
 mlfqs_priority (struct thread *t) {
 	if(t == idle_thread) return;
-	enum intr_level old_level = intr_disable();
 	t->priority = FIXED_TO_INT_ZERO(ADD_FIXED_INT(DIV_FIXED_INT(t->recent_cpu, -4), PRI_MAX - t->nice * 2));
-	intr_set_level(old_level);
+
 }
 
 void
 increment_cur_recent_cpu (void) {
 	if (thread_current() == idle_thread) return;
-	enum intr_level old_level = intr_disable();
 	thread_current() -> recent_cpu = ADD_FIXED_INT(thread_current() -> recent_cpu, 1);
-	intr_set_level(old_level);
 }
 
 void
@@ -435,7 +432,6 @@ calculate_recent_cpu (void) {
 void
 mlfqs_recent_cpu (struct thread *t) {
 	if(t == idle_thread) return;
-	enum intr_level old_level = intr_disable();
 	t->recent_cpu = ADD_FIXED_INT(
 		MULT_FIXED(
 			DIV_FIXED(
@@ -446,7 +442,6 @@ mlfqs_recent_cpu (struct thread *t) {
 		),
 		t->nice
 	);
-	intr_set_level(old_level);
 }
 
 void
@@ -579,10 +574,8 @@ init_thread (struct thread *t, const char *name, int priority) {
 	t->status = THREAD_BLOCKED;
 	strlcpy (t->name, name, sizeof t->name);
 	t->tf.rsp = (uint64_t) t + PGSIZE - sizeof (void *);
-	if(!thread_mlfqs){
-		t->priority = priority;
-		t->init_priority = priority;
-	}
+	t->priority = priority;
+	t->init_priority = priority;
 	t->magic = THREAD_MAGIC;
 	list_init(&t->donate);
 	t->waiting_lock = NULL;
