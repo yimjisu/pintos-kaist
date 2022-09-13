@@ -4,6 +4,7 @@
 #include <random.h>
 #include <stdio.h>
 #include <string.h>
+#include "threads/fixed_point.h"
 #include "threads/flags.h"
 #include "threads/interrupt.h"
 #include "threads/intr-stubs.h"
@@ -80,21 +81,6 @@ static tid_t allocate_tid (void);
 // Because the gdt will be setup after the thread_init, we should
 // setup temporal gdt first.
 static uint64_t gdt[3] = { 0, 0x00af9a000000ffff, 0x00cf92000000ffff };
-
-
-#define f (1 << 14)
-#define INT_TO_FIXED(n) (n * f)
-#define FIXED_TO_INT_ZERO(x) (x / f)
-#define FIXED_TO_INT_NEAR(x) (x>=0 ? (x + f/2)/f : (x - f/2)/f)
-#define ADD_FIXED(x, y) (x+y)
-#define SUB_FIXED(x, y) (x-y)
-#define MULT_FIXED(x, y) ((int64_t)x*y/f)
-#define DIV_FIXED(x, y) ((int64_t)x*f/y)
-#define ADD_FIXED_INT(x, n) (x + n *f)
-#define SUB_FIXED_INT(x, n) (x - n *f)
-#define MULT_FIXED_INT(x, n) (x*n)
-#define DIV_FIXED_INT(x, n) (x/n)
-
  
 bool
 thread_priority_compare (struct list_elem *a, struct list_elem *b, void UNUSED(*aux)){
@@ -410,7 +396,7 @@ calculate_priority (void) {
 		mlfqs_priority(t);
 	}
 	for(e = list_begin(&sleep_list); e != list_end(&sleep_list); e = list_next(e)) {
-		struct thread *t = list_entry(e, struct thread, elem);
+		struct thread *t = list_entry(e, struct thread, all_elem);
 		mlfqs_priority(t);
 	}
 	mlfqs_priority(thread_current());
@@ -419,16 +405,17 @@ calculate_priority (void) {
 void 
 mlfqs_priority (struct thread *t) {
 	if(t == idle_thread) return;
-	t->priority = FIXED_TO_INT_ZERO(ADD_FIXED_INT(
-		DIV_FIXED_INT(t->recent_cpu, -4),
-		PRI_MAX - t->nice * 2
-	));
+	enum intr_level old_level = intr_disable();
+	t->priority = FIXED_TO_INT_ZERO(ADD_FIXED_INT(DIV_FIXED_INT(t->recent_cpu, -4), PRI_MAX - t->nice * 2));
+	intr_set_level(old_level);
 }
 
 void
 increment_cur_recent_cpu (void) {
 	if (thread_current() == idle_thread) return;
+	enum intr_level old_level = intr_disable();
 	thread_current() -> recent_cpu = ADD_FIXED_INT(thread_current() -> recent_cpu, 1);
+	intr_set_level(old_level);
 }
 
 void
@@ -439,7 +426,7 @@ calculate_recent_cpu (void) {
 		mlfqs_recent_cpu(t);
 	}
 	for(e = list_begin(&sleep_list); e != list_end(&sleep_list); e = list_next(e)) {
-		struct thread *t = list_entry(e, struct thread, elem);
+		struct thread *t = list_entry(e, struct thread, all_elem);
 		mlfqs_recent_cpu(t);
 	}
 	mlfqs_recent_cpu(thread_current());
@@ -448,16 +435,18 @@ calculate_recent_cpu (void) {
 void
 mlfqs_recent_cpu (struct thread *t) {
 	if(t == idle_thread) return;
+	enum intr_level old_level = intr_disable();
 	t->recent_cpu = ADD_FIXED_INT(
 		MULT_FIXED(
 			DIV_FIXED(
 				MULT_FIXED_INT(load_avg, 2),
-				ADD_FIXED_INT(MULT_FIXED(load_avg, 2), 1)
+				ADD_FIXED_INT(MULT_FIXED_INT(load_avg, 2), 1)
 			),
 			t->recent_cpu
 		),
 		t->nice
 	);
+	intr_set_level(old_level);
 }
 
 void
@@ -467,10 +456,15 @@ calculate_load_avg (void) {
 		ready_threads += 1;
 	
 	load_avg = ADD_FIXED(
-		MULT_FIXED(load_avg, DIV_FIXED(INT_TO_FIXED(59), INT_TO_FIXED(60))),
-		MULT_FIXED_INT(DIV_FIXED(INT_TO_FIXED(1), INT_TO_FIXED(60)), ready_threads)
+		MULT_FIXED( 
+			DIV_FIXED_INT(INT_TO_FIXED(59), 60),
+			load_avg
+		),
+		MULT_FIXED_INT(
+			DIV_FIXED_INT(INT_TO_FIXED(1), 60), 
+			ready_threads
+		)
 	);
-	printf("<1> load_avg %d\n", load_avg);
 }
 /* Returns the current thread's priority. */
 int

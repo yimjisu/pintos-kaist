@@ -11,100 +11,20 @@ Executing 'mlfqs-nice-10':
 (mlfqs-nice-10) Starting 10 threads...
 (mlfqs-nice-10) Starting threads took 0 ticks.
 (mlfqs-nice-10) Sleeping 40 seconds to let threads run, please wait...
-ticks 100
-<1> load_avg 0
-ticks 200
-<1> load_avg 0
-ticks 300
-<1> load_avg 0
-ticks 400
-<1> load_avg 0
-ticks 500
-<1> load_avg 0
-ticks 600
-<1> load_avg 2730
-ticks 700
-<1> load_avg 5414
-ticks 800
-<1> load_avg 8053
-ticks 900
-<1> load_avg 10648
-ticks 1000
-<1> load_avg 13199
-ticks 1100
-<1> load_avg 15708
-ticks 1200
-<1> load_avg 18175
-ticks 1300
-<1> load_avg 20601
-ticks 1400
-<1> load_avg 22986
-ticks 1500
-<1> load_avg 25331
-ticks 1600
-<1> load_avg 27637
-ticks 1700
-<1> load_avg 29904
-ticks 1800
-<1> load_avg 32133
-ticks 1900
-<1> load_avg 34325
-ticks 2000
-<1> load_avg 36480
-ticks 2100
-<1> load_avg 38599
-ticks 2200
-<1> load_avg 40683
-ticks 2300
-<1> load_avg 42732
-ticks 2400
-<1> load_avg 44747
-ticks 2500
-<1> load_avg 46728
-ticks 2600
-<1> load_avg 48676
-ticks 2700
-<1> load_avg 50591
-ticks 2800
-<1> load_avg 52474
-ticks 2900
-<1> load_avg 54326
-ticks 3000
-<1> load_avg 56147
-ticks 3100
-<1> load_avg 57938
-ticks 3200
-<1> load_avg 59699
-ticks 3300
-<1> load_avg 61430
-ticks 3400
-<1> load_avg 63132
-ticks 3500
-<1> load_avg 64806
-ticks 3600
-<1> load_avg 63722
-ticks 3700
-<1> load_avg 62656
-ticks 3800
-<1> load_avg 61608
-ticks 3900
-<1> load_avg 60577
-ticks 4000
-<1> load_avg 59563
-(mlfqs-nice-10) Thread 0 received 353 ticks.
-(mlfqs-nice-10) Thread 1 received 124 ticks.
-(mlfqs-nice-10) Thread 2 received 205 ticks.
-(mlfqs-nice-10) Thread 3 received 781 ticks.
-(mlfqs-nice-10) Thread 4 received 53 ticks.
-(mlfqs-nice-10) Thread 5 received 216 ticks.
-(mlfqs-nice-10) Thread 6 received 616 ticks.
-(mlfqs-nice-10) Thread 7 received 173 ticks.
-(mlfqs-nice-10) Thread 8 received 485 ticks.
-(mlfqs-nice-10) Thread 9 received 0 ticks.
+(mlfqs-nice-10) Thread 0 received 680 ticks.
+(mlfqs-nice-10) Thread 1 received 601 ticks.
+(mlfqs-nice-10) Thread 2 received 504 ticks.
+(mlfqs-nice-10) Thread 3 received 404 ticks.
+(mlfqs-nice-10) Thread 4 received 312 ticks.
+(mlfqs-nice-10) Thread 5 received 221 ticks.
+(mlfqs-nice-10) Thread 6 received 145 ticks.
+(mlfqs-nice-10) Thread 7 received 89 ticks.
+(mlfqs-nice-10) Thread 8 received 40 ticks.
+(mlfqs-nice-10) Thread 9 received 8 ticks.
 (mlfqs-nice-10) end
 Execution of 'mlfqs-nice-10' complete.
 Timer: 4046 ticks
 Thread: 1000 idle ticks, 3046 kernel ticks, 0 user ticks
-Console: 2208 characters output
+Console: 1039 characters output
 Keyboard: 0 keys pressed
 Powering off...

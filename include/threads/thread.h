@@ -102,6 +102,7 @@ struct thread {
 	int recent_cpu;
 	
 	/* Shared between thread.c and synch.c. */
+	struct list_elem all_elem;
 	struct list_elem elem;              /* List element. */
 
 #ifdef USERPROG

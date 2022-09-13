@@ -4,117 +4,37 @@ Kernel command line: -q -mlfqs run mlfqs-fair-20
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  75,468,800 loops/s.
+Calibrating timer...  111,206,400 loops/s.
 Boot complete.
 Executing 'mlfqs-fair-20':
 (mlfqs-fair-20) begin
 (mlfqs-fair-20) Starting 20 threads...
-(mlfqs-fair-20) Starting threads took 1 ticks.
+(mlfqs-fair-20) Starting threads took 0 ticks.
 (mlfqs-fair-20) Sleeping 40 seconds to let threads run, please wait...
-ticks 100
-<1> load_avg 0
-ticks 200
-<1> load_avg 0
-ticks 300
-<1> load_avg 0
-ticks 400
-<1> load_avg 0
-ticks 500
-<1> load_avg 0
-ticks 600
-<1> load_avg 5460
-ticks 700
-<1> load_avg 10828
-ticks 800
-<1> load_avg 16106
-ticks 900
-<1> load_avg 21296
-ticks 1000
-<1> load_avg 26399
-ticks 1100
-<1> load_avg 31417
-ticks 1200
-<1> load_avg 36351
-ticks 1300
-<1> load_avg 41203
-ticks 1400
-<1> load_avg 45973
-ticks 1500
-<1> load_avg 50664
-ticks 1600
-<1> load_avg 55276
-ticks 1700
-<1> load_avg 59811
-ticks 1800
-<1> load_avg 64270
-ticks 1900
-<1> load_avg 68655
-ticks 2000
-<1> load_avg 72966
-ticks 2100
-<1> load_avg 77205
-ticks 2200
-<1> load_avg 81373
-ticks 2300
-<1> load_avg 85472
-ticks 2400
-<1> load_avg 89502
-ticks 2500
-<1> load_avg 93465
-ticks 2600
-<1> load_avg 97361
-ticks 2700
-<1> load_avg 101192
-ticks 2800
-<1> load_avg 104959
-ticks 2900
-<1> load_avg 108663
-ticks 3000
-<1> load_avg 112305
-ticks 3100
-<1> load_avg 115886
-ticks 3200
-<1> load_avg 119407
-ticks 3300
-<1> load_avg 122870
-ticks 3400
-<1> load_avg 126275
-ticks 3500
-<1> load_avg 129623
-ticks 3600
-<1> load_avg 127455
-ticks 3700
-<1> load_avg 125323
-ticks 3800
-<1> load_avg 123227
-ticks 3900
-<1> load_avg 121166
-ticks 4000
-<1> load_avg 119139
-(mlfqs-fair-20) Thread 0 received 29 ticks.
-(mlfqs-fair-20) Thread 1 received 26 ticks.
-(mlfqs-fair-20) Thread 2 received 26 ticks.
-(mlfqs-fair-20) Thread 3 received 27 ticks.
-(mlfqs-fair-20) Thread 4 received 136 ticks.
-(mlfqs-fair-20) Thread 5 received 188 ticks.
-(mlfqs-fair-20) Thread 6 received 187 ticks.
-(mlfqs-fair-20) Thread 7 received 188 ticks.
-(mlfqs-fair-20) Thread 8 received 31 ticks.
-(mlfqs-fair-20) Thread 9 received 65 ticks.
-(mlfqs-fair-20) Thread 10 received 66 ticks.
-(mlfqs-fair-20) Thread 11 received 246 ticks.
-(mlfqs-fair-20) Thread 12 received 420 ticks.
-(mlfqs-fair-20) Thread 13 received 791 ticks.
-(mlfqs-fair-20) Thread 14 received 61 ticks.
-(mlfqs-fair-20) Thread 15 received 114 ticks.
-(mlfqs-fair-20) Thread 16 received 113 ticks.
-(mlfqs-fair-20) Thread 17 received 113 ticks.
-(mlfqs-fair-20) Thread 18 received 40 ticks.
-(mlfqs-fair-20) Thread 19 received 22 ticks.
+(mlfqs-fair-20) Thread 0 received 148 ticks.
+(mlfqs-fair-20) Thread 1 received 149 ticks.
+(mlfqs-fair-20) Thread 2 received 153 ticks.
+(mlfqs-fair-20) Thread 3 received 152 ticks.
+(mlfqs-fair-20) Thread 4 received 152 ticks.
+(mlfqs-fair-20) Thread 5 received 153 ticks.
+(mlfqs-fair-20) Thread 6 received 152 ticks.
+(mlfqs-fair-20) Thread 7 received 152 ticks.
+(mlfqs-fair-20) Thread 8 received 153 ticks.
+(mlfqs-fair-20) Thread 9 received 152 ticks.
+(mlfqs-fair-20) Thread 10 received 152 ticks.
+(mlfqs-fair-20) Thread 11 received 152 ticks.
+(mlfqs-fair-20) Thread 12 received 152 ticks.
+(mlfqs-fair-20) Thread 13 received 148 ticks.
+(mlfqs-fair-20) Thread 14 received 148 ticks.
+(mlfqs-fair-20) Thread 15 received 149 ticks.
+(mlfqs-fair-20) Thread 16 received 148 ticks.
+(mlfqs-fair-20) Thread 17 received 148 ticks.
+(mlfqs-fair-20) Thread 18 received 148 ticks.
+(mlfqs-fair-20) Thread 19 received 144 ticks.
 (mlfqs-fair-20) end
 Execution of 'mlfqs-fair-20' complete.
-Timer: 4053 ticks
-Thread: 999 idle ticks, 3054 kernel ticks, 0 user ticks
-Console: 2675 characters output
+Timer: 4054 ticks
+Thread: 1000 idle ticks, 3054 kernel ticks, 0 user ticks
+Console: 1503 characters output
 Keyboard: 0 keys pressed
 Powering off...
