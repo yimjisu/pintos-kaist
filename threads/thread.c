@@ -93,16 +93,7 @@ thread_desc_priority (struct list_elem *l1, struct list_elem *l2, void *aux) {
 // 현재 실행중인 thread의 priority와 ready_list에 있는 priority가 가장 높은 thread의 priority 비교
 void
 thread_comp_priority (void) {
-	// struct list_elem * max_elem;
-	// if (!list_empty (&ready_list)) {
-	// 	max_elem = list_min (&ready_list, thread_desc_priority, NULL);
-	// 	struct thread * max_thread = list_entry (max_elem, struct thread, elem);
-	// 	if (thread_current ()->priority < max_thread->priority) {
-	// 		thread_yield ();
-	// 	} 
-	// }
 	if (!list_empty (&ready_list)) {
-		// list_sort(&ready_list, thread_desc_priority, NULL);
 		if (thread_current ()->priority < list_entry (list_front (&ready_list), struct thread, elem)->priority) {
 			thread_yield ();
 		}
