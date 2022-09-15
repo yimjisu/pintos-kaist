@@ -98,7 +98,7 @@ void
 // }
 timer_sleep (int64_t ticks) {
 	int64_t start = timer_ticks (); 
-	ASSERT (intr_get_level () == INTR_ON);
+	ASSERT (intr_get_level () == INTR_ON); 
 	thread_sleep (start + ticks); 
 }
 
@@ -136,7 +136,7 @@ timer_interrupt (struct intr_frame *args UNUSED) {
 		mlfqs_increment_recent_cpu ();
 		if (ticks % TIMER_FREQ == 0) {
 				mlfqs_load_avg ();
-				mlfqs_update_recent_cpu ();
+				mlfqs_update_recent_cpu (); 
 			}
 		if (ticks % 4 == 0) {
 			mlfqs_update_priority ();

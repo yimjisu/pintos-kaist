@@ -336,7 +336,6 @@ thread_yield (void) {
 
 	old_level = intr_disable ();
 	if (curr != idle_thread)
-		// list_push_back (&ready_list, &curr->elem);
 		list_insert_ordered (&ready_list, &curr->elem, thread_desc_priority, NULL);
 	do_schedule (THREAD_READY);
 	intr_set_level (old_level);
@@ -352,8 +351,8 @@ thread_sleep (int64_t ticks) {
 	old_level = intr_disable (); // 잠시 인터럽트를 끈다. 아래 코드가 실행되는 중 인터럽트가 들어오면 곤란하기 때문
 	if (curr != idle_thread) {
 		curr->wakeup_time = ticks;
-		list_push_back (&sleep_list, &curr->elem);
-		// list_insert_ordered (&sleep_list, &curr->elem, time_asc, NULL);
+		// list_push_back (&sleep_list, &curr->elem);
+		list_insert_ordered (&sleep_list, &curr->elem, time_asc, NULL);
 		thread_block ();
 	}
 	intr_set_level (old_level);
@@ -367,25 +366,14 @@ time_asc (struct list_elem *l1, struct list_elem *l2, void *aux) {
 
 void
 thread_awake (int64_t ticks) {
-	// struct list_elem *e = list_begin (&sleep_list);
-	// while (e != list_end (&sleep_list)){
-	// 	struct thread *t = list_entry (e, struct thread, elem);
-	// 	if (t->wakeup_time > ticks) {
-	// 		break;
-	// 	}
-	// 	e = list_remove (e);
-	// 	thread_unblock (t);
-	// }
-	struct list_elem *e = list_begin(&sleep_list);
-
-	while (e != list_end(&sleep_list)) {
-		struct thread * t = list_entry(e, struct thread, elem);
-		if (t->wakeup_time <= ticks){
-			e = list_remove(e);
-			thread_unblock(t);
-		} else {
-			e = list_next(e);
+	struct list_elem *e = list_begin (&sleep_list);
+	while (e != list_end (&sleep_list)){
+		struct thread *t = list_entry (e, struct thread, elem);
+		if (t->wakeup_time > ticks) {
+			break;
 		}
+		e = list_remove (e);
+		thread_unblock (t);
 	}
 }
 
@@ -431,8 +419,6 @@ thread_get_priority (void) {
 void
 mlfqs_priority (struct thread * t) { 
 	if (t != idle_thread) {
-		// int rcf4 = fp_to_int (div_fp_int (t->recent_cpu, 4));
-		// t->priority = PRI_MAX - rcf4 - (t->nice)*2;
 		t->priority = fp_to_int (add_fp_int (div_fp_int (t->recent_cpu, -4), PRI_MAX - t->nice * 2));
 	}
 }
@@ -446,15 +432,15 @@ mlfqs_recent_cpu (struct thread * t) {
 
 void
 mlfqs_load_avg (void) {
-	int ready_threads;
+	int num_ready_threads;
 	if (thread_current () == idle_thread) {
-		ready_threads = list_size (&ready_list);
+		num_ready_threads = list_size (&ready_list);
 	}
 	else {
-		ready_threads = list_size (&ready_list) + 1;
+		num_ready_threads = list_size (&ready_list) + 1;
 	} 
 
-	load_avg = add_fp (mult_fp (div_fp_int (int_to_fp (59), 60), load_avg), mult_fp_int (div_fp_int (int_to_fp (1), 60), ready_threads));
+	load_avg = add_fp (mult_fp (div_fp_int (int_to_fp (59), 60), load_avg), mult_fp_int (div_fp_int (int_to_fp (1), 60), num_ready_threads));
 }
 
 void
