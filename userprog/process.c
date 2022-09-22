@@ -176,6 +176,19 @@ process_exec (void *f_name) {
 	/* We first kill the current context */
 	process_cleanup ();
 
+	/********** CHANGE **************/
+	char *temp_file_name; // create copy of file name
+	memcpy(temp_file_name, file_name, strlen(file_name) + 1); // copy file_name
+	char *argv[64]; // list for argument
+	int argc = 0; // number of argument
+
+	char *token, *save_ptr;
+	for (token = strtok_r (&file_name, " ", &save_ptr); token != NULL;
+	token = strtok_r (NULL, " ", &save_ptr)) {
+		argv[argc++] = token;
+	}
+	/*********************************/
+
 	/* And then load the binary */
 	success = load (file_name, &_if);
 
@@ -184,9 +197,48 @@ process_exec (void *f_name) {
 	if (!success)
 		return -1;
 
+	/**CHANGE**/
+    argument_stack(argv, argc, &_if.rsp);
+	_if.R.rdi = argc;
+	_if.R.rsi = _if.rsp + 8; 
+	/**********/
+
 	/* Start switched process. */
 	do_iret (&_if);
 	NOT_REACHED ();
+}
+
+/**** ADD ARGUMENT STACK ****/
+void
+argument_stack(char *argv, char *argc, void **rsp) {
+	// Place words at top of the stack
+	char *argv_address[128];
+	for(int i = argc - 1; i >= 0 ; i--) {
+		int len = strlen(argv[i]) + 1;
+		*rsp -= len;
+		memcpy(*(char **)rsp,  argv[i], len); // Copy word to address (including sentinel)
+		argv_address[i] = *(char **)rsp;
+	}
+
+	// Word-align
+	while ((int)*rsp % 8 != 0){
+		(*rsp)--;
+		**(uint8_t **)rsp = 0;
+	}
+
+	// Address of argv
+	*rsp -= 8;
+	memcpy(*(char **)rsp, 0, 8);
+	
+	for(int i = argc - 1; i >= 0; i--) {
+		*rsp -= 8;
+		memcpy(*(char **)rsp, argv_address[i], sizeof(char **));
+	}
+
+	// Fake Return Address
+	*rsp -= 8;
+	memcpy(*(void **)rsp, 0, sizeof(void **));
+
 }
 
 
