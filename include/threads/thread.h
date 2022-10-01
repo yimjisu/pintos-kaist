@@ -90,6 +90,7 @@ struct thread {
 	tid_t tid;                          /* Thread identifier. */
 	enum thread_status status;          /* Thread state. */
 	char name[16];                      /* Name (for debugging purposes). */
+	int original_priority;
 	int priority;                       /* Priority. */
 	int64_t wake_tick;					/* Tick to wake up */
 	
@@ -103,6 +104,14 @@ struct thread {
 	
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
+	struct lock * lock;
+	struct list donate;
+	struct list_elem donate_elem;
+	// start 2-3
+	struct file **files;
+	int fd;
+	// end 2-3
+
 
 	/* Owned by userprog/process.c. */
 	uint64_t *pml4;                     /* Page map level 4 */
@@ -129,6 +138,9 @@ struct thread {
 	/* Owned by thread.c. */
 	struct intr_frame tf;               /* Information for switching */
 	unsigned magic;                     /* Detects stack overflow. */
+	int64_t wakeup_time;
+	int nice;
+	int recent_cpu;
 };
 
 /* If false (default), use round-robin scheduler.
@@ -158,18 +170,31 @@ const char *thread_name (void);
 
 void thread_exit (void) NO_RETURN;
 void thread_yield (void);
+void thread_sleep (int64_t ticks);
+bool time_asc (struct list_elem *, struct list_elem *, void *);
+void thread_awake (int64_t ticks);
 
-void thread_sleep(int64_t);
-void thread_awake(int64_t);
-
+bool donate_desc_priority (struct list_elem *, struct list_elem *, void *);
+void reset_priority (void);
 int thread_get_priority (void);
 void thread_set_priority (int);
+bool thread_desc_priority (struct list_elem *, struct list_elem *, void *);
+void thread_comp_priority (void);
 
+void mlfqs_priority (struct thread *);
+void mlfqs_recent_cpu (struct thread *);
+void mlfqs_load_avg (void);
+void mlfqs_increment_recent_cpu (void);
 int thread_get_nice (void);
 void thread_set_nice (int);
 int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
 void do_iret (struct intr_frame *tf);
+
+//start 2-3
+#define FDT_START 3
+#define FDCOUNT_LIMIT FDT_PAGES *(1 << 9)
+//end 2-3
 
 #endif /* threads/thread.h */

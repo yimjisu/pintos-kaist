@@ -89,13 +89,24 @@ timer_elapsed (int64_t then) {
 
 /* Suspends execution for approximately TICKS timer ticks. */
 void
-timer_sleep (int64_t ticks) {
-	int64_t start = timer_ticks ();
+// timer_sleep (int64_t ticks) {
+// 	int64_t start = timer_ticks (); 
 
+<<<<<<< HEAD
 	ASSERT (intr_get_level () == INTR_ON);
 	// while (timer_elapsed (start) < ticks)
 	// 	thread_yield ();
 	thread_sleep(start + ticks);
+=======
+// 	ASSERT (intr_get_level () == INTR_ON);
+// 	while (timer_elapsed (start) < ticks) // start부터 시작해서 시간이 ticks보다 크거나 같아질 때까지 반복
+// 		thread_yield ();
+// }
+timer_sleep (int64_t ticks) {
+	int64_t start = timer_ticks (); 
+	ASSERT (intr_get_level () == INTR_ON); 
+	thread_sleep (start + ticks); 
+>>>>>>> origin/seeha-proj2
 }
 
 /* Suspends execution for approximately MS milliseconds. */
@@ -127,6 +138,7 @@ static void
 timer_interrupt (struct intr_frame *args UNUSED) {
 	ticks++;
 	thread_tick ();
+<<<<<<< HEAD
 	if(thread_mlfqs) {
 		increment_cur_recent_cpu();
 		
@@ -139,6 +151,20 @@ timer_interrupt (struct intr_frame *args UNUSED) {
 		}
 	}	
 	thread_wake_up (ticks);
+=======
+
+	if (thread_mlfqs) {
+		mlfqs_increment_recent_cpu ();
+		if (ticks % TIMER_FREQ == 0) {
+				mlfqs_load_avg ();
+				mlfqs_update_recent_cpu (); 
+			}
+		if (ticks % 4 == 0) {
+			mlfqs_update_priority ();
+		}
+	}
+	thread_awake (ticks);
+>>>>>>> origin/seeha-proj2
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
