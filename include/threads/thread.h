@@ -107,6 +107,20 @@ struct thread {
 	/* Owned by userprog/process.c. */
 	uint64_t *pml4;                     /* Page map level 4 */
 
+	int exit_status;
+
+	struct file **fd;
+	int fd_idx;
+
+	struct list child;
+	struct list_elem child_elem;
+
+	struct intr_frame *parent_if;
+
+	struct semaphore sema_wait;
+	struct semaphore sema_free;
+	struct semaphore sema_fork;
+
 #ifdef VM
 	/* Table for whole virtual memory owned by thread. */
 	struct supplemental_page_table spt;
