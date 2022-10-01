@@ -61,7 +61,7 @@ syscall_handler (struct intr_frame *f UNUSED) {
 			halt();
 			break;
 		case SYS_EXIT:
-			exec(f->R.rdi);
+			exit(f->R.rdi);
 			break;
 		case SYS_FORK:
 			f->R.rax = fork(f->R.rdi, f);
@@ -96,11 +96,13 @@ int exec(const char *cmd_line) {
 	// Otherwise process terminates with exit state -1
 
 	// file descriptors remoain open => Make Copy
-	// char *fn_copy = palloc_get_page(PAL_ZERO);
-	// if(fn_copy == NULL) exit(-1);
-	// strlcpy(fn_copy, cmd_line,  strlen(cmd_line) + 1);
+	///. Please note that file descriptors remain open across an exec call.
 
-	if (process_exec(cmd_line) == -1) return -1;
+	char *fn_copy = palloc_get_page(PAL_ZERO);
+	if(fn_copy == NULL) exit(-1);
+	strlcpy(fn_copy, cmd_line,  strlen(cmd_line) + 1);
+
+	if (process_exec(fn_copy) == -1) return -1;
 	return 0;
 }
 
@@ -154,7 +156,7 @@ int open (const char *file) {
 	struct file **files = cur->files;
 
 	while (cur->fd < FDCOUNT_LIMIT && files[cur->fd]) {
-		cur->fd = cur->fd + 1
+		cur->fd = cur->fd + 1;
 	}
 
 	if (cur->fd >= FDCOUNT_LIMIT) {
@@ -261,7 +263,7 @@ void remove_file(int fd)
 	struct thread *cur = thread_current();
 	if (fd < 0 || fd >= FDCOUNT_LIMIT)
 		return;
-	cur->fdTable[fd] = NULL;
+	cur->files[fd] = NULL;
 }
 
 

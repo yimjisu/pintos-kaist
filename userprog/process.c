@@ -76,6 +76,7 @@ initd (void *f_name) {
 tid_t
 process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	/* Clone current thread to new thread.*/
+	// 2-3 start
 	tid_t tid = thread_create (name,
 			PRI_DEFAULT, __do_fork, thread_current ());
 	struct thread *child = get_child(tid);
@@ -83,6 +84,7 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	sema_down(&child->sema_fork);
 	if(child->exit_status == -1) return TID_ERROR;
 	return tid;
+	// 2-3 end
 }
 
 #ifndef VM
@@ -95,7 +97,7 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
 	void *parent_page;
 	void *newpage;
 	bool writable;
-
+	// 2-3 start
 	/* 1. TODO: If the parent_page is kernel page, then return immediately. */
 	if(is_kernel_vaddr(va)) return true; // WHY TRUE??
 	/* 2. Resolve VA from the parent's page map level 4. */
@@ -115,9 +117,10 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
 	 *    permission. */
 	if (!pml4_set_page (current->pml4, va, newpage, writable)) {
 		/* 6. TODO: if fail to insert page, do error handling. */
-		//???
+		// How to Error Handling??
 		return false;
 	}
+	// 2-3 end
 	return true;
 }
 #endif
@@ -132,7 +135,9 @@ __do_fork (void *aux) {
 	struct thread *parent = (struct thread *) aux;
 	struct thread *current = thread_current ();
 	/* TODO: somehow pass the parent_if. (i.e. process_fork()'s if_) */
+	// 2-3 start
 	struct intr_frame *parent_if = &parent->parent_if;
+	// 2-3 end
 	bool succ = true;
 
 	/* 1. Read the cpu context to local stack. */
@@ -158,16 +163,23 @@ __do_fork (void *aux) {
 	 * TODO:       in include/filesys/file.h. Note that parent should not return
 	 * TODO:       from the fork() until this function successfully duplicates
 	 * TODO:       the resources of parent.*/
+	// 2-3 start
 	if_.R.rax = 0;
-	// if(parent->fd_idx == FDCOUNT_LIMIT)
-	// 	goto error;
 	
-	for (int i = 0; i < parent->fd_idx; i++){ // WHY FDCOUNT_LIMIT?
-		struct file *file = parent->fd[i];
-		current->fd[i] = file_duplicate(file);
+	int fd = parent->fd;
+	if(fd <0 || fd >= FDCOUNT_LIMIT)
+		goto error;
+	
+	for (int i = 0; i < FDCOUNT_LIMIT; i++){ // WHY FDCOUNT_LIMIT?
+		struct file *file = parent->files[i];
+		struct file *newfile;
+		if(file <= 2) newfile = file;
+		else newfile = file_duplicate(file);
+		current->files[i] = newfile;
 	}
-	current->fd_idx = parent->fd_idx;
+	current->fd = parent->fd;
 	sema_up(&current->sema_fork);
+	// 2-3 end
 
 	process_init ();
 
@@ -175,9 +187,11 @@ __do_fork (void *aux) {
 	if (succ)
 		do_iret (&if_);
 error:
-	current->exit_status = -1;
+	// 2-3 start
+	current->exit_status = TID_ERROR;
 	sema_up(&current->sema_fork);
-	thread_exit ();
+	exit(-1);
+	// 2-3 end
 }
 
 /* Switch the current execution context to the f_name.
@@ -261,11 +275,12 @@ process_wait (tid_t child_tid UNUSED) {
 	 * XXX:       to add infinite loop here before
 	 * XXX:       implementing the process_wait. */
 	
+	// 2-3 start
 	struct thread *curr = thread_current();
 	struct thread *child = get_child(child_tid);
 	if(child == NULL) return -1;
 
-	// wait for child to die
+	// wait for child to die (exit)
 	sema_down(&child->sema_wait);
 	int exit_status = child->exit_status;
 	list_remove(&child->child_elem);
@@ -273,8 +288,10 @@ process_wait (tid_t child_tid UNUSED) {
 
 	// returns child's exit status
 	return exit_status;
+	// 2-3 end
 }
 
+// 2-3 start
 struct thread* get_child(tid_t tid){
 	struct thread *curr = thread_current();
 	for(struct list_elem *e = list_begin(&curr->child); e != list_end(&curr->child)
@@ -286,6 +303,7 @@ struct thread* get_child(tid_t tid){
 	}
 	return NULL;
 }
+// 2-3 end
 
 /* Exit the process. This function is called by thread_exit (). */
 void
@@ -298,10 +316,11 @@ process_exit (void) {
 	int status = thread_current() -> exit_status;
 	printf("%s: exit(%d)\n", thread_name(), status);
 
-	// ??
-	close();
-	// ??
-	palloc_free_page(curr->fd);
+	for(int i = 0; i < FDCOUNT_LIMIT; i++){
+		close(i);
+	}
+	palloc_free_page(curr->files);
+	//palloc_free_multiple(curr->files, FDT_PAGES);
 
 	process_cleanup ();
 	// wake up parent

@@ -96,11 +96,6 @@ struct thread {
 	
 	int init_priority;
 	struct lock *waiting_lock;
-	struct list donate;
-	struct list_elem donate_elem;
-
-	int nice;
-	int recent_cpu;
 	
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
@@ -109,7 +104,7 @@ struct thread {
 	struct list_elem donate_elem;
 	// start 2-3
 	struct file **files;
-	int fd;
+	int fd; // index
 	// end 2-3
 
 
@@ -117,9 +112,6 @@ struct thread {
 	uint64_t *pml4;                     /* Page map level 4 */
 
 	int exit_status;
-
-	struct file **fd;
-	int fd_idx;
 
 	struct list child;
 	struct list_elem child_elem;

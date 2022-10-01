@@ -245,8 +245,8 @@ thread_create (const char *name, int priority,
 	t->tf.eflags = FLAG_IF;
 
 	//start 2-3
-	t->files = palloc_get_page(PAL_ZERO);
-	// t->fdTable = palloc_get_multiple(PAL_ZERO, FDT_PAGES);
+	t->files = palloc_get_page(PAL_ZERO); // page 1개 만들기
+	// t->fdTable = palloc_get_multiple(PAL_ZERO, FDT_PAGES); memory 3개를 만든다.
 	if (t->files == NULL)
 		return TID_ERROR;
 	t->fd = 2;
