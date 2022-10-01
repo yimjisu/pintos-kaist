@@ -79,7 +79,7 @@ process_fork (const char *name, struct intr_frame *if_ UNUSED) {
 	// 2-3 start
 	tid_t tid = thread_create (name,
 			PRI_DEFAULT, __do_fork, thread_current ());
-	struct thread *child = get_child(tid);
+	struct thread *child = get_child_tid(tid);
 	if(child == NULL) return TID_ERROR;
 	sema_down(&child->sema_fork);
 	if(child->exit_status == -1) return TID_ERROR;
@@ -277,7 +277,7 @@ process_wait (tid_t child_tid UNUSED) {
 	
 	// 2-3 start
 	struct thread *curr = thread_current();
-	struct thread *child = get_child(child_tid);
+	struct thread *child = get_child_tid(child_tid);
 	if(child == NULL) return -1;
 
 	// wait for child to die (exit)
@@ -290,20 +290,6 @@ process_wait (tid_t child_tid UNUSED) {
 	return exit_status;
 	// 2-3 end
 }
-
-// 2-3 start
-struct thread* get_child(tid_t tid){
-	struct thread *curr = thread_current();
-	for(struct list_elem *e = list_begin(&curr->child); e != list_end(&curr->child)
-	; e = list_next(e)) {
-		struct thread *child = list_entry(e, struct thread, child_elem);
-		if(child->tid == tid) {
-			return child;
-		}
-	}
-	return NULL;
-}
-// 2-3 end
 
 /* Exit the process. This function is called by thread_exit (). */
 void
@@ -792,3 +778,18 @@ setup_stack (struct intr_frame *if_) {
 	return success;
 }
 #endif /* VM */
+
+// 2-3 start
+struct thread *get_child_tid(tid_t tid){
+	struct thread *curr = thread_current();
+	for(struct list_elem *e = list_begin(&curr->child); e != list_end(&curr->child)
+	; e = list_next(e)) {
+		struct thread *child = list_entry(e, struct thread, child_elem);
+		if(child->tid == tid) {
+			return child;
+		}
+	}
+	return NULL;
+}
+// 2-3 end
+

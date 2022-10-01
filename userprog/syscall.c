@@ -7,13 +7,21 @@
 #include "userprog/gdt.h"
 #include "threads/flags.h"
 #include "intrinsic.h"
+
+// 2-3 start
 #include "user/syscall.h"
+#include "threads/palloc.h"
+#include "filesys/file.h"
+#include "filesys/filesys.h"
+// 2-3 end
 
 void syscall_entry (void);
 void syscall_handler (struct intr_frame *);
 
 // 2-2
 void check_address(uaddr);
+struct file* lookup_fd(int fd);
+
 
 /* System call.
  *
@@ -64,13 +72,41 @@ syscall_handler (struct intr_frame *f UNUSED) {
 			exit(f->R.rdi);
 			break;
 		case SYS_FORK:
-			f->R.rax = fork(f->R.rdi, f);
+			memcpy(&thread_current()->parent_if, f, sizeof(struct intr_frame)); // ?? memcpy?
+			f->R.rax = fork(f->R.rdi);
 			break;
 		case SYS_EXEC:
 			if(exec(f->R.rdi)==-1) exit(-1);
 			break;
 		case SYS_WAIT:
 			f->R.rax = wait(f->R.rdi);
+			break;
+		case SYS_CREATE:
+		f->R.rax = create(f->R.rdi, f->R.rsi);
+		break;
+		case SYS_REMOVE:
+			f->R.rax = remove(f->R.rdi);
+			break;
+		case SYS_OPEN:
+			f->R.rax = open(f->R.rdi);
+			break;
+		case SYS_FILESIZE:
+			f->R.rax = filesize(f->R.rdi);
+			break;
+		case SYS_READ:
+			f->R.rax = read(f->R.rdi, f->R.rsi, f->R.rdx);
+			break;
+		case SYS_WRITE:
+			f->R.rax = write(f->R.rdi, f->R.rsi, f->R.rdx);
+			break;
+		case SYS_SEEK:
+			seek(f->R.rdi, f->R.rsi);
+			break;
+		case SYS_TELL:
+			f->R.rax = tell(f->R.rdi);
+			break;
+		case SYS_CLOSE:
+			close(f->R.rdi);
 			break;
 	}
 	thread_exit ();
@@ -85,9 +121,8 @@ void exit(int status) {
 	thread_exit();
 }
 
-pid_t fork(const char *thread_name, struct intr_frame* f) {
-	thread_current()->parent_if = f; // ?? memcpy?
-	return process_fork(thread_name, f);
+pid_t fork(const char *thread_name) {
+	return process_fork(thread_name);
 }
 
 int exec(const char *cmd_line) {
@@ -110,19 +145,6 @@ int wait(pid_t pid) {
 	return process_wait(pid);
 }
 
-void check_address(void *addr){
-	// Check if user-provided pointer address is valid.
-	// Kernel must access memory through pointers provided by a user program.
-	// 1. Null Pointer
-	// 2. Unmapped virtual memory
-	// 3. Pointer to kernel virtual address space (KERN_BASE)
-	// Terminate the user process
-
-	// First Method : verify validity of user-provided pointer & dereference
-	if (addr == NULL) exit(-1);
-	if (is_kernel_vaddr(addr)) exit(-1);
-	if (pml4_get_page(thread_current()->pml4, addr) == NULL) exit(-1);
-}
 // start 2-2
 void check_address (const uint64_t *uaddr) {
 	struct thread *cur = thread_current();
@@ -204,7 +226,7 @@ int read(int fd, void *buffer, unsigned size) {
 	return read;
 }
 
-int write (int fd, const void *buffer, unsigned length) {
+int write (int fd, const void *buffer, unsigned size) {
 	check_address(buffer);
 	int write;
 	struct file *open;
@@ -228,7 +250,7 @@ int write (int fd, const void *buffer, unsigned length) {
 
 void seek (int fd, unsigned position) {
 	struct file *open = lookup_fd(fd);
-	if (open <= 2) {// 초기값 2로 설정. 0: 표준 입력, 1: 표준 출력
+	if (open <= 2) {
 		return;
 	}
 	open->pos = position;
@@ -250,7 +272,7 @@ void close (int fd) {
 	remove_file(fd);
 }
 
-static struct file *lookup_fd(int fd) {
+struct file *lookup_fd(int fd) {
 	struct thread *cur = thread_current();
 	if (fd < 0 || fd >= FDCOUNT_LIMIT) {
 		return NULL;
