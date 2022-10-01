@@ -188,7 +188,7 @@ int read(int fd, void *buffer, unsigned size) {
 
 	if (fd == 0) {
 		*(char *)buffer = input_getc(); //stdin
-		read_result = size;
+		read = size;
 	}
 	else {
 		open = lookup_fd(fd);
@@ -228,7 +228,7 @@ int write (int fd, const void *buffer, unsigned length) {
 
 void seek (int fd, unsigned position) {
 	struct file *open = lookup_fd(fd);
-	if (open <= 2) {		// 초기값 2로 설정. 0: 표준 입력, 1: 표준 출력
+	if (open <= 2) {// 초기값 2로 설정. 0: 표준 입력, 1: 표준 출력
 		return;
 	}
 	open->pos = position;
@@ -243,8 +243,8 @@ unsigned tell (int fd) {
 }
 
 void close (int fd) {
-	struct file *fileobj = find_file_by_fd(fd);
-	if (fileobj == NULL) {
+	struct file *open = lookup_fd(fd);
+	if (open == NULL) {
 		return;
 	}
 	remove_file(fd);
