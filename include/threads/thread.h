@@ -98,6 +98,11 @@ struct thread {
 	struct lock * lock;
 	struct list donate;
 	struct list_elem donate_elem;
+	// start 2-3
+	struct file **files;
+	int fd;
+	// end 2-3
+
 
 #ifdef USERPROG
 	/* Owned by userprog/process.c. */
@@ -160,5 +165,10 @@ int thread_get_recent_cpu (void);
 int thread_get_load_avg (void);
 
 void do_iret (struct intr_frame *tf);
+
+//start 2-3
+#define FDT_START 3
+#define FDCOUNT_LIMIT FDT_PAGES *(1 << 9)
+//end 2-3
 
 #endif /* threads/thread.h */

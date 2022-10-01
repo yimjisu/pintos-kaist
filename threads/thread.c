@@ -236,6 +236,16 @@ thread_create (const char *name, int priority,
 	t->tf.cs = SEL_KCSEG;
 	t->tf.eflags = FLAG_IF;
 
+	//start 2-3
+	t->files = palloc_get_page(PAL_ZERO);
+	// t->fdTable = palloc_get_multiple(PAL_ZERO, FDT_PAGES);
+	if (t->files == NULL)
+		return TID_ERROR;
+	t->fd = 2;
+	t->files[0] = 1;
+	t->files[1] = 2;
+	//end 2-3
+
 	/* Add to run queue. */
 	thread_unblock (t);
 	thread_comp_priority ();

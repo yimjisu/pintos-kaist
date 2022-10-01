@@ -184,6 +184,7 @@ process_exec (void *f_name) {
 	if (!success)
 		return -1;
 
+	// hex_dump(_if.rsp, _if.rsp, USER_STACK - _if.rsp, true);
 	/* Start switched process. */
 	do_iret (&_if);
 	NOT_REACHED ();
@@ -416,14 +417,59 @@ load (const char *file_name, struct intr_frame *if_) {
 
 	/* TODO: Your code goes here.
 	 * TODO: Implement argument passing (see project2/argument_passing.html). */
+	// 2-1 start
+	char *argv[30];
+	char argc = 0;
+	char * file_name_copy;
+	memcpy(file_name_copy, file_name, strlen(file_name) + 1);
 
+	char *arg, *save_ptr;
+	arg = strtok_r(file_name_copy, " ", &save_ptr);
+	while (arg != NULL)
+	{
+		argv[argc] = arg;
+		arg = strtok_r(NULL, " ", &save_ptr); // 같은 string을 할려면 NULL을 줘야 됨
+		argc++;
+	}
+
+	// Save args
+	char * arg_address[128];
+	for (int i = argc - 1; i >= 0; i--) {
+		int argv_len = strlen(argv[i]);
+		if_->rsp = if_->rsp - (argv_len + 1);
+		memcpy(if_->rsp, argv[i], argv_len + 1);
+		arg_address[i] = if_->rsp;
+	}
+	// Word-align
+	int pad = if_->rsp % 8;
+	if_->rsp = if_->rsp - pad;
+	memset(if_->rsp, 0, pad);
+
+	// for (int i = 0; i < pad; i++) {
+	// 	if_->rsp--;
+	// 	*(uint8_t *)if_->rsp = 0;
+	// }
+	// Point to args
+	if_->rsp = if_->rsp - sizeof(char *);
+	memset(if_->rsp, 0, sizeof(char *));
+	for (int i = argc - 1; i >= 0; i--) {
+		if_->rsp = if_->rsp - sizeof(char *);
+		memcpy(if_->rsp, arg_address[i], sizeof(char *)); 
+	}
+	//Return address
+	if_->rsp = if_->rsp - sizeof(void *);
+	memset(if_->rsp, 0, sizeof(void *));
+
+	if_->R.rdi = argc;
+	if_->R.rsi = if_->rsp + sizeof(void *); 
+	// 2-1 end
 	success = true;
 
 done:
 	/* We arrive here whether the load is successful or not. */
 	file_close (file);
 	return success;
-}
+} 
 
 
 /* Checks whether PHDR describes a valid, loadable segment in

@@ -28,3 +28,5 @@ make tests/threads/mlfqs/mlfqs-nice-10.result
 make tests/threads/mlfqs/mlfqs-block.result
 
 ### 그냥 실행하고 싶으면 'pintos -- -q run alarm-single' 이런식으로
+
+make tests/userprog/args-single.result
