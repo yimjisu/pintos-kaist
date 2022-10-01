@@ -5,6 +5,7 @@
 #include <list.h>
 #include <stdint.h>
 #include "threads/interrupt.h"
+#include "threads/synch.h"
 #ifdef VM
 #include "vm/vm.h"
 #endif
@@ -105,6 +106,11 @@ struct thread {
 	// start 2-3
 	struct file **files;
 	int fd; // index
+	
+	struct intr_frame parent_if;
+	struct semaphore sema_wait;
+	struct semaphore sema_free;
+	struct semaphore sema_fork;
 	// end 2-3
 
 
@@ -115,12 +121,6 @@ struct thread {
 
 	struct list child;
 	struct list_elem child_elem;
-
-	struct intr_frame *parent_if;
-
-	struct semaphore sema_wait;
-	struct semaphore sema_free;
-	struct semaphore sema_fork;
 
 #ifdef VM
 	/* Table for whole virtual memory owned by thread. */

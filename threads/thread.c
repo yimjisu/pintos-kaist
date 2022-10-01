@@ -429,38 +429,6 @@ thread_set_priority (int new_priority) {
 	}
 }
 
-void
-mlfqs_recent_cpu (struct thread *t) {
-	if(t == idle_thread) return;
-	t->recent_cpu = ADD_FIXED_INT(
-		MULT_FIXED(
-			DIV_FIXED(
-				MULT_FIXED_INT(load_avg, 2),
-				ADD_FIXED_INT(MULT_FIXED_INT(load_avg, 2), 1)
-			),
-			t->recent_cpu
-		),
-		t->nice
-	);
-}
-
-void
-calculate_load_avg (void) {
-	int ready_threads = list_size(&ready_list);
-	if (thread_current() != idle_thread)
-		ready_threads += 1;
-	
-	load_avg = ADD_FIXED(
-		MULT_FIXED( 
-			DIV_FIXED_INT(INT_TO_FIXED(59), 60),
-			load_avg
-		),
-		MULT_FIXED_INT(
-			DIV_FIXED_INT(INT_TO_FIXED(1), 60), 
-			ready_threads
-		)
-	);
-}
 /* Returns the current thread's priority. */
 int
 thread_get_priority (void) {
