@@ -9,18 +9,16 @@
 #include "intrinsic.h"
 
 // 2-3 start
-#include "user/syscall.h"
+#include "userprog/process.h"
 #include "threads/palloc.h"
 #include "filesys/file.h"
 #include "filesys/filesys.h"
+#include "threads/vaddr.h"
 // 2-3 end
 
 void syscall_entry (void);
 void syscall_handler (struct intr_frame *);
 
-// 2-2
-void check_address(uaddr);
-struct file* lookup_fd(int fd);
 
 
 /* System call.
@@ -47,6 +45,7 @@ syscall_init (void) {
 	 * mode stack. Therefore, we masked the FLAG_FL. */
 	write_msr(MSR_SYSCALL_MASK,
 			FLAG_IF | FLAG_TF | FLAG_DF | FLAG_IOPL | FLAG_AC | FLAG_NT);
+	lock_init(&file_lock);
 }
 
 /* The main system call interface */
@@ -112,6 +111,16 @@ syscall_handler (struct intr_frame *f UNUSED) {
 	thread_exit ();
 }
 
+// start 2-2
+void check_address (const uint64_t *uaddr) {
+	struct thread *cur = thread_current();
+	if (uaddr == NULL || !(is_user_vaddr(uaddr)) || pml4_get_page(cur->pml4, uaddr) == NULL) {
+		exit(-1);
+	}
+}
+// end 2-2
+
+// start 2-3
 void halt (void) {
 	power_off();
 }
@@ -145,16 +154,6 @@ int wait(pid_t pid) {
 	return process_wait(pid);
 }
 
-// start 2-2
-void check_address (const uint64_t *uaddr) {
-	struct thread *cur = thread_current();
-	if (uaddr == NULL || !(is_user_vaddr(uaddr)) || pml4_get_page(cur->pml4, uaddr) == NULL) {
-		exit(-1);
-	}
-}
-// end 2-2
-
-// 2-3
 bool create(const char *file, unsigned initial_size) {
 	check_address(file);
 	return filesys_create(file, initial_size);
@@ -218,9 +217,9 @@ int read(int fd, void *buffer, unsigned size) {
 			return -1;
 		}
 		else {
-			lock_acquire(&filesys_lock);
+			lock_acquire(&file_lock);
 			read = file_read(open, buffer, size);
-			lock_release(&filesys_lock);
+			lock_release(&file_lock);
 		}
 	}
 	return read;
@@ -230,7 +229,7 @@ int write (int fd, const void *buffer, unsigned size) {
 	check_address(buffer);
 	int write;
 	struct file *open;
-	lock_acquire(&filesys_lock);
+	lock_acquire(&file_lock);
 	if (fd == 1) {
 		putbuf(buffer, size); //stdout
 		write = size;
@@ -244,7 +243,7 @@ int write (int fd, const void *buffer, unsigned size) {
 			write = file_write(open, buffer, size);
 		}
 	}
-	lock_release(&filesys_lock);
+	lock_release(&file_lock);
 	return write;
 }
 
@@ -272,7 +271,7 @@ void close (int fd) {
 	remove_file(fd);
 }
 
-struct file *lookup_fd(int fd) {
+static struct file *lookup_fd(int fd) {
 	struct thread *cur = thread_current();
 	if (fd < 0 || fd >= FDCOUNT_LIMIT) {
 		return NULL;
@@ -280,14 +279,14 @@ struct file *lookup_fd(int fd) {
 	return cur->files[fd];
 }
 
-void remove_file(int fd)
-{
+void remove_file(int fd) {
 	struct thread *cur = thread_current();
 	if (fd < 0 || fd >= FDCOUNT_LIMIT)
 		return;
 	cur->files[fd] = NULL;
 }
 
+// end 2-3
 
 
 // void halt (void) NO_RETURN;
