@@ -1,5 +1,10 @@
 {
     "files.associations": {
-        "exception.h": "c"
+        "exception.h": "c",
+        "palloc.h": "c",
+        "file.h": "c",
+        "filesys.h": "c",
+        "intrinsic.h": "c",
+        "syscall.h": "c"
     }
 }

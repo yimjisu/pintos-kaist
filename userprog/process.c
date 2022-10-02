@@ -512,52 +512,69 @@ load (const char *file_name, struct intr_frame *if_) {
 
 	/* TODO: Your code goes here.
 	 * TODO: Implement argument passing (see project2/argument_passing.html). */
-	// 2-1 start
-	char *argv[30];
-	char argc = 0;
-	char * file_name_copy;
-	memcpy(file_name_copy, file_name, strlen(file_name) + 1);
+	// // 2-1 start
+	// char *argv[30];
+	// char argc = 0;
+	// char * file_name_copy;
+	// memcpy(file_name_copy, file_name, strlen(file_name) + 1);
 
-	char *arg, *save_ptr;
-	arg = strtok_r(file_name_copy, " ", &save_ptr);
-	while (arg != NULL)
-	{
-		argv[argc] = arg;
-		arg = strtok_r(NULL, " ", &save_ptr); // 같은 string을 할려면 NULL을 줘야 됨
-		argc++;
-	}
-
-	// Save args
-	char * arg_address[128];
-	for (int i = argc - 1; i >= 0; i--) {
-		int argv_len = strlen(argv[i]);
-		if_->rsp = if_->rsp - (argv_len + 1);
-		memcpy(if_->rsp, argv[i], argv_len + 1);
-		arg_address[i] = if_->rsp;
-	}
-	// Word-align
-	int pad = if_->rsp % 8;
-	if_->rsp = if_->rsp - pad;
-	memset(if_->rsp, 0, pad);
-
-	// for (int i = 0; i < pad; i++) {
-	// 	if_->rsp--;
-	// 	*(uint8_t *)if_->rsp = 0;
+	// char *arg, *save_ptr;
+	// arg = strtok_r(file_name_copy, " ", &save_ptr);
+	// while (arg != NULL)
+	// {
+	// 	argv[argc] = arg;
+	// 	arg = strtok_r(NULL, " ", &save_ptr); // 같은 string을 할려면 NULL을 줘야 됨
+	// 	argc++;
 	// }
-	// Point to args
-	if_->rsp = if_->rsp - sizeof(char *);
-	memset(if_->rsp, 0, sizeof(char *));
-	for (int i = argc - 1; i >= 0; i--) {
-		if_->rsp = if_->rsp - sizeof(char *);
-		memcpy(if_->rsp, arg_address[i], sizeof(char *)); 
-	}
-	//Return address
-	if_->rsp = if_->rsp - sizeof(void *);
-	memset(if_->rsp, 0, sizeof(void *));
 
+	// // Save args
+	// char * arg_address[128];
+	// for (int i = argc - 1; i >= 0; i--) {
+	// 	int argv_len = strlen(argv[i]);
+	// 	if_->rsp = if_->rsp - (argv_len + 1);
+	// 	memcpy(if_->rsp, argv[i], argv_len + 1);
+	// 	arg_address[i] = if_->rsp;
+	// }
+	// // Word-align
+	// int pad = if_->rsp % 8;
+	// if_->rsp = if_->rsp - pad;
+	// memset(if_->rsp, 0, pad);
+
+	// // for (int i = 0; i < pad; i++) {
+	// // 	if_->rsp--;
+	// // 	*(uint8_t *)if_->rsp = 0;
+	// // }
+	// // Point to args
+	// if_->rsp = if_->rsp - sizeof(char *);
+	// memset(if_->rsp, 0, sizeof(char *));
+	// for (int i = argc - 1; i >= 0; i--) {
+	// 	if_->rsp = if_->rsp - sizeof(char *);
+	// 	memcpy(if_->rsp, arg_address[i], sizeof(char *)); 
+	// }
+	// //Return address
+	// if_->rsp = if_->rsp - sizeof(void *);
+	// memset(if_->rsp, 0, sizeof(void *));
+
+	// if_->R.rdi = argc;
+	// if_->R.rsi = if_->rsp + sizeof(void *); 
+	// // 2-1 end
+
+	/********** 2-1 start **************/
+	char *temp_file_name; // create copy of file name
+	memcpy(temp_file_name, file_name, strlen(file_name) + 1); // copy file_name
+	char *argv[64]; // list for argument
+	int argc = 0; // number of argument
+
+	char *token, *save_ptr;
+	for (token = strtok_r (&file_name, " ", &save_ptr); token != NULL;
+	token = strtok_r (NULL, " ", &save_ptr)) {
+		argv[argc++] = token;
+	}
+
+    argument_stack(argv, argc, if_->rsp);
 	if_->R.rdi = argc;
-	if_->R.rsi = if_->rsp + sizeof(void *); 
-	// 2-1 end
+	if_->R.rsi = if_->rsp + 8; 
+	/******2-1 end****/
 	success = true;
 
 done:
@@ -565,6 +582,41 @@ done:
 	file_close (file);
 	return success;
 } 
+
+// 2-1 start
+void
+argument_stack(char *argv, char *argc, void **rsp) {
+	// Place words at top of the stack
+	char *argv_address[128];
+	for(int i = argc - 1; i >= 0 ; i--) {
+		int len = strlen(argv[i]) + 1;
+		*rsp -= len;
+		memcpy(*(char **)rsp,  argv[i], len); // Copy word to address (including sentinel)
+		argv_address[i] = *(char **)rsp;
+	}
+
+	// Word-align
+	while ((int)*rsp % 8 != 0){
+		(*rsp)--;
+		**(uint8_t **)rsp = 0;
+	}
+
+	// Address of argv
+	*rsp -= sizeof(char);
+	memset(*(char **)rsp, 0, sizeof(char));
+	
+	for(int i = argc - 1; i >= 0; i--) {
+		*rsp -= sizeof(char *);
+		memcpy(*(char **)rsp, argv_address[i], sizeof(char));
+	}
+
+	// Fake Return Address
+	*rsp -= 8;
+	memset(*(void **)rsp, 0, sizeof(void **));
+
+}
+// 2-1 end
+
 
 
 /* Checks whether PHDR describes a valid, loadable segment in
