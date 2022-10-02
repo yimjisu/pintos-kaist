@@ -82,31 +82,17 @@ static tid_t allocate_tid (void);
 // Because the gdt will be setup after the thread_init, we should
 // setup temporal gdt first.
 static uint64_t gdt[3] = { 0, 0x00af9a000000ffff, 0x00cf92000000ffff };
- 
-bool
-thread_priority_compare (struct list_elem *a, struct list_elem *b, void UNUSED(*aux)){
-	return list_entry(a, struct thread, elem) -> priority > list_entry(b, struct thread, elem) -> priority;
-}
-
 int load_avg;
 
 // Thread들을 priority에 따른 내림차순으로 정렬하기 위해서 필요한 비교문
 bool
-thread_desc_priority (struct list_elem *l1, struct list_elem *l2, void *aux) {
+thread_desc_priority (struct list_elem *l1, struct list_elem *l2, void *aux UNUSED) {
 	return list_entry (l1, struct thread, elem)->priority > list_entry (l2, struct thread, elem)->priority;
 }
 
 // 현재 실행중인 thread의 priority와 ready_list에 있는 priority가 가장 높은 thread의 priority 비교
 void
 thread_comp_priority (void) {
-	// struct list_elem * max_elem;
-	// if (!list_empty (&ready_list)) {
-	// 	max_elem = list_min (&ready_list, thread_desc_priority, NULL);
-	// 	struct thread * max_thread = list_entry (max_elem, struct thread, elem);
-	// 	if (thread_current ()->priority < max_thread->priority) {
-	// 		thread_yield ();
-	// 	} 
-	// }
 	if (!list_empty (&ready_list)) {
 		// list_sort(&ready_list, thread_desc_priority, NULL);
 		if (thread_current ()->priority < list_entry (list_front (&ready_list), struct thread, elem)->priority) {
@@ -245,11 +231,14 @@ thread_create (const char *name, int priority,
 	t->tf.eflags = FLAG_IF;
 
 	//start 2-3
-	t->files = palloc_get_page(PAL_ZERO); // page 1개 만들기
-	// t->fdTable = palloc_get_multiple(PAL_ZERO, FDT_PAGES); memory 3개를 만든다.
+	struct thread *cur = thread_current();
+	list_push_back(&cur->child, &t->child_elem);
+
+	// t->files = palloc_get_page(PAL_ZERO); // page 1개 만들기
+	t->files = palloc_get_multiple(PAL_ZERO, FDT_PAGES);
 	if (t->files == NULL)
 		return TID_ERROR;
-	t->fd = 2;
+	t->fd_index = 2;
 	t->files[0] = 1;
 	t->files[1] = 2;
 	//end 2-3
@@ -365,13 +354,14 @@ thread_sleep (int64_t ticks) {
 	struct thread *curr = thread_current ();
 	enum intr_level old_level;
 
-	ASSERT (!intr_context ()); // Returns true during processing of an external interrupt and false at all other times. 
-
 	old_level = intr_disable (); // 잠시 인터럽트를 끈다. 아래 코드가 실행되는 중 인터럽트가 들어오면 곤란하기 때문
+
+	ASSERT (!intr_context ()); // Returns true during processing of an external interrupt and false at all other times. 
+	
 	if (curr != idle_thread) {
-		curr->wakeup_time = ticks;
-		// list_push_back (&sleep_list, &curr->elem);
-		list_insert_ordered (&sleep_list, &curr->elem, time_asc, NULL);
+		curr->wake_tick = ticks;
+		list_push_back (&sleep_list, &curr->elem);
+		// list_insert_ordered (&sleep_list, &curr->elem, time_asc, NULL);
 		thread_block ();
 	}
 	intr_set_level (old_level);
@@ -380,7 +370,7 @@ thread_sleep (int64_t ticks) {
 // wakeup_time에 대해 오름차순으로 thread들을 sleep list에 넣기 위해 필요한 비교문
 bool
 time_asc (struct list_elem *l1, struct list_elem *l2, void *aux) {
-	return list_entry (l1, struct thread, elem)->wakeup_time < list_entry (l2, struct thread, elem)->wakeup_time;
+	return list_entry (l1, struct thread, elem)->wake_tick < list_entry (l2, struct thread, elem)->wake_tick;
 }
 
 void
@@ -388,16 +378,23 @@ thread_awake (int64_t ticks) {
 	struct list_elem *e = list_begin (&sleep_list);
 	while (e != list_end (&sleep_list)){
 		struct thread *t = list_entry (e, struct thread, elem);
-		if (t->wakeup_time > ticks) {
-			break;
+		if (t->wake_tick <= ticks) {
+			e = list_remove(e);
+			thread_unblock(t);
 		}
-		e = list_remove (e);
-		thread_unblock (t);
+		else {
+			e = list_next(e);
+		}
+		// if (t->wake_tick > ticks) {
+		// 	break;
+		// }
+		// e = list_remove (e);
+		// thread_unblock (t);
 	}
 }
 
 bool
-donate_desc_priority (struct list_elem *l1, struct list_elem *l2, void * aux) {
+donate_desc_priority (struct list_elem *l1, struct list_elem *l2, void * aux UNUSED) {
 	return list_entry (l1, struct thread, donate_elem)->priority > list_entry (l2, struct thread, donate_elem)->priority;
 }
 
@@ -406,11 +403,7 @@ void
 reset_priority (void) {
 	struct thread * curr = thread_current ();
 	curr->priority = curr->original_priority;
-	struct list_elem * max_elem;
 	if (!list_empty (&curr->donate)) {
-		// max_elem = list_min (&curr->donate, donate_desc_priority, NULL);
-		// struct thread * max_thread = list_entry (max_elem, struct thread, donate_elem);
-
 		list_sort(&curr->donate, donate_desc_priority, NULL);
 		struct thread * max_thread = list_entry(list_front(&curr->donate), struct thread, donate_elem);
 		if (max_thread->priority > curr->priority) {
@@ -614,6 +607,12 @@ init_thread (struct thread *t, const char *name, int priority) {
 	t->magic = THREAD_MAGIC;
 	t->nice = 0;
 	t->recent_cpu = 0;
+	// start 2-3
+	list_init(&t->child);
+	sema_init(&t->sema_wait, 0);
+	sema_init(&t->sema_fork, 0);
+	sema_init(&t->sema_free, 0);
+	// end 2-3
 }
 
 /* Chooses and returns the next thread to be scheduled.  Should

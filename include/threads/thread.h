@@ -100,18 +100,9 @@ struct thread {
 	
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
-	struct lock * lock;
+	struct lock *lock;
 	struct list donate;
 	struct list_elem donate_elem;
-	// start 2-3
-	struct file **files;
-	int fd; // index
-	
-	struct intr_frame parent_if;
-	struct semaphore sema_wait;
-	struct semaphore sema_free;
-	struct semaphore sema_fork;
-	// end 2-3
 
 
 	/* Owned by userprog/process.c. */
@@ -121,6 +112,14 @@ struct thread {
 
 	struct list child;
 	struct list_elem child_elem;
+	// start 2-3
+	struct intr_frame parent_if;
+	struct semaphore sema_wait;
+	struct semaphore sema_free;
+	struct semaphore sema_fork;
+	struct file **files;
+	int fd_index;
+	// end 2-3
 
 #ifdef VM
 	/* Table for whole virtual memory owned by thread. */
@@ -130,7 +129,6 @@ struct thread {
 	/* Owned by thread.c. */
 	struct intr_frame tf;               /* Information for switching */
 	unsigned magic;                     /* Detects stack overflow. */
-	int64_t wakeup_time;
 	int nice;
 	int recent_cpu;
 };

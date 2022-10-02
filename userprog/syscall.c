@@ -8,18 +8,35 @@
 #include "threads/flags.h"
 #include "intrinsic.h"
 
-// 2-3 start
-#include "userprog/process.h"
-#include "threads/palloc.h"
 #include "filesys/file.h"
-#include "filesys/filesys.h"
-#include "threads/vaddr.h"
-// 2-3 end
+#include "threads/palloc.h"
 
 void syscall_entry (void);
 void syscall_handler (struct intr_frame *);
 
+// 2-2
+void check_address(const uint64_t *uaddr);
 
+//2-3 
+struct lock file_lock;
+void halt (void);
+void exit (int status);
+tid_t fork (const char *thread_name);
+int exec (const char *cmd_line);
+bool create(const char *file, unsigned initial_size);
+bool remove(const char *file);
+int open(const char *file);
+int filesize(int fd);
+int read(int fd, void *buffer, unsigned size);
+int write(int fd, const void *buffer, unsigned size);
+void seek(int fd, unsigned position);
+unsigned tell(int fd);
+void close(int fd);
+
+
+static struct file* lookup_fd(int fd);
+void remove_file(int fd);
+// end 2-3
 
 /* System call.
  *
@@ -71,14 +88,14 @@ syscall_handler (struct intr_frame *f UNUSED) {
 			exit(f->R.rdi);
 			break;
 		case SYS_FORK:
-			memcpy(&thread_current()->parent_if, f, sizeof(struct intr_frame)); // ?? memcpy?
+			memcpy(&thread_current()->parent_if, f, sizeof(struct intr_frame)); // child를 만드는 데 intr_frame 정보가 필요하기 때문
 			f->R.rax = fork(f->R.rdi);
 			break;
 		case SYS_EXEC:
 			if(exec(f->R.rdi)==-1) exit(-1);
 			break;
 		case SYS_WAIT:
-			f->R.rax = wait(f->R.rdi);
+			f->R.rax = process_wait(f->R.rdi);
 			break;
 		case SYS_CREATE:
 		f->R.rax = create(f->R.rdi, f->R.rsi);
@@ -127,20 +144,17 @@ void halt (void) {
 
 void exit(int status) {
 	thread_current() -> exit_status = status;
+	printf("%s: exit(%d)\n", thread_name(), status); // 2-4
 	thread_exit();
 }
 
-pid_t fork(const char *thread_name) {
-	return process_fork(thread_name);
+tid_t fork(const char *thread_name) {
+	struct intr_frame *if_ = &thread_current()->parent_if;
+	return process_fork(thread_name, if_);
 }
 
 int exec(const char *cmd_line) {
 	check_address(cmd_line);
-	// Never returns if successful
-	// Otherwise process terminates with exit state -1
-
-	// file descriptors remoain open => Make Copy
-	///. Please note that file descriptors remain open across an exec call.
 
 	char *fn_copy = palloc_get_page(PAL_ZERO);
 	if(fn_copy == NULL) exit(-1);
@@ -148,10 +162,6 @@ int exec(const char *cmd_line) {
 
 	if (process_exec(fn_copy) == -1) return -1;
 	return 0;
-}
-
-int wait(pid_t pid) {
-	return process_wait(pid);
 }
 
 bool create(const char *file, unsigned initial_size) {
@@ -176,18 +186,18 @@ int open (const char *file) {
 	struct thread *cur = thread_current();
 	struct file **files = cur->files;
 
-	while (cur->fd < FDCOUNT_LIMIT && files[cur->fd]) {
-		cur->fd = cur->fd + 1;
+	while (cur->fd_index < FDCOUNT_LIMIT && files[cur->fd_index]) {
+		cur->fd_index = cur->fd_index + 1;
 	}
 
-	if (cur->fd >= FDCOUNT_LIMIT) {
+	if (cur->fd_index >= FDCOUNT_LIMIT) {
 		fd = -1;
 		file_close(open);
 	}
 
 	else {
-		files[cur->fd] = file;
-		fd = cur->fd;
+		files[cur->fd_index] = file;
+		fd = cur->fd_index;
 	}
 
 	return fd;
@@ -207,9 +217,12 @@ int read(int fd, void *buffer, unsigned size) {
 	struct thread *cur = thread_current();
 	struct file *open;
 
-	if (fd == 0) {
-		*(char *)buffer = input_getc(); //stdin
+	if (fd == 0) { //stdin
+		*(char *)buffer = input_getc();
 		read = size;
+	}
+	else if (fd == 1) { //stdout
+		return -1;
 	}
 	else {
 		open = lookup_fd(fd);
@@ -230,8 +243,11 @@ int write (int fd, const void *buffer, unsigned size) {
 	int write;
 	struct file *open;
 	lock_acquire(&file_lock);
-	if (fd == 1) {
-		putbuf(buffer, size); //stdout
+	if (fd == 0) { //stdin
+		return -1;
+	}
+	if (fd == 1) { //stdout
+		putbuf(buffer, size);
 		write = size;
 	}
 	else {
@@ -287,19 +303,3 @@ void remove_file(int fd) {
 }
 
 // end 2-3
-
-
-// void halt (void) NO_RETURN;
-// void exit (int status) NO_RETURN;
-// pid_t fork (const char *thread_name);
-// int exec (const char *file);
-// int wait (pid_t);
-// bool create (const char *file, unsigned initial_size);
-// bool remove (const char *file);
-// int open (const char *file);
-// int filesize (int fd);
-// int read (int fd, void *buffer, unsigned length);
-// int write (int fd, const void *buffer, unsigned length);
-// void seek (int fd, unsigned position);
-// unsigned tell (int fd);
-// void close (int fd);

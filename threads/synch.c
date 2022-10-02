@@ -225,7 +225,8 @@ lock_acquire (struct lock *lock) {
 void
 update_priority (void){
 	struct thread * curr = thread_current ();
-	while (1) {
+	for (int i = 0; i < 8; i++) {
+	// while (1) {
 		if (!curr->lock) {
 			break;
 		}
@@ -388,7 +389,7 @@ cond_signal (struct condition *cond, struct lock *lock UNUSED) {
 		// list_remove (max_thread);
 		// sema_up (&list_entry (max_thread, struct semaphore_elem, elem)->semaphore);
 
-		list_sort(&cond->waiters, sema_desc_priority, 0);
+		list_sort(&cond->waiters, sema_desc_priority, NULL);
 		sema_up (&list_entry (list_pop_front (&cond->waiters), struct semaphore_elem, elem)->semaphore);
 	}
 }
@@ -409,7 +410,7 @@ cond_broadcast (struct condition *cond, struct lock *lock) {
 }
 
 bool
-sema_desc_priority (struct list_elem *l1, struct list_elem *l2, void *aux) {
+sema_desc_priority (struct list_elem *l1, struct list_elem *l2, void *aux UNUSED) {
 	struct semaphore_elem *s_l1 = list_entry (l1, struct semaphore_elem, elem);
 	struct semaphore_elem *s_l2 = list_entry (l2, struct semaphore_elem, elem);
 

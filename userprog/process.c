@@ -73,18 +73,27 @@ initd (void *f_name) {
 
 /* Clones the current process as `name`. Returns the new process's thread id, or
  * TID_ERROR if the thread cannot be created. */
-tid_t
-process_fork (const char *name, struct intr_frame *if_ UNUSED) {
+tid_t process_fork (const char *name, struct intr_frame *if_) {
 	/* Clone current thread to new thread.*/
-	// 2-3 start
-	tid_t tid = thread_create (name,
-			PRI_DEFAULT, __do_fork, thread_current ());
+	// start 2-3
+	struct thread *cur = thread_current();
+	memcpy(&cur->parent_if, if_, sizeof(struct intr_frame));
+
+	tid_t tid = thread_create(name, PRI_DEFAULT, __do_fork, cur);
+	if (tid == TID_ERROR) {
+		return TID_ERROR;
+	}
+
 	struct thread *child = get_child_tid(tid);
-	if(child == NULL) return TID_ERROR;
-	sema_down(&child->sema_fork);
-	if(child->exit_status == -1) return TID_ERROR;
+	if (child == NULL) {
+		return TID_ERROR;
+	}
+	sema_down(&child->sema_fork); // fork complete
+	if (child->exit_status == -1) {
+		return TID_ERROR;
+	}
 	return tid;
-	// 2-3 end
+	// end 2-3
 }
 
 #ifndef VM
@@ -99,13 +108,19 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
 	bool writable;
 	// 2-3 start
 	/* 1. TODO: If the parent_page is kernel page, then return immediately. */
-	if(is_kernel_vaddr(va)) return true; // WHY TRUE??
+	if(is_kernel_vaddr(va)) return true;
 	/* 2. Resolve VA from the parent's page map level 4. */
 	parent_page = pml4_get_page (parent->pml4, va);
+	if (parent_page == NULL) {
+		return false;
+	}
 
 	/* 3. TODO: Allocate new PAL_USER page for the child and set result to
 	 *    TODO: NEWPAGE. */
 	newpage = palloc_get_page(PAL_USER);
+	if (newpage == NULL) {
+		return false;
+	}
 
 	/* 4. TODO: Duplicate parent's page to the new page and
 	 *    TODO: check whether parent's page is writable or not (set WRITABLE
@@ -135,9 +150,7 @@ __do_fork (void *aux) {
 	struct thread *parent = (struct thread *) aux;
 	struct thread *current = thread_current ();
 	/* TODO: somehow pass the parent_if. (i.e. process_fork()'s if_) */
-	// 2-3 start
-	struct intr_frame *parent_if = &parent->parent_if;
-	// 2-3 end
+	struct intr_frame *parent_if = &parent->parent_if; // 2-3
 	bool succ = true;
 
 	/* 1. Read the cpu context to local stack. */
@@ -166,18 +179,19 @@ __do_fork (void *aux) {
 	// 2-3 start
 	if_.R.rax = 0;
 	
-	int fd = parent->fd;
-	if(fd <0 || fd >= FDCOUNT_LIMIT)
+	int fd = parent->fd_index;
+	if(fd < 0 || fd >= FDCOUNT_LIMIT)
 		goto error;
 	
-	for (int i = 0; i < FDCOUNT_LIMIT; i++){ // WHY FDCOUNT_LIMIT?
+	for (int i = 0; i < FDCOUNT_LIMIT; i++){
 		struct file *file = parent->files[i];
+		if (file == NULL) continue;
 		struct file *newfile;
 		if(file <= 2) newfile = file;
 		else newfile = file_duplicate(file);
 		current->files[i] = newfile;
 	}
-	current->fd = parent->fd;
+	current->fd_index = parent->fd_index;
 	sema_up(&current->sema_fork);
 	// 2-3 end
 
@@ -226,39 +240,6 @@ process_exec (void *f_name) {
 	NOT_REACHED ();
 }
 
-/**** ADD ARGUMENT STACK ****/
-void
-argument_stack(char *argv, char *argc, void **rsp) {
-	// Place words at top of the stack
-	char *argv_address[128];
-	for(int i = argc - 1; i >= 0 ; i--) {
-		int len = strlen(argv[i]) + 1;
-		*rsp -= len;
-		memcpy(*(char **)rsp,  argv[i], len); // Copy word to address (including sentinel)
-		argv_address[i] = *(char **)rsp;
-	}
-
-	// Word-align
-	while ((int)*rsp % 8 != 0){
-		(*rsp)--;
-		**(uint8_t **)rsp = 0;
-	}
-
-	// Address of argv
-	*rsp -= 8;
-	memcpy(*(char **)rsp, 0, 8);
-	
-	for(int i = argc - 1; i >= 0; i--) {
-		*rsp -= 8;
-		memcpy(*(char **)rsp, argv_address[i], sizeof(char **));
-	}
-
-	// Fake Return Address
-	*rsp -= 8;
-	memcpy(*(void **)rsp, 0, sizeof(void **));
-
-}
-
 
 /* Waits for thread TID to die and returns its exit status.  If
  * it was terminated by the kernel (i.e. killed due to an
@@ -276,7 +257,7 @@ process_wait (tid_t child_tid UNUSED) {
 	 * XXX:       implementing the process_wait. */
 	
 	// 2-3 start
-	struct thread *curr = thread_current();
+	struct thread *cur = thread_current();
 	struct thread *child = get_child_tid(child_tid);
 	if(child == NULL) return -1;
 
@@ -305,8 +286,8 @@ process_exit (void) {
 	for(int i = 0; i < FDCOUNT_LIMIT; i++){
 		close(i);
 	}
-	palloc_free_page(curr->files);
-	//palloc_free_multiple(curr->files, FDT_PAGES);
+	// palloc_free_page(curr->files);
+	palloc_free_multiple(curr->files, FDT_PAGES);
 
 	process_cleanup ();
 	// wake up parent
@@ -781,9 +762,9 @@ setup_stack (struct intr_frame *if_) {
 
 // 2-3 start
 struct thread *get_child_tid(tid_t tid){
-	struct thread *curr = thread_current();
-	for(struct list_elem *e = list_begin(&curr->child); e != list_end(&curr->child)
-	; e = list_next(e)) {
+	struct thread *cur = thread_current();
+
+	for(struct list_elem *e = list_begin(&cur->child); e != list_end(&cur->child); e = list_next(e)) {
 		struct thread *child = list_entry(e, struct thread, child_elem);
 		if(child->tid == tid) {
 			return child;

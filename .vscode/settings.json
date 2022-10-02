@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "exception.h": "c"
+        "*.json": "jsonc",
+        "exception.h": "c",
+        "*.inc": "c",
+        "syscall.h": "c"
     }
 }
