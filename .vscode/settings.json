@@ -3,6 +3,8 @@
         "*.json": "jsonc",
         "exception.h": "c",
         "*.inc": "c",
-        "syscall.h": "c"
+        "syscall.h": "c",
+        "process.h": "c",
+        "file.h": "c"
     }
 }

@@ -126,6 +126,7 @@ struct thread {
 	struct file **files;
 	int fd_index;
 	// end P2-3
+	struct file *running; //P2-5
 };
 
 /* If false (default), use round-robin scheduler.

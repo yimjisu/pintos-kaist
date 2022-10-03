@@ -26,6 +26,7 @@ static void process_cleanup (void);
 static bool load (const char *file_name, struct intr_frame *if_);
 static void initd (void *f_name);
 static void __do_fork (void *);
+void load_userStack(char **argv, int argc, void **rspp);
 
 /* General process initializer for initd and other process. */
 static void
@@ -49,6 +50,11 @@ process_create_initd (const char *file_name) {
 	if (fn_copy == NULL)
 		return TID_ERROR;
 	strlcpy (fn_copy, file_name, PGSIZE);
+
+	//start P2-1
+	char *temp;
+	strtok_r(file_name, " ", &temp);
+	//end P2-1
 
 	/* Create a new thread to execute FILE_NAME. */
 	tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
@@ -75,11 +81,11 @@ initd (void *f_name) {
  * TID_ERROR if the thread cannot be created. */
 tid_t process_fork (const char *name, struct intr_frame *if_) {
 	/* Clone current thread to new thread.*/
-	// start 2-3
-	struct thread *cur = thread_current();
-	memcpy(&cur->parent_if, if_, sizeof(struct intr_frame));
+	// start P2-3
+	struct thread *curr = thread_current();
+	memcpy(&curr->parent_if, if_, sizeof(struct intr_frame));
 
-	tid_t tid = thread_create(name, PRI_DEFAULT, __do_fork, cur);
+	tid_t tid = thread_create(name, PRI_DEFAULT, __do_fork, curr);
 	if (tid == TID_ERROR) {
 		return TID_ERROR;
 	}
@@ -93,7 +99,7 @@ tid_t process_fork (const char *name, struct intr_frame *if_) {
 		return TID_ERROR;
 	}
 	return tid;
-	// end 2-3
+	// end P2-3
 }
 
 #ifndef VM
@@ -106,7 +112,7 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
 	void *parent_page;
 	void *newpage;
 	bool writable;
-	// 2-3 start
+	// start P2-3
 	/* 1. TODO: If the parent_page is kernel page, then return immediately. */
 	if(is_kernel_vaddr(va)) return true;
 	/* 2. Resolve VA from the parent's page map level 4. */
@@ -135,7 +141,7 @@ duplicate_pte (uint64_t *pte, void *va, void *aux) {
 		// How to Error Handling??
 		return false;
 	}
-	// 2-3 end
+	// end P2-3
 	return true;
 }
 #endif
@@ -150,11 +156,12 @@ __do_fork (void *aux) {
 	struct thread *parent = (struct thread *) aux;
 	struct thread *current = thread_current ();
 	/* TODO: somehow pass the parent_if. (i.e. process_fork()'s if_) */
-	struct intr_frame *parent_if = &parent->parent_if; // 2-3
+	struct intr_frame *parent_if = &parent->parent_if; //P2-3
 	bool succ = true;
 
 	/* 1. Read the cpu context to local stack. */
 	memcpy (&if_, parent_if, sizeof (struct intr_frame));
+	if_.R.rax = 0; //P2-3
 
 	/* 2. Duplicate PT */
 	current->pml4 = pml4_create();
@@ -176,24 +183,24 @@ __do_fork (void *aux) {
 	 * TODO:       in include/filesys/file.h. Note that parent should not return
 	 * TODO:       from the fork() until this function successfully duplicates
 	 * TODO:       the resources of parent.*/
-	// 2-3 start
-	if_.R.rax = 0;
-	
-	int fd = parent->fd_index;
-	if(fd < 0 || fd >= FDCOUNT_LIMIT)
+	// start P2-3
+	// int fd = parent->fd_index;
+	if (parent->fd_index == FDCOUNT_LIMIT)
 		goto error;
 	
 	for (int i = 0; i < FDCOUNT_LIMIT; i++){
 		struct file *file = parent->files[i];
 		if (file == NULL) continue;
 		struct file *newfile;
-		if(file <= 2) newfile = file;
-		else newfile = file_duplicate(file);
+		// if(file <= 2) newfile = file;
+		// else newfile = file_duplicate(file);
+		if (file > 2) newfile = file_duplicate(file);
+		else newfile = file;
 		current->files[i] = newfile;
 	}
 	current->fd_index = parent->fd_index;
 	sema_up(&current->sema_fork);
-	// 2-3 end
+	// end P2-3
 
 	process_init ();
 
@@ -201,11 +208,11 @@ __do_fork (void *aux) {
 	if (succ)
 		do_iret (&if_);
 error:
-	// 2-3 start
+	// start P2-3
 	current->exit_status = TID_ERROR;
 	sema_up(&current->sema_fork);
 	exit(-1);
-	// 2-3 end
+	// end P2-3
 }
 
 /* Switch the current execution context to the f_name.
@@ -226,14 +233,41 @@ process_exec (void *f_name) {
 	/* We first kill the current context */
 	process_cleanup ();
 
+	// start P2-1
+	char *argv[30];
+	int argc = 0;
+
+	char *arg;
+	char *temp;
+	arg = strtok_r(file_name, " ", &temp); 
+	while (arg != NULL)
+	{
+		/* code */
+		argv[argc] = arg;
+		arg = strtok_r(NULL, " ", &temp);
+		argc++;
+	}
+	// end P2-1
+
 	/* And then load the binary */
 	success = load (file_name, &_if);
 
 	/* If load failed, quit. */
-	palloc_free_page (file_name);
-	if (!success)
+	
+	//palloc_free_page (file_name);
+	if (!success) {
+		palloc_free_page (file_name); // P2-3
 		return -1;
+	}
+	
+	// start P2-1
+	void **rspp = &_if.rsp;
+	load_userStack(argv, argc, rspp);
+	_if.R.rdi = argc;
+	_if.R.rsi = (uint64_t)*rspp + sizeof(void *);
+	// end P2-1
 
+	palloc_free_page (file_name); // P2-3
 	// hex_dump(_if.rsp, _if.rsp, USER_STACK - _if.rsp, true);
 	/* Start switched process. */
 	do_iret (&_if);
@@ -256,8 +290,7 @@ process_wait (tid_t child_tid UNUSED) {
 	 * XXX:       to add infinite loop here before
 	 * XXX:       implementing the process_wait. */
 	
-	// 2-3 start
-	struct thread *cur = thread_current();
+	// start P2-3
 	struct thread *child = get_child_tid(child_tid);
 	if(child == NULL) return -1;
 
@@ -268,8 +301,8 @@ process_wait (tid_t child_tid UNUSED) {
 	sema_up(&child->sema_free);
 
 	// returns child's exit status
-	return exit_status;
-	// 2-3 end
+	return exit_status; 
+	// end P2-3
 }
 
 /* Exit the process. This function is called by thread_exit (). */
@@ -280,14 +313,13 @@ process_exit (void) {
 	 * TODO: Implement process termination message (see
 	 * TODO: project2/process_termination.html).
 	 * TODO: We recommend you to implement process resource cleanup here. */
-	int status = thread_current() -> exit_status;
-	printf("%s: exit(%d)\n", thread_name(), status);
-
 	for(int i = 0; i < FDCOUNT_LIMIT; i++){
 		close(i);
 	}
 	// palloc_free_page(curr->files);
 	palloc_free_multiple(curr->files, FDT_PAGES);
+
+	file_close(curr->running); //P2-5
 
 	process_cleanup ();
 	// wake up parent
@@ -419,6 +451,11 @@ load (const char *file_name, struct intr_frame *if_) {
 		goto done;
 	}
 
+	// start P2-5
+	t->running = file;
+	file_deny_write(file);
+	// end P2-5
+
 	/* Read and verify executable header. */
 	if (file_read (file, &ehdr, sizeof ehdr) != sizeof ehdr
 			|| memcmp (ehdr.e_ident, "\177ELF\2\1\1", 7)
@@ -493,57 +530,66 @@ load (const char *file_name, struct intr_frame *if_) {
 
 	/* TODO: Your code goes here.
 	 * TODO: Implement argument passing (see project2/argument_passing.html). */
-	// 2-1 start
-	char *argv[30];
-	char argc = 0;
-	char * file_name_copy;
-	memcpy(file_name_copy, file_name, strlen(file_name) + 1);
+	// start P2-1
+	// char *argv[30];
+	// int argc = 0;
+	// char *file_name_copy;
+	// memcpy(file_name_copy, file_name, strlen(file_name) + 1);
 
-	char *arg, *save_ptr;
-	arg = strtok_r(file_name_copy, " ", &save_ptr);
-	while (arg != NULL)
-	{
-		argv[argc] = arg;
-		arg = strtok_r(NULL, " ", &save_ptr); // 같은 string을 할려면 NULL을 줘야 됨
-		argc++;
-	}
-
-	// Save args
-	char * arg_address[128];
-	for (int i = argc - 1; i >= 0; i--) {
-		int argv_len = strlen(argv[i]);
-		if_->rsp = if_->rsp - (argv_len + 1);
-		memcpy(if_->rsp, argv[i], argv_len + 1);
-		arg_address[i] = if_->rsp;
-	}
-	// Word-align
-	int pad = if_->rsp % 8;
-	if_->rsp = if_->rsp - pad;
-	memset(if_->rsp, 0, pad);
-
-	// for (int i = 0; i < pad; i++) {
-	// 	if_->rsp--;
-	// 	*(uint8_t *)if_->rsp = 0;
+	// char *arg, *save_ptr;
+	// arg = strtok_r(file_name, " ", &save_ptr);
+	// while (arg != NULL)
+	// {
+	// 	argv[argc] = arg;
+	// 	arg = strtok_r(NULL, " ", &save_ptr); // 같은 string을 할려면 NULL을 줘야 됨
+	// 	argc++;
 	// }
-	// Point to args
-	if_->rsp = if_->rsp - sizeof(char *);
-	memset(if_->rsp, 0, sizeof(char *));
-	for (int i = argc - 1; i >= 0; i--) {
-		if_->rsp = if_->rsp - sizeof(char *);
-		memcpy(if_->rsp, arg_address[i], sizeof(char *)); 
-	}
-	//Return address
-	if_->rsp = if_->rsp - sizeof(void *);
-	memset(if_->rsp, 0, sizeof(void *));
 
-	if_->R.rdi = argc;
-	if_->R.rsi = if_->rsp + sizeof(void *); 
-	// 2-1 end
+	// // Save args
+	// char * arg_address[128];
+	// for (int i = argc - 1; i >= 0; i--) {
+	// 	int argv_len = strlen(argv[i]);
+	// 	for (int j = argv_len; j >= 0; j--) {
+	// 		if_->rsp = if_->rsp - 1;
+	// 		*(char *)if_->rsp = argv[i][j];
+	// 	}
+	// 	// if_->rsp = if_->rsp - (argv_len + 1);
+	// 	// memcpy((char *)if_->rsp, argv[i], argv_len + 1);
+	// 	arg_address[i] = (char *)if_->rsp;
+	// }
+	// // Word-align
+	// int pad = (int)if_->rsp % 8;
+	// for (int i = 0; i < pad; i++) {
+	// 	if_->rsp = if_->rsp - 1;
+	// 	*(uint8_t *)if_->rsp = (uint8_t)0;
+	// }
+	// // if_->rsp = if_->rsp - pad;
+	// // memset((uint8_t *)if_->rsp, 0, pad);
+
+	// // Point to args
+	// if_->rsp = if_->rsp - sizeof(char *);
+	// // memset((char **)if_->rsp, 0, sizeof(char *));
+	// *(char **)if_->rsp = (char *)0;
+	// for (int i = argc - 1; i >= 0; i--) {
+	// 	if_->rsp = if_->rsp - sizeof(char *);
+	// 	// memcpy((char **)if_->rsp, arg_address[i], sizeof(char *)); 
+	// 	*(char **)if_->rsp = arg_address[i];
+	// }
+	// //Return address
+	// if_->rsp = if_->rsp - sizeof(void *);
+	// // memset((void *)if_->rsp, 0, sizeof(void *));
+	// *(void **)if_->rsp = (void *)0;
+
+	// void **rspp = &if_->rsp;
+	// load_userStack(argv, argc, rspp);
+	// if_->R.rdi = argc;
+	// if_->R.rsi = if_->rsp + sizeof(void *); 
+	// end P2-1
 	success = true;
 
 done:
 	/* We arrive here whether the load is successful or not. */
-	file_close (file);
+	// file_close (file);
 	return success;
 } 
 
@@ -760,11 +806,11 @@ setup_stack (struct intr_frame *if_) {
 }
 #endif /* VM */
 
-// 2-3 start
+// start P2-3
 struct thread *get_child_tid(tid_t tid){
-	struct thread *cur = thread_current();
+	struct thread *curr = thread_current();
 
-	for(struct list_elem *e = list_begin(&cur->child); e != list_end(&cur->child); e = list_next(e)) {
+	for(struct list_elem *e = list_begin(&curr->child); e != list_end(&curr->child); e = list_next(e)) {
 		struct thread *child = list_entry(e, struct thread, child_elem);
 		if(child->tid == tid) {
 			return child;
@@ -772,5 +818,45 @@ struct thread *get_child_tid(tid_t tid){
 	}
 	return NULL;
 }
-// 2-3 end
+// end P2-3
 
+
+void load_userStack(char **argv, int argc, void **rspp)
+{
+	// 1. Save argument strings (character by character)
+	for (int i = argc - 1; i >= 0; i--)
+	{
+		int N = strlen(argv[i]);
+		for (int j = N; j >= 0; j--)
+		{
+			char individual_character = argv[i][j];
+			(*rspp)--;
+			**(char **)rspp = individual_character; // 1 byte
+		}
+		argv[i] = *(char **)rspp; // push this address too
+	}
+
+	// 2. Word-align padding
+	int pad = (int)*rspp % 8;
+	for (int k = 0; k < pad; k++)
+	{
+		(*rspp)--;
+		**(uint8_t **)rspp = (uint8_t)0; // 1 byte
+	}
+
+	// 3. Pointers to the argument strings
+	size_t PTR_SIZE = sizeof(char *);
+ 
+	(*rspp) -= PTR_SIZE;
+	**(char ***)rspp = (char *)0;
+
+	for (int i = argc - 1; i >= 0; i--)
+	{
+		(*rspp) -= PTR_SIZE;
+		**(char ***)rspp = argv[i];
+	}
+
+	// 4. Return address
+	(*rspp) -= PTR_SIZE;
+	**(void ***)rspp = (void *)0;
+}

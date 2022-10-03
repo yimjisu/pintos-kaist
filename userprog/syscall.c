@@ -8,20 +8,20 @@
 #include "threads/flags.h"
 #include "intrinsic.h"
 
-#include "filesys/file.h"
-#include "threads/palloc.h"
+#include "filesys/file.h" //P2-3
+#include "filesys/filesys.h" //P2-3
+#include "threads/palloc.h" //P2-3
 
 void syscall_entry (void);
 void syscall_handler (struct intr_frame *);
 
-// 2-2
-void check_address(const uint64_t *uaddr);
+void check_address(const uint64_t *uaddr); //P2-2
 
-//2-3 
+// start P2-3 
 struct lock file_lock;
 void halt (void);
 void exit (int status);
-tid_t fork (const char *thread_name);
+tid_t fork (const char *thread_name, struct intr_frame *if_);
 int exec (const char *cmd_line);
 bool create(const char *file, unsigned initial_size);
 bool remove(const char *file);
@@ -35,8 +35,9 @@ void close(int fd);
 
 
 static struct file* lookup_fd(int fd);
+int add_file(struct file *file);
 void remove_file(int fd);
-// end 2-3
+// end P2-3
 
 /* System call.
  *
@@ -62,7 +63,7 @@ syscall_init (void) {
 	 * mode stack. Therefore, we masked the FLAG_FL. */
 	write_msr(MSR_SYSCALL_MASK,
 			FLAG_IF | FLAG_TF | FLAG_DF | FLAG_IOPL | FLAG_AC | FLAG_NT);
-	lock_init(&file_lock);
+	lock_init(&file_lock); //P2-3
 }
 
 /* The main system call interface */
@@ -71,15 +72,7 @@ syscall_handler (struct intr_frame *f UNUSED) {
 	// TODO: Your implementation goes here.
 	// %rax : syscall num
 	// arg 순서 : %rdi, %rsi, %rdx, %r10, %r8, %r9
-	
-	switch (f->R.rax) {
-		case SYS_CREATE:
-			// bool create(const char *file, unsigned initial_size)
-			// 
-			f->R.rax = create(f->R.rdi, f->R.rsi);
-	}
-
-	printf ("system call!\n");
+	// printf ("system call!\n");
 	switch(f->R.rax) { 
 		case SYS_HALT:
 			halt();
@@ -88,18 +81,20 @@ syscall_handler (struct intr_frame *f UNUSED) {
 			exit(f->R.rdi);
 			break;
 		case SYS_FORK:
-			memcpy(&thread_current()->parent_if, f, sizeof(struct intr_frame)); // child를 만드는 데 intr_frame 정보가 필요하기 때문
-			f->R.rax = fork(f->R.rdi);
+			// memcpy(&thread_current()->parent_if, f, sizeof(struct intr_frame)); // child를 만드는 데 intr_frame 정보가 필요하기 때문
+			f->R.rax = fork(f->R.rdi, f);
 			break;
 		case SYS_EXEC:
-			if(exec(f->R.rdi)==-1) exit(-1);
+			if (exec(f->R.rdi) == -1) {
+				exit(-1);
+			}
 			break;
 		case SYS_WAIT:
 			f->R.rax = process_wait(f->R.rdi);
 			break;
 		case SYS_CREATE:
-		f->R.rax = create(f->R.rdi, f->R.rsi);
-		break;
+			f->R.rax = create(f->R.rdi, f->R.rsi);
+			break;
 		case SYS_REMOVE:
 			f->R.rax = remove(f->R.rdi);
 			break;
@@ -124,32 +119,35 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		case SYS_CLOSE:
 			close(f->R.rdi);
 			break;
+		default:
+			exit(-1);
+			break;
 	}
-	thread_exit ();
+	// thread_exit ();
 }
 
 // start 2-2
-void check_address (const uint64_t *uaddr) {
-	struct thread *cur = thread_current();
-	if (uaddr == NULL || !(is_user_vaddr(uaddr)) || pml4_get_page(cur->pml4, uaddr) == NULL) {
+void check_address (const uint64_t *addr) {
+	struct thread *curr = thread_current();
+	if (addr == NULL || !(is_user_vaddr(addr)) || pml4_get_page(curr->pml4, addr) == NULL) {
 		exit(-1);
 	}
 }
 // end 2-2
 
-// start 2-3
+// start P2-3
 void halt (void) {
 	power_off();
 }
 
 void exit(int status) {
-	thread_current() -> exit_status = status;
+	thread_current()->exit_status = status;
 	printf("%s: exit(%d)\n", thread_name(), status); // 2-4
 	thread_exit();
 }
 
-tid_t fork(const char *thread_name) {
-	struct intr_frame *if_ = &thread_current()->parent_if;
+tid_t fork(const char *thread_name, struct intr_frame *if_) {
+	// struct intr_frame *if_ = &thread_current()->parent_if;
 	return process_fork(thread_name, if_);
 }
 
@@ -157,10 +155,16 @@ int exec(const char *cmd_line) {
 	check_address(cmd_line);
 
 	char *fn_copy = palloc_get_page(PAL_ZERO);
-	if(fn_copy == NULL) exit(-1);
-	strlcpy(fn_copy, cmd_line,  strlen(cmd_line) + 1);
+	if (fn_copy == NULL) {
+		exit(-1);
+	}
+	strlcpy(fn_copy, cmd_line, strlen(cmd_line) + 1);
 
-	if (process_exec(fn_copy) == -1) return -1;
+	if (process_exec(fn_copy) == -1) {
+		return -1;
+	}
+	
+	NOT_REACHED();
 	return 0;
 }
 
@@ -180,24 +184,10 @@ int open (const char *file) {
 	if (open == NULL) {
 		return -1;
 	}
-
-	int fd;
+	int fd = add_file(open);
 	
-	struct thread *cur = thread_current();
-	struct file **files = cur->files;
-
-	while (cur->fd_index < FDCOUNT_LIMIT && files[cur->fd_index]) {
-		cur->fd_index = cur->fd_index + 1;
-	}
-
-	if (cur->fd_index >= FDCOUNT_LIMIT) {
-		fd = -1;
+	if (fd == -1) {
 		file_close(open);
-	}
-
-	else {
-		files[cur->fd_index] = file;
-		fd = cur->fd_index;
 	}
 
 	return fd;
@@ -214,8 +204,11 @@ int filesize (int fd) {
 int read(int fd, void *buffer, unsigned size) {
 	check_address(buffer);
 	int read;
-	struct thread *cur = thread_current();
-	struct file *open;
+	struct file *open = lookup_fd(fd);
+
+	if (open == NULL) {
+		return -1;
+	}
 
 	if (fd == 0) { //stdin
 		*(char *)buffer = input_getc();
@@ -225,15 +218,9 @@ int read(int fd, void *buffer, unsigned size) {
 		return -1;
 	}
 	else {
-		open = lookup_fd(fd);
-		if (open == NULL) {
-			return -1;
-		}
-		else {
-			lock_acquire(&file_lock);
-			read = file_read(open, buffer, size);
-			lock_release(&file_lock);
-		}
+		lock_acquire(&file_lock);
+		read = file_read(open, buffer, size);
+		lock_release(&file_lock);
 	}
 	return read;
 }
@@ -241,8 +228,11 @@ int read(int fd, void *buffer, unsigned size) {
 int write (int fd, const void *buffer, unsigned size) {
 	check_address(buffer);
 	int write;
-	struct file *open;
-	lock_acquire(&file_lock);
+	struct file *open = lookup_fd(fd);
+
+	if (open == NULL) {
+		return -1;
+	}
 	if (fd == 0) { //stdin
 		return -1;
 	}
@@ -251,15 +241,10 @@ int write (int fd, const void *buffer, unsigned size) {
 		write = size;
 	}
 	else {
-		open = lookup_fd(fd);
-		if (open == NULL) {
-			write = -1;
-		}
-		else {
-			write = file_write(open, buffer, size);
-		}
+		lock_acquire(&file_lock);
+		write = file_write(open, buffer, size);
+		lock_release(&file_lock);
 	}
-	lock_release(&file_lock);
 	return write;
 }
 
@@ -285,20 +270,42 @@ void close (int fd) {
 		return;
 	}
 	remove_file(fd);
+	if (fd <=1 || open <= 2) {
+		return;
+	}
+	file_close(open);
 }
 
 static struct file *lookup_fd(int fd) {
-	struct thread *cur = thread_current();
+	struct thread *curr = thread_current();
 	if (fd < 0 || fd >= FDCOUNT_LIMIT) {
 		return NULL;
 	}
-	return cur->files[fd];
+	return curr->files[fd];
+}
+
+int add_file(struct file *file)
+{
+	struct thread *curr = thread_current();
+	struct file **fdt = curr->files;
+
+	while (curr->fd_index < FDCOUNT_LIMIT && fdt[curr->fd_index]) {
+		curr->fd_index = curr->fd_index + 1;
+	}
+
+	if (curr->fd_index >= FDCOUNT_LIMIT) {
+		return -1;
+	}
+
+	fdt[curr->fd_index] = file;
+	return curr->fd_index;
 }
 
 void remove_file(int fd) {
 	struct thread *cur = thread_current();
-	if (fd < 0 || fd >= FDCOUNT_LIMIT)
+	if (fd < 0 || fd >= FDCOUNT_LIMIT) {
 		return;
+	}
 	cur->files[fd] = NULL;
 }
 

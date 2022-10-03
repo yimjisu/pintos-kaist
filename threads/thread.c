@@ -504,6 +504,7 @@ init_thread (struct thread *t, const char *name, int priority) {
 	sema_init(&t->sema_fork, 0);
 	sema_init(&t->sema_free, 0);
 	// end P2-3
+	t->running = NULL; //P2-5
 }
 
 /* Chooses and returns the next thread to be scheduled.  Should
