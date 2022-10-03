@@ -24,9 +24,7 @@ struct lock {
 
 void lock_init (struct lock *);
 void lock_acquire (struct lock *);
-void update_priority (void);
 bool lock_try_acquire (struct lock *);
-void remove_lock (struct lock *);
 void lock_release (struct lock *);
 bool lock_held_by_current_thread (const struct lock *);
 
@@ -39,11 +37,15 @@ void cond_init (struct condition *);
 void cond_wait (struct condition *, struct lock *);
 void cond_signal (struct condition *, struct lock *);
 void cond_broadcast (struct condition *, struct lock *);
+
+// start P1-2
 bool sema_desc_priority (struct list_elem *, struct list_elem *, void *);
+// end P1-2
 
-
-bool sema_priority_compare (struct list_elem *, struct list_elem *, void *);
-bool thread_donate_priority_compare(struct list_elem *, struct list_elem *, void *);
+// start P1-2 : donation
+void update_priority (void);
+void remove_lock (struct lock *);
+// end P1-2 : donation
 
 /* Optimization barrier.
  *
