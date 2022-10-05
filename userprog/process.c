@@ -55,10 +55,11 @@ process_create_initd (const char *file_name) {
 	char * file_name_copy = malloc(strlen(file_name)+1);
 	memcpy(file_name_copy, file_name, strlen(file_name)+1);
 	strtok_r(file_name_copy, " ", &temp);
+	// file_name에는 진짜 필요한 file_name과, args가 포함되어 있다. file_name만 따로 뽑아내기 위해 strtok_r을 사용해줬다.
 	//end P2-1
 
 	/* Create a new thread to execute FILE_NAME. */
-	tid = thread_create (file_name_copy, PRI_DEFAULT, initd, fn_copy);
+	tid = thread_create (file_name_copy, PRI_DEFAULT, initd, fn_copy); //P2-1. thread_create ()에서는 args를 제외한 file_name만 필요하다. 
 	free(file_name_copy);
 	if (tid == TID_ERROR)
 		palloc_free_page (fn_copy);
@@ -414,6 +415,7 @@ load (const char *file_name, struct intr_frame *if_) {
 	char *arg;
 	char *temp;
 	arg = strtok_r(file_name_copy, " ", &temp);
+	// 여기도 process_create_initd ()와 마찬기지로 args를 제외한 file_name이 필요하다. 
 	//end P2-1
 	struct thread *t = thread_current ();
 	struct ELF ehdr;
@@ -429,9 +431,9 @@ load (const char *file_name, struct intr_frame *if_) {
 	process_activate (thread_current ());
 
 	/* Open executable file. */
-	file = filesys_open (file_name_copy);
+	file = filesys_open (file_name_copy); //P2-1(원래는 file_name이었음)
 	if (file == NULL) {
-		printf ("load: %s: open failed\n", file_name_copy);
+		printf ("load: %s: open failed\n", file_name_copy);//P2-1(원래는 file_name이었음)
 		goto done;
 	}
 
@@ -448,7 +450,7 @@ load (const char *file_name, struct intr_frame *if_) {
 			|| ehdr.e_version != 1
 			|| ehdr.e_phentsize != sizeof (struct Phdr)
 			|| ehdr.e_phnum > 1024) {
-		printf ("load: %s: error loading executable\n", file_name_copy);
+		printf ("load: %s: error loading executable\n", file_name_copy);//P2-1(원래는 file_name이었음)
 		goto done;
 	}
 
