@@ -33,7 +33,6 @@ void seek(int fd, unsigned position);
 unsigned tell(int fd);
 void close(int fd);
 
-
 static struct file* lookup_fd(int fd);
 int add_file(struct file *file);
 void remove_file(int fd);

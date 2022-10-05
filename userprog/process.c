@@ -26,7 +26,6 @@ static void process_cleanup (void);
 static bool load (const char *file_name, struct intr_frame *if_);
 static void initd (void *f_name);
 static void __do_fork (void *);
-void load_userStack(char **argv, int argc, void **rspp);
 
 /* General process initializer for initd and other process. */
 static void
@@ -53,11 +52,14 @@ process_create_initd (const char *file_name) {
 
 	//start P2-1
 	char *temp;
-	strtok_r(file_name, " ", &temp);
+	char * file_name_copy = malloc(strlen(file_name)+1);
+	memcpy(file_name_copy, file_name, strlen(file_name)+1);
+	strtok_r(file_name_copy, " ", &temp);
 	//end P2-1
 
 	/* Create a new thread to execute FILE_NAME. */
-	tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
+	tid = thread_create (file_name_copy, PRI_DEFAULT, initd, fn_copy);
+	free(file_name_copy);
 	if (tid == TID_ERROR)
 		palloc_free_page (fn_copy);
 	return tid;
@@ -192,10 +194,8 @@ __do_fork (void *aux) {
 		struct file *file = parent->files[i];
 		if (file == NULL) continue;
 		struct file *newfile;
-		// if(file <= 2) newfile = file;
-		// else newfile = file_duplicate(file);
-		if (file > 2) newfile = file_duplicate(file);
-		else newfile = file;
+		if(file <= 2) newfile = file;
+		else newfile = file_duplicate(file);
 		current->files[i] = newfile;
 	}
 	current->fd_index = parent->fd_index;
@@ -231,23 +231,7 @@ process_exec (void *f_name) {
 	_if.eflags = FLAG_IF | FLAG_MBS;
 
 	/* We first kill the current context */
-	process_cleanup ();
-
-	// start P2-1
-	char *argv[30];
-	int argc = 0;
-
-	char *arg;
-	char *temp;
-	arg = strtok_r(file_name, " ", &temp); 
-	while (arg != NULL)
-	{
-		/* code */
-		argv[argc] = arg;
-		arg = strtok_r(NULL, " ", &temp);
-		argc++;
-	}
-	// end P2-1
+	process_cleanup (); 
 
 	/* And then load the binary */
 	success = load (file_name, &_if);
@@ -260,14 +244,7 @@ process_exec (void *f_name) {
 		return -1;
 	}
 	
-	// start P2-1
-	void **rspp = &_if.rsp;
-	load_userStack(argv, argc, rspp);
-	_if.R.rdi = argc;
-	_if.R.rsi = (uint64_t)*rspp + sizeof(void *);
-	// end P2-1
-
-	palloc_free_page (file_name); // P2-3
+	palloc_free_page (file_name);
 	// hex_dump(_if.rsp, _if.rsp, USER_STACK - _if.rsp, true);
 	/* Start switched process. */
 	do_iret (&_if);
@@ -431,6 +408,13 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
  * Returns true if successful, false otherwise. */
 static bool
 load (const char *file_name, struct intr_frame *if_) {
+	//start P2-1
+	char * file_name_copy = malloc(strlen(file_name)+1);
+	memcpy(file_name_copy, file_name, strlen(file_name)+1);
+	char *arg;
+	char *temp;
+	arg = strtok_r(file_name_copy, " ", &temp);
+	//end P2-1
 	struct thread *t = thread_current ();
 	struct ELF ehdr;
 	struct file *file = NULL;
@@ -445,9 +429,9 @@ load (const char *file_name, struct intr_frame *if_) {
 	process_activate (thread_current ());
 
 	/* Open executable file. */
-	file = filesys_open (file_name);
+	file = filesys_open (file_name_copy);
 	if (file == NULL) {
-		printf ("load: %s: open failed\n", file_name);
+		printf ("load: %s: open failed\n", file_name_copy);
 		goto done;
 	}
 
@@ -464,7 +448,7 @@ load (const char *file_name, struct intr_frame *if_) {
 			|| ehdr.e_version != 1
 			|| ehdr.e_phentsize != sizeof (struct Phdr)
 			|| ehdr.e_phnum > 1024) {
-		printf ("load: %s: error loading executable\n", file_name);
+		printf ("load: %s: error loading executable\n", file_name_copy);
 		goto done;
 	}
 
@@ -531,59 +515,44 @@ load (const char *file_name, struct intr_frame *if_) {
 	/* TODO: Your code goes here.
 	 * TODO: Implement argument passing (see project2/argument_passing.html). */
 	// start P2-1
-	// char *argv[30];
-	// int argc = 0;
-	// char *file_name_copy;
-	// memcpy(file_name_copy, file_name, strlen(file_name) + 1);
+	char *argv[128]; // There is an unrelated limit of 128 bytes on command-line arguments that the pintos utility can pass to the kernel.
+	int argc = 0;
+	void **rspp = &if_->rsp;
+	while (arg != NULL) {
+		argv[argc] = arg;
+		arg = strtok_r(NULL, " ", &temp);
+		argc++;
+	}
 
-	// char *arg, *save_ptr;
-	// arg = strtok_r(file_name, " ", &save_ptr);
-	// while (arg != NULL)
-	// {
-	// 	argv[argc] = arg;
-	// 	arg = strtok_r(NULL, " ", &save_ptr); // 같은 string을 할려면 NULL을 줘야 됨
-	// 	argc++;
-	// }
+	// Save args
+	for (int i = argc - 1; i >= 0; i--)
+	{
+		int argv_len = strlen(argv[i]);
+		if_->rsp = if_->rsp - (argv_len + 1);
+		memcpy((char *)if_->rsp, argv[i], argv_len + 1);
+		argv[i] = (char *)if_->rsp;
+	}
 
-	// // Save args
-	// char * arg_address[128];
-	// for (int i = argc - 1; i >= 0; i--) {
-	// 	int argv_len = strlen(argv[i]);
-	// 	for (int j = argv_len; j >= 0; j--) {
-	// 		if_->rsp = if_->rsp - 1;
-	// 		*(char *)if_->rsp = argv[i][j];
-	// 	}
-	// 	// if_->rsp = if_->rsp - (argv_len + 1);
-	// 	// memcpy((char *)if_->rsp, argv[i], argv_len + 1);
-	// 	arg_address[i] = (char *)if_->rsp;
-	// }
-	// // Word-align
-	// int pad = (int)if_->rsp % 8;
-	// for (int i = 0; i < pad; i++) {
-	// 	if_->rsp = if_->rsp - 1;
-	// 	*(uint8_t *)if_->rsp = (uint8_t)0;
-	// }
-	// // if_->rsp = if_->rsp - pad;
-	// // memset((uint8_t *)if_->rsp, 0, pad);
+	// Word-align
+	int pad = (int)if_->rsp % 8;
+	if_->rsp = if_->rsp - pad;
+	memset((uint8_t *)if_->rsp, 0, pad);
 
-	// // Point to args
-	// if_->rsp = if_->rsp - sizeof(char *);
-	// // memset((char **)if_->rsp, 0, sizeof(char *));
-	// *(char **)if_->rsp = (char *)0;
-	// for (int i = argc - 1; i >= 0; i--) {
-	// 	if_->rsp = if_->rsp - sizeof(char *);
-	// 	// memcpy((char **)if_->rsp, arg_address[i], sizeof(char *)); 
-	// 	*(char **)if_->rsp = arg_address[i];
-	// }
-	// //Return address
-	// if_->rsp = if_->rsp - sizeof(void *);
-	// // memset((void *)if_->rsp, 0, sizeof(void *));
-	// *(void **)if_->rsp = (void *)0;
+	// Point to args
+	if_->rsp = if_->rsp - sizeof(char *);
+	*(char **)if_->rsp = (char *)0;
+	
+	for (int i = argc - 1; i >= 0; i--)
+	{
+		if_->rsp = if_->rsp - sizeof(char *);
+		memcpy((char **)if_->rsp, &argv[i], sizeof(char **));
+	}
 
-	// void **rspp = &if_->rsp;
-	// load_userStack(argv, argc, rspp);
-	// if_->R.rdi = argc;
-	// if_->R.rsi = if_->rsp + sizeof(void *); 
+	//Return address
+	if_->rsp = if_->rsp - sizeof(void *);
+	memset((void* *)if_->rsp, 0, sizeof(void **));
+	if_->R.rdi = argc;
+	if_->R.rsi = (uint64_t)if_->rsp + sizeof(void *);
 	// end P2-1
 	success = true;
 
@@ -819,44 +788,3 @@ struct thread *get_child_tid(tid_t tid){
 	return NULL;
 }
 // end P2-3
-
-
-void load_userStack(char **argv, int argc, void **rspp)
-{
-	// 1. Save argument strings (character by character)
-	for (int i = argc - 1; i >= 0; i--)
-	{
-		int N = strlen(argv[i]);
-		for (int j = N; j >= 0; j--)
-		{
-			char individual_character = argv[i][j];
-			(*rspp)--;
-			**(char **)rspp = individual_character; // 1 byte
-		}
-		argv[i] = *(char **)rspp; // push this address too
-	}
-
-	// 2. Word-align padding
-	int pad = (int)*rspp % 8;
-	for (int k = 0; k < pad; k++)
-	{
-		(*rspp)--;
-		**(uint8_t **)rspp = (uint8_t)0; // 1 byte
-	}
-
-	// 3. Pointers to the argument strings
-	size_t PTR_SIZE = sizeof(char *);
- 
-	(*rspp) -= PTR_SIZE;
-	**(char ***)rspp = (char *)0;
-
-	for (int i = argc - 1; i >= 0; i--)
-	{
-		(*rspp) -= PTR_SIZE;
-		**(char ***)rspp = argv[i];
-	}
-
-	// 4. Return address
-	(*rspp) -= PTR_SIZE;
-	**(void ***)rspp = (void *)0;
-}
