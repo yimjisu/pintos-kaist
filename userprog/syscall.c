@@ -21,7 +21,7 @@ void check_address(const uint64_t *uaddr); //P2-2
 struct lock file_lock;
 void halt (void);
 void exit (int status);
-tid_t fork (const char *thread_name, struct intr_frame *if_);
+tid_t fork (const char *thread_name);
 int exec (const char *cmd_line);
 bool create(const char *file, unsigned initial_size);
 bool remove(const char *file);
@@ -80,8 +80,8 @@ syscall_handler (struct intr_frame *f UNUSED) {
 			exit(f->R.rdi);
 			break;
 		case SYS_FORK:
-			// memcpy(&thread_current()->parent_if, f, sizeof(struct intr_frame)); // child를 만드는 데 intr_frame 정보가 필요하기 때문
-			f->R.rax = fork(f->R.rdi, f);
+			memcpy(&thread_current()->parent_if, f, sizeof(struct intr_frame)); // child를 만드는 데 intr_frame 정보가 필요하기 때문
+			f->R.rax = fork(f->R.rdi);
 			break;
 		case SYS_EXEC:
 			if (exec(f->R.rdi) == -1) {
@@ -145,8 +145,8 @@ void exit(int status) {
 	thread_exit();
 }
 
-tid_t fork(const char *thread_name, struct intr_frame *if_) {
-	// struct intr_frame *if_ = &thread_current()->parent_if;
+tid_t fork(const char *thread_name) {
+	struct intr_frame *if_ = &thread_current()->parent_if;
 	return process_fork(thread_name, if_);
 }
 

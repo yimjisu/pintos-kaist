@@ -86,7 +86,6 @@ tid_t process_fork (const char *name, struct intr_frame *if_) {
 	/* Clone current thread to new thread.*/
 	// start P2-3
 	struct thread *curr = thread_current();
-	memcpy(&curr->parent_if, if_, sizeof(struct intr_frame));
 
 	tid_t tid = thread_create(name, PRI_DEFAULT, __do_fork, curr);
 	if (tid == TID_ERROR) {
@@ -97,7 +96,7 @@ tid_t process_fork (const char *name, struct intr_frame *if_) {
 	if (child == NULL) {
 		return TID_ERROR;
 	}
-	sema_down(&child->sema_fork); // fork complete
+	sema_down(&child->sema_fork);
 	if (child->exit_status == -1) {
 		return TID_ERROR;
 	}
@@ -187,9 +186,7 @@ __do_fork (void *aux) {
 	 * TODO:       from the fork() until this function successfully duplicates
 	 * TODO:       the resources of parent.*/
 	// start P2-3
-	// int fd = parent->fd_index;
-	if (parent->fd_index == FDCOUNT_LIMIT)
-		goto error;
+	if (parent->fd_index == FDCOUNT_LIMIT) goto error;
 	
 	for (int i = 0; i < FDCOUNT_LIMIT; i++){
 		struct file *file = parent->files[i];
