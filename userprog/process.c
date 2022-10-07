@@ -271,11 +271,10 @@ process_wait (tid_t child_tid UNUSED) {
 
 	// wait for child to die (exit)
 	sema_down(&child->sema_wait);
-	int exit_status = child->exit_status;
 	list_remove(&child->child_elem);
-	sema_up(&child->sema_free);
+	int exit_status = child->exit_status;
+	sema_up(&child->sema_wait2);
 
-	// returns child's exit status
 	return exit_status; 
 	// end P2-3
 }
@@ -288,19 +287,15 @@ process_exit (void) {
 	 * TODO: Implement process termination message (see
 	 * TODO: project2/process_termination.html).
 	 * TODO: We recommend you to implement process resource cleanup here. */
-	for(int i = 0; i < FDCOUNT_LIMIT; i++){
-		close(i);
-	}
-	// palloc_free_page(curr->files);
+	// start P2-3
 	palloc_free_multiple(curr->files, FDT_PAGES);
-
 	file_close(curr->running); //P2-5
-
 	process_cleanup ();
 	// wake up parent
 	sema_up(&curr->sema_wait);
 	// wait until parent receives exit status 
-	sema_down(&curr->sema_free);
+	sema_down(&curr->sema_wait2);
+	// end P2-3
 }
 
 /* Free the current process's resources. */
