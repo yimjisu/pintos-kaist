@@ -409,7 +409,7 @@ load (const char *file_name, struct intr_frame *if_) {
 	//start P2-1
 	char * file_name_copy = malloc(strlen(file_name)+1);
 	memcpy(file_name_copy, file_name, strlen(file_name)+1);
-	char *arg;
+	char *arg; //argument 저장용
 	char *temp;
 	arg = strtok_r(file_name_copy, " ", &temp);
 	// 여기도 process_create_initd ()와 마찬기지로 args를 제외한 file_name이 필요하다. 
@@ -516,7 +516,6 @@ load (const char *file_name, struct intr_frame *if_) {
 	// start P2-1
 	char *argv[128]; // There is an unrelated limit of 128 bytes on command-line arguments that the pintos utility can pass to the kernel.
 	int argc = 0;
-	void **rspp = &if_->rsp;
 	while (arg != NULL) {
 		argv[argc] = arg;
 		arg = strtok_r(NULL, " ", &temp);

@@ -118,6 +118,9 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		case SYS_CLOSE:
 			close(f->R.rdi);
 			break;
+		case SYS_DUP2:
+			f->R.rax = dup2(f->R.rdi, f->R.rsi);
+			break;
 		default:
 			exit(-1);
 			break;
@@ -209,11 +212,16 @@ int read(int fd, void *buffer, unsigned size) {
 		return -1;
 	}
 
-	if (fd == 0) { //stdin
+	struct thread *curr = thread_current();
+
+	if (open == 1) { //stdin
+		if(curr->stdin_num == 0) {
+			return -1;
+		}
 		*(char *)buffer = input_getc();
 		read = size;
 	}
-	else if (fd == 1) { //stdout
+	else if (open == 2) { //stdout
 		return -1;
 	}
 	else {
@@ -228,14 +236,17 @@ int write (int fd, const void *buffer, unsigned size) {
 	check_address(buffer);
 	int write;
 	struct file *open = lookup_fd(fd);
+	struct thread *curr = thread_current();
 
 	if (open == NULL) {
 		return -1;
 	}
-	if (fd == 0) { //stdin
+	if (open == 1) { //stdin
 		return -1;
-	}
-	if (fd == 1) { //stdout
+	}else if (open == 2) { //stdout
+		if(curr->stdout_num == 0) {
+			return -1;
+		}
 		putbuf(buffer, size);
 		write = size;
 	}
@@ -268,11 +279,25 @@ void close (int fd) {
 	if (open == NULL) {
 		return;
 	}
+
+	struct thread *curr = thread_current();
+	if(open == 1) {
+		curr->stdin_num --;
+	}else if(open == 2) {
+		curr->stdout_num --;
+	}
+	
 	remove_file(fd);
-	if (fd <=1 || open <= 2) {
+
+	if (open <= 2) {
 		return;
 	}
-	file_close(open);
+
+	if(open->dup_num == 0){
+		file_close(open);
+	}else{
+		open->dup_num --;
+	}
 }
 
 static struct file *lookup_fd(int fd) {
@@ -309,3 +334,30 @@ void remove_file(int fd) {
 }
 
 // end 2-3
+
+// start 2-extra
+int dup2(int oldfd, int newfd) {
+	struct file *open = lookup_fd(oldfd);
+	if (open == NULL) {
+		return -1;
+	}
+	if (oldfd == newfd) {
+		return newfd;
+	}
+
+	struct thread *cur = thread_current();	
+	if (open == 1) { // stdin
+		cur->stdin_num++;
+	}
+	else if (open == 2) { // stdout
+		cur->stdout_num++;
+	}
+	else {
+		open->dup_num++;
+	}
+
+	close(newfd);
+
+	cur->files[newfd] = open;
+	return newfd;
+}
