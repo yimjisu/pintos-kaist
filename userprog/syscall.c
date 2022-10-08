@@ -165,9 +165,6 @@ int exec(const char *cmd_line) {
 	if (process_exec(fn_copy) == -1) {
 		return -1;
 	}
-	
-	NOT_REACHED();
-	return 0;
 }
 
 bool create(const char *file, unsigned initial_size) {
@@ -215,7 +212,7 @@ int read(int fd, void *buffer, unsigned size) {
 	struct thread *curr = thread_current();
 
 	if (open == 1) { //stdin
-		if(curr->stdin_num == 0) {
+		if(curr->stdin_num == 0) { // stdin is closed. do nothing.
 			return -1;
 		}
 		*(char *)buffer = input_getc();
@@ -244,7 +241,7 @@ int write (int fd, const void *buffer, unsigned size) {
 	if (open == 1) { //stdin
 		return -1;
 	}else if (open == 2) { //stdout
-		if(curr->stdout_num == 0) {
+		if(curr->stdout_num == 0) { // stdout is closed. do nothing
 			return -1;
 		}
 		putbuf(buffer, size);

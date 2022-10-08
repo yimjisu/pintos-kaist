@@ -212,13 +212,16 @@ thread_create (const char *name, int priority,
 	// start P2-3
 	struct thread *curr = thread_current ();
 	list_push_back(&curr->child, &t->child_elem);
-	// t->files = palloc_get_page(PAL_ZERO); // page 1개 만들기
+
+	//t->files = palloc_get_page(PAL_ZERO); // page 1개 만들기
 	t->files = palloc_get_multiple(PAL_ZERO, FDT_PAGES);
 	if (t->files == NULL)
 		return TID_ERROR;
 	t->fd_index = 2;
 	t->files[0] = 1;
 	t->files[1] = 2;
+	t->stdin_num = 1;
+	t->stdout_num = 1;
 	// end P2-3
 
 	/* Add to run queue. */
@@ -501,8 +504,8 @@ init_thread (struct thread *t, const char *name, int priority) {
 	// start P2-3
 	list_init(&t->child);
 	sema_init(&t->sema_wait, 0);
+	sema_init(&t->sema_wait2, 0);
 	sema_init(&t->sema_fork, 0);
-	sema_init(&t->sema_free, 0);
 	// end P2-3
 	t->running = NULL; //P2-5
 }

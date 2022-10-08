@@ -1,4 +1,6 @@
 source ./activate
-cd threads
-#pintos --fs-disk=10 -p tests/userprog/args-single:args-single -- -q -f run 'args-single onearg'
+cd userprog
 make check
+# cd build
+# make tests/userprog/dup2/dup2-simple.result
+# make tests/userprog/dup2/dup2-complex.result
