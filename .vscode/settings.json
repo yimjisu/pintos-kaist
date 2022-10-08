@@ -5,6 +5,7 @@
         "*.inc": "c",
         "syscall.h": "c",
         "process.h": "c",
-        "file.h": "c"
+        "file.h": "c",
+        "intrinsic.h": "c"
     }
 }

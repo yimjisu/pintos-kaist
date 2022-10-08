@@ -192,8 +192,11 @@ __do_fork (void *aux) {
 		struct file *file = parent->files[i];
 		if (file == NULL) continue;
 		struct file *newfile;
-		if(file <= 2) newfile = file;
-		else newfile = file_duplicate(file);
+		if(file <= 2) {
+			newfile = file;
+		}else {
+			newfile = file_duplicate(file);
+		}
 		current->files[i] = newfile;
 	}
 	current->fd_index = parent->fd_index;
@@ -273,7 +276,7 @@ process_wait (tid_t child_tid UNUSED) {
 	sema_down(&child->sema_wait);
 	int exit_status = child->exit_status;
 	list_remove(&child->child_elem);
-	sema_up(&child->sema_free);
+	sema_up(&child->sema_exit);
 
 	// returns child's exit status
 	return exit_status; 
@@ -291,7 +294,6 @@ process_exit (void) {
 	for(int i = 0; i < FDCOUNT_LIMIT; i++){
 		close(i);
 	}
-	// palloc_free_page(curr->files);
 	palloc_free_multiple(curr->files, FDT_PAGES);
 
 	file_close(curr->running); //P2-5
@@ -300,7 +302,7 @@ process_exit (void) {
 	// wake up parent
 	sema_up(&curr->sema_wait);
 	// wait until parent receives exit status 
-	sema_down(&curr->sema_free);
+	sema_down(&curr->sema_exit);
 }
 
 /* Free the current process's resources. */

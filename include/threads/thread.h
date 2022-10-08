@@ -121,12 +121,14 @@ struct thread {
 	struct list_elem child_elem;
 	struct intr_frame parent_if;
 	struct semaphore sema_wait;
-	struct semaphore sema_free;
+	struct semaphore sema_exit;
 	struct semaphore sema_fork;
 	struct file **files;
 	int fd_index;
 	// end P2-3
 	struct file *running; //P2-5
+	int stdin_num; //P2-extra
+	int stdout_num; //P2-extra
 };
 
 /* If false (default), use round-robin scheduler.

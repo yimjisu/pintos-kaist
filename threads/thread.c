@@ -219,6 +219,8 @@ thread_create (const char *name, int priority,
 	t->fd_index = 2;
 	t->files[0] = 1;
 	t->files[1] = 2;
+	t->stdin_num = 1;
+	t->stdout_num = 1;
 	// end P2-3
 
 	/* Add to run queue. */
@@ -502,7 +504,7 @@ init_thread (struct thread *t, const char *name, int priority) {
 	list_init(&t->child);
 	sema_init(&t->sema_wait, 0);
 	sema_init(&t->sema_fork, 0);
-	sema_init(&t->sema_free, 0);
+	sema_init(&t->sema_exit, 0);
 	// end P2-3
 	t->running = NULL; //P2-5
 }
