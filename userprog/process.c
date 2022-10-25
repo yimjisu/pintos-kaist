@@ -518,6 +518,7 @@ load (const char *file_name, struct intr_frame *if_) {
 	// start P2-1
 	char *argv[128]; // There is an unrelated limit of 128 bytes on command-line arguments that the pintos utility can pass to the kernel.
 	int argc = 0;
+	void **rspp = &if_->rsp;
 	while (arg != NULL) {
 		argv[argc] = arg;
 		arg = strtok_r(NULL, " ", &temp);
