@@ -397,3 +397,34 @@ remove_lock (struct lock * lock){
 	}
 }
 // end P1-2 : donation
+
+// sema_down() // 공유 자원을 사용하고자하는 스레드
+// old_level = intr_disable();
+// while(sema->value == 0){
+// 	list_insert_ordered(
+// 		&sema->waiters, 
+// 		&thread_current() -> elem,
+// 		thread_comp_priority);
+// 	thread_block();;
+// }
+// sema->value --;
+// intr_set_level(old_level);
+
+// void sema_up(struct semaphore *sema) {
+
+// // 공유 자원의 사용을 마친 스레드
+// if(!list_empty(&sema->waiters)){
+// 	list_sort(&sema->waiters, thread_comp_priority, 0);
+// 	thread_unblock(list_entry(list_pop_front(&sema->waiters), struct thread elem));
+// }
+// sema->value++;
+
+// }
+
+// lock_acquire() // value = 1
+// sema_down(&lock->semaphore);
+// lock->holder = thread_current();
+
+// lock_release() // value = 0
+// lock->holder = NULL;
+// sema_up(&lock->semaphore);
