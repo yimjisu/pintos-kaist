@@ -6,6 +6,8 @@
         "syscall.h": "c",
         "process.h": "c",
         "file.h": "c",
-        "intrinsic.h": "c"
+        "intrinsic.h": "c",
+        "page_cache.h": "c",
+        "anon.h": "c"
     }
 }

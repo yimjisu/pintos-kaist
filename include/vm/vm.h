@@ -27,6 +27,7 @@ enum vm_type {
 #include "vm/uninit.h"
 #include "vm/anon.h"
 #include "vm/file.h"
+#include "hash.h"
 #ifdef EFILESYS
 #include "filesys/page_cache.h"
 #endif
@@ -48,6 +49,7 @@ struct page {
 	/* Your implementation */
 	// P3-1 start
 	struct hash_elem hash_elem;
+	bool writable;
 	// P3-1 end
 
 	/* Per-type data are binded into the union.
@@ -64,8 +66,9 @@ struct page {
 
 /* The representation of "frame" */
 struct frame {
-	void *kva;
+	void *kva; // kernel virtual address
 	struct page *page;
+	struct list_elem frame_elem;
 };
 
 /* The function table for page operations.
