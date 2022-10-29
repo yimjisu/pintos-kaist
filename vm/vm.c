@@ -3,6 +3,10 @@
 #include "threads/malloc.h"
 #include "vm/vm.h"
 #include "vm/inspect.h"
+#include "filesys/filesys.h"
+
+// P3-1
+#include "hash.h"
 
 /* Initializes the virtual memory subsystem by invoking each subsystem's
  * intialize codes. */
@@ -60,13 +64,19 @@ err:
 	return false;
 }
 
+// P3-1 start
 /* Find VA from spt and return page. On error, return NULL. */
 struct page *
 spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
 	struct page *page = NULL;
 	/* TODO: Fill this function. */
-
-	return page;
+	page = malloc(sizeof(struct page));
+	page->va = va; //pg_round_down(va);
+	struct hash_elem *e = hash_find(&spt->spt_hash, &page->hash_elem);
+	if(e == NULL) {
+		return NULL;
+	}
+	return hash_entry(e, struct page, hash_elem);
 }
 
 /* Insert PAGE into spt with validation. */
@@ -75,9 +85,14 @@ spt_insert_page (struct supplemental_page_table *spt UNUSED,
 		struct page *page UNUSED) {
 	int succ = false;
 	/* TODO: Fill this function. */
-
+	struct hash *h = &spt->spt_hash;
+	struct hash_elem *new = &page->hash_elem;
+	if(hash_insert(h, new) != NULL){
+		succ = true;
+	}
 	return succ;
 }
+// P3-1 end
 
 void
 spt_remove_page (struct supplemental_page_table *spt, struct page *page) {
@@ -171,10 +186,29 @@ vm_do_claim_page (struct page *page) {
 	return swap_in (page, frame->kva);
 }
 
+// P3-1 start
 /* Initialize new supplemental page table */
 void
 supplemental_page_table_init (struct supplemental_page_table *spt UNUSED) {
+	hash_init(&spt->spt_hash, hash_hash_func, hash_less_func, NULL);
 }
+
+/* Computes and returns the hash value for hash element E, given
+ * auxiliary data AUX. */
+void hash_hash_func(const struct hash_elem *e, void *aux) {
+	struct page *p = hash_entry(e, struct page, hash_elem);
+	return hash_bytes(&p->va, sizeof p->va);
+}
+
+/* Compares the value of two hash elements A and B, given
+ * auxiliary data AUX.  Returns true if A is less than B, or
+ * false if A is greater than or equal to B. */
+bool hash_less_func(const struct hash_elem *a, const struct hash_elem *b, void *aux) {
+	struct page *page_a = hash_entry(a, struct page, hash_elem);
+	struct page *page_b = hash_entry(b, struct page, hash_elem);
+	return page_a->va < page_b->va;
+}
+// P3-1 end
 
 /* Copy supplemental page table from src to dst */
 bool
@@ -187,4 +221,5 @@ void
 supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
 	/* TODO: Destroy all the supplemental_page_table hold by thread and
 	 * TODO: writeback all the modified contents to the storage. */
+	
 }
