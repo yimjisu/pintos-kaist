@@ -8,4 +8,5 @@ devices/intq.o: ../../devices/intq.c ../../include/devices/intq.h \
  ../../include/vm/file.h ../../include/filesys/file.h \
  ../../include/filesys/off_t.h ../../include/filesys/inode.h \
  ../../include/devices/disk.h ../../include/lib/inttypes.h \
- ../../include/threads/malloc.h
+ ../../include/threads/malloc.h ../../include/lib/kernel/hash.h \
+ ../../include/lib/kernel/list.h

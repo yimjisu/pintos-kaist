@@ -11,4 +11,5 @@ tests/threads/alarm-priority.o: ../../tests/threads/alarm-priority.c \
  ../../include/vm/file.h ../../include/filesys/file.h \
  ../../include/filesys/off_t.h ../../include/filesys/inode.h \
  ../../include/devices/disk.h ../../include/lib/inttypes.h \
+ ../../include/lib/kernel/hash.h ../../include/lib/kernel/list.h \
  ../../include/devices/timer.h ../../include/lib/round.h

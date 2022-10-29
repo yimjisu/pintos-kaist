@@ -10,4 +10,5 @@ tests/threads/priority-preempt.o: ../../tests/threads/priority-preempt.c \
  ../../include/vm/anon.h ../../include/vm/file.h \
  ../../include/filesys/file.h ../../include/filesys/off_t.h \
  ../../include/filesys/inode.h ../../include/devices/disk.h \
- ../../include/lib/inttypes.h ../../include/threads/malloc.h
+ ../../include/lib/inttypes.h ../../include/threads/malloc.h \
+ ../../include/lib/kernel/hash.h ../../include/lib/kernel/list.h

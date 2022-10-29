@@ -9,6 +9,7 @@ userprog/gdt.o: ../../userprog/gdt.c ../../include/userprog/gdt.h \
  ../../include/vm/file.h ../../include/filesys/file.h \
  ../../include/filesys/off_t.h ../../include/filesys/inode.h \
  ../../include/devices/disk.h ../../include/lib/inttypes.h \
- ../../include/threads/malloc.h ../../include/threads/mmu.h \
+ ../../include/threads/malloc.h ../../include/lib/kernel/hash.h \
+ ../../include/lib/kernel/list.h ../../include/threads/mmu.h \
  ../../include/threads/pte.h ../../include/threads/vaddr.h \
  ../../include/intrinsic.h ../../include/threads/mmu.h

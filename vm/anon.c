@@ -22,6 +22,8 @@ void
 vm_anon_init (void) {
 	/* TODO: Set up the swap_disk. */
 	swap_disk = NULL;
+	// P3-2
+	//swap_disk = disk_get(0, 0);
 }
 
 /* Initialize the file mapping */
@@ -29,7 +31,7 @@ bool
 anon_initializer (struct page *page, enum vm_type type, void *kva) {
 	/* Set up the handler */
 	page->operations = &anon_ops;
-
+	
 	struct anon_page *anon_page = &page->anon;
 }
 

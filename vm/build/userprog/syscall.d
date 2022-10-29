@@ -11,6 +11,7 @@ userprog/syscall.o: ../../userprog/syscall.c \
  ../../include/filesys/file.h ../../include/filesys/off_t.h \
  ../../include/filesys/inode.h ../../include/devices/disk.h \
  ../../include/lib/inttypes.h ../../include/threads/malloc.h \
+ ../../include/lib/kernel/hash.h ../../include/lib/kernel/list.h \
  ../../include/threads/loader.h ../../include/userprog/gdt.h \
  ../../include/threads/flags.h ../../include/intrinsic.h \
  ../../include/threads/mmu.h ../../include/threads/pte.h \
