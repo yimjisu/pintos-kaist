@@ -94,6 +94,8 @@ spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
 	page = malloc(sizeof(struct page));
 	page->va = pg_round_down(va);
 	struct hash_elem *e = hash_find(&spt->spt_hash, &page->hash_elem);
+	printf("VA %d %d\n", (va, pg_round_down(va)));
+	printf("HASH %s\n", e);
 	if(e == NULL) {
 		return NULL;
 	}
@@ -106,9 +108,10 @@ spt_insert_page (struct supplemental_page_table *spt UNUSED,
 		struct page *page UNUSED) {
 	int succ = false;
 	/* TODO: Fill this function. */
+	
 	struct hash *h = &spt->spt_hash;
 	struct hash_elem *new = &page->hash_elem;
-	if(hash_insert(h, new) != NULL){
+	if(hash_insert(h, new) == NULL){
 		succ = true;
 	}
 	return succ;
@@ -169,6 +172,7 @@ vm_get_frame (void) {
 	struct frame *frame = NULL;
 	/* TODO: Fill this function. */
 	frame = malloc(sizeof(struct frame));	
+	frame->page = NULL;
 	
 	ASSERT (frame != NULL);
 	ASSERT (frame->page == NULL);
@@ -180,13 +184,23 @@ vm_get_frame (void) {
 		frame -> kva = p;
 	}
 	
-	frame->page = NULL;
 	return frame;
 }
 
 /* Growing the stack. */
 static void
 vm_stack_growth (void *addr UNUSED) {
+	void *stack_bottom = pg_round_down (addr);
+	size_t req_stack_size = USER_STACK - (uintptr_t)stack_bottom;
+	if (req_stack_size > (1 << 20)) PANIC("Stack limit exceeded!\n"); // 1MB
+
+	// Alloc page from tested region to previous claimed stack page.
+	void *growing_stack_bottom = stack_bottom;
+	while ((uintptr_t) growing_stack_bottom < USER_STACK && /*while 을 if로 바꾸면 무슨차이지*/
+		vm_alloc_page (VM_ANON | VM_MARKER_0, growing_stack_bottom, true)) {
+	      growing_stack_bottom += PGSIZE;
+	};
+	vm_claim_page (stack_bottom); // Lazy load requested stack page only
 }
 
 /* Handle the fault on write_protected page */
@@ -200,22 +214,15 @@ vm_handle_wp (struct page *page UNUSED) {
 bool
 vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 		bool user UNUSED, bool write UNUSED, bool not_present UNUSED) {
-			
-	printf("HERE");
 	struct supplemental_page_table *spt UNUSED = &thread_current()->spt;
 	struct page *page = NULL;
 	/* TODO: Validate the fault */
-	printf("USER %s\n", user ? "true" : "false");
-	printf("WRITE %s\n", write ? "true" : "false");
-	printf("NOT PRESENT %s\n", not_present ? "true" : "false");
-	printf("ADDR %s\n", is_kernel_vaddr(addr) ? "true" : "false");
 	if (user && is_kernel_vaddr(addr))  {
 		return false;
 	}
 
 	/* TODO: Your code goes here */
 	page = spt_find_page(spt, addr);
-	printf("PAGE %s\n", page);
 	if(page == NULL) {
 		return false;
 	}
@@ -246,6 +253,7 @@ vm_claim_page (void *va UNUSED) {
 	struct page *page = NULL;
 	/* TODO: Fill this function */
 	struct thread *curr = thread_current();
+	printf("vm_claim_page\n");
 	page = spt_find_page(&curr->spt, va);
 	if(page == NULL) {
 		return false;
@@ -329,6 +337,7 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
 		else if (page_get_type(page) == VM_ANON){
 			if (!vm_alloc_page (page -> operations -> type, page -> va, page -> writable))
 				return false;
+			printf("supplemental page table\n");
 			struct page* new_page = spt_find_page (&thread_current () -> spt, page -> va);
 			if (!vm_do_claim_page (new_page))
 				return false;
@@ -339,6 +348,14 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
 		}
 	}
 	return true;
+}
+
+static void
+spt_destroy (struct hash_elem *e, void *aux UNUSED){
+	struct page *page = hash_entry (e, struct page, hash_elem);
+	ASSERT (page != NULL);
+	destroy (page);
+	free (page);
 }
 
 /* Free the resource hold by the supplemental page table */

@@ -717,22 +717,24 @@ lazy_load_segment (struct page *page, void *aux) {
 	/* TODO: This called when the first page fault occurs on address VA. */
 	/* TODO: VA is available when calling this function. */
 	
-	struct file *file = ((struct lazy_aux *)aux) -> file;
-	off_t ofs = ((struct lazy_aux *)aux) -> ofs;
-	size_t page_read_bytes = ((struct lazy_aux *)aux) -> page_read_bytes;
-	size_t page_zero_bytes = ((struct lazy_aux *)aux) -> page_zero_bytes;
+	struct lazy_aux* aux_info = (struct lazy_aux *) aux;
+	struct file *file = aux_info -> file;
+	off_t ofs = aux_info -> ofs;
+	size_t page_read_bytes = aux_info -> page_read_bytes;
+	size_t page_zero_bytes = aux_info -> page_zero_bytes;
 
 	file_seek(file, ofs);
 	uint8_t *kpage = page->frame->kva;
 	if(kpage == NULL)
 		return false;
 	
-	if(file_read(file, kpage, page_read_bytes) != (int) page_read_bytes) {
-		palloc_free_page(kpage);
+	if(file_read(file, kpage, page_read_bytes) != (off_t) page_read_bytes) {
+		vm_dealloc_page(kpage);
 		return false;
 	}
 
-	memset(kpage + page_read_bytes, 0, page_zero_bytes);
+	memset(page->va + page_read_bytes, 0, page_zero_bytes);
+	free(aux_info);
 	return true;
 }
 
@@ -766,19 +768,22 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
 		/* TODO: Set up aux to pass information to the lazy_load_segment. */
-		struct lazy_aux *aux = NULL;
+		struct lazy_aux *aux = malloc(sizeof (struct lazy_aux));
 		aux -> file = file;
 		aux -> ofs = ofs;
 		aux -> page_read_bytes = page_read_bytes;
 		aux -> page_zero_bytes = page_zero_bytes;
 		if (!vm_alloc_page_with_initializer (VM_ANON, upage,
-					writable, lazy_load_segment, (void *)aux))
+					writable, lazy_load_segment, (void *)aux)){
+			free(aux);
 			return false;
+		}
 
 		/* Advance. */
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
 		upage += PGSIZE;
+		ofs += PGSIZE;
 	}
 	return true;
 }
@@ -793,7 +798,7 @@ setup_stack (struct intr_frame *if_) {
 	 * TODO: If success, set the rsp accordingly.
 	 * TODO: You should mark the page is stack. */
 	/* TODO: Your code goes here */
-	enum vm_type type = VM_MARKER_0;
+	enum vm_type type = VM_ANON | VM_MARKER_0;
 	void *upage = stack_bottom;
 	vm_alloc_page(type, upage, true);
 
