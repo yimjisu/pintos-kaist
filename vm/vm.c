@@ -94,12 +94,12 @@ spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
 	page = malloc(sizeof(struct page));
 	page->va = pg_round_down(va);
 	struct hash_elem *e = hash_find(&spt->spt_hash, &page->hash_elem);
-	printf("VA %d %d\n", (va, pg_round_down(va)));
-	printf("HASH %s\n", e);
+
 	if(e == NULL) {
 		return NULL;
 	}
 	return hash_entry(e, struct page, hash_elem);
+	
 }
 
 /* Insert PAGE into spt with validation. */
@@ -108,23 +108,10 @@ spt_insert_page (struct supplemental_page_table *spt UNUSED,
 		struct page *page UNUSED) {
 	int succ = false;
 	/* TODO: Fill this function. */
-	
-	struct hash *h = &spt->spt_hash;
-	struct hash_elem *new = &page->hash_elem;
-	if(hash_insert(h, new) == NULL){
+	if(hash_insert(&spt->spt_hash, &page->hash_elem) == NULL){
 		succ = true;
 	}
 	return succ;
-}
-
-void
-spt_remove_page (struct supplemental_page_table *spt, struct page *page) {
-	struct hash *h = &spt->spt_hash;
-	struct hash_elem *new = &page->hash_elem;
-	if(hash_delete(h, new) != NULL) {
-		vm_dealloc_page (page);
-	}
-	return true;
 }
 // P3-1 end
 
@@ -142,10 +129,10 @@ vm_get_victim (void) {
 		victim = list_entry(e, struct frame, frame_elem);
 		if (!pml4_is_accessed(curr->pml4, victim->page->va)) {
 			break;
-		}else {
-			pml4_set_accessed(curr->pml4, victim->page->va, false);
 		}
+		pml4_set_accessed(curr->pml4, victim->page->va, false);
 	}
+	
 	return victim;
 }
 
@@ -159,7 +146,6 @@ vm_evict_frame (void) {
 		return NULL;
 	}
 	swap_out(victim -> page);
-	memset (victim -> kva , 0, PGSIZE);
 	return victim;
 }
 
@@ -173,12 +159,13 @@ vm_get_frame (void) {
 	/* TODO: Fill this function. */
 	frame = malloc(sizeof(struct frame));	
 	frame->page = NULL;
-	
+
 	ASSERT (frame != NULL);
 	ASSERT (frame->page == NULL);
 
 	struct page *p = palloc_get_page(PAL_USER);
 	if (p == NULL) {
+		free(frame);
 		frame = vm_evict_frame();
 	}else {
 		frame -> kva = p;
@@ -190,23 +177,11 @@ vm_get_frame (void) {
 /* Growing the stack. */
 static void
 vm_stack_growth (void *addr UNUSED) {
-	void *stack_bottom = pg_round_down (addr);
-	size_t req_stack_size = USER_STACK - (uintptr_t)stack_bottom;
-	if (req_stack_size > (1 << 20)) PANIC("Stack limit exceeded!\n"); // 1MB
-
-	// Alloc page from tested region to previous claimed stack page.
-	void *growing_stack_bottom = stack_bottom;
-	while ((uintptr_t) growing_stack_bottom < USER_STACK && /*while 을 if로 바꾸면 무슨차이지*/
-		vm_alloc_page (VM_ANON | VM_MARKER_0, growing_stack_bottom, true)) {
-	      growing_stack_bottom += PGSIZE;
-	};
-	vm_claim_page (stack_bottom); // Lazy load requested stack page only
 }
 
 /* Handle the fault on write_protected page */
 static bool
 vm_handle_wp (struct page *page UNUSED) {
-	// ?
 	return false;
 }
 
@@ -227,11 +202,10 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 		return false;
 	}
 	
-	if(write && not_present) {
+	if(write && !not_present) {
 		return vm_handle_wp(page);
 	}
-	
-	printf("vm do claim page\n");
+
 	return vm_do_claim_page (page);
 }
 
@@ -253,7 +227,7 @@ vm_claim_page (void *va UNUSED) {
 	struct page *page = NULL;
 	/* TODO: Fill this function */
 	struct thread *curr = thread_current();
-	printf("vm_claim_page\n");
+
 	page = spt_find_page(&curr->spt, va);
 	if(page == NULL) {
 		return false;
@@ -320,57 +294,29 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
 	while (hash_next (&i))
 	{
 		struct page *page = hash_entry (hash_cur (&i), struct page, hash_elem);
-		/*Handle UNINIT page*/
-		if (page -> operations -> type == VM_UNINIT){
-			vm_initializer* init = page ->uninit.init;
-			bool writable = page -> writable;
-			int type = page ->uninit.type;
-			void* aux = page ->uninit.aux;
-			if (type & VM_ANON){
-				vm_alloc_page_with_initializer (type, page -> va, writable, init, (void*) aux);
-			}
-			else if (type & VM_FILE){
-				//Do_nothing(it should not inherit mmap)
-			}
-		}
-		/* Handle ANON/FILE page*/
-		else if (page_get_type(page) == VM_ANON){
-			if (!vm_alloc_page (page -> operations -> type, page -> va, page -> writable))
-				return false;
-			printf("supplemental page table\n");
-			struct page* new_page = spt_find_page (&thread_current () -> spt, page -> va);
-			if (!vm_do_claim_page (new_page))
-				return false;
-			memcpy (new_page -> frame -> kva, page -> frame -> kva, PGSIZE);
-		}
-		else if (page_get_type(page) == VM_FILE){
-			//Do nothing(it should not inherit mmap)
+		switch(page_get_type(page)) {
+			case VM_UNINIT:
+				break;
+			case VM_ANON:
+				break;
 		}
 	}
 	return true;
 }
 
-static void
-spt_destroy (struct hash_elem *e, void *aux UNUSED){
+/* Free the resource hold by the supplemental page table */
+void 
+spt_destroy (struct hash_elem *e, void *aux) {
 	struct page *page = hash_entry (e, struct page, hash_elem);
-	ASSERT (page != NULL);
-	destroy (page);
-	free (page);
+	if(page != NULL){
+		vm_dealloc_page(page);
+	}
 }
 
-/* Free the resource hold by the supplemental page table */
 void
 supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
 	/* TODO: Destroy all the supplemental_page_table hold by thread and
 	 * TODO: writeback all the modified contents to the storage. */
-	struct hash *h = &spt->spt_hash;
-	struct hash_iterator i;
-
-	hash_first (&i, h);
-	while (hash_next (&i))
-	{
-		struct page *page = hash_entry (hash_cur (&i), struct page, hash_elem);
-		vm_dealloc_page(page);
-	}
+	//hash_destroy(&spt->spt_hash, spt_destroy);
 }
 // P3-2 end
