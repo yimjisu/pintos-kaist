@@ -231,6 +231,9 @@ process_exec (void *f_name) {
 
 	/* We first kill the current context */
 	process_cleanup (); 
+	// P3-2 start
+	supplemental_page_table_init(&thread_current() -> spt);
+	// P3-2 end
 
 	/* And then load the binary */
 	success = load (file_name, &_if);
@@ -729,12 +732,11 @@ lazy_load_segment (struct page *page, void *aux) {
 		return false;
 	
 	if(file_read(file, kpage, page_read_bytes) != (off_t) page_read_bytes) {
-		vm_dealloc_page(kpage);
+		palloc_free_page(kpage);
 		return false;
 	}
 
 	memset(page->va + page_read_bytes, 0, page_zero_bytes);
-	free(aux_info);
 	return true;
 }
 
@@ -783,7 +785,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
 		upage += PGSIZE;
-		ofs += PGSIZE;
+		ofs += page_read_bytes;
 	}
 	return true;
 }
@@ -800,14 +802,15 @@ setup_stack (struct intr_frame *if_) {
 	/* TODO: Your code goes here */
 	enum vm_type type = VM_ANON | VM_MARKER_0;
 	void *upage = stack_bottom;
-	vm_alloc_page(type, upage, true);
-
-	success = vm_claim_page(upage);
-	if(success) {
-		if_ -> rsp = USER_STACK;
+	if(vm_alloc_page(type, upage, true) != NULL){
+		success = vm_claim_page(upage);
+		if(success) {
+			if_ -> rsp = USER_STACK;
+		}
 	}
 	return success;
 }
+
 // P3-2 end
 #endif /* VM */
 

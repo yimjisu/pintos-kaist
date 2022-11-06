@@ -177,6 +177,11 @@ vm_get_frame (void) {
 /* Growing the stack. */
 static void
 vm_stack_growth (void *addr UNUSED) {
+	void* stack_bottom = pg_round_down(addr);
+	
+	if(vm_alloc_page(VM_ANON | VM_MARKER_0, stack_bottom, true)) {
+		vm_claim_page(stack_bottom);
+	}
 }
 
 /* Handle the fault on write_protected page */
@@ -192,13 +197,19 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 	struct supplemental_page_table *spt UNUSED = &thread_current()->spt;
 	struct page *page = NULL;
 	/* TODO: Validate the fault */
-	if (user && is_kernel_vaddr(addr))  {
+	if (is_kernel_vaddr(addr))  {
 		return false;
 	}
 	// Start P3-4
 	// Check Whether the page fault is valid case for stack growth or not.
-	void *rsp = thread_current() -> rsp;
-	if (rsp - PGSIZE <= addr )
+	void *rsp = f->rsp;
+	if(is_kernel_vaddr(f->rsp)) {
+		rsp = thread_current() -> rsp;
+	}
+	if (write && rsp - 8 <= addr && addr <= USER_STACK) {
+		vm_stack_growth(addr);
+		return true;
+	}
 	// End P3-4
 
 	/* TODO: Your code goes here */

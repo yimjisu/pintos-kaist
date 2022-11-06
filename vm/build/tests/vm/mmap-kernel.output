@@ -4,7 +4,7 @@ Kernel command line: -q -f put mmap-kernel put sample.txt run mmap-kernel
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  77,619,200 loops/s.
+Calibrating timer...  21,836,800 loops/s.
 hd0:0: detected 329 sector (164 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 107 sector (53 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -19,13 +19,13 @@ Executing 'mmap-kernel':
 (mmap-kernel) try to mmap over kernel 0
 mmap-kernel: exit(-1)
 Execution of 'mmap-kernel' complete.
-Timer: 106 ticks
-Thread: 38 idle ticks, 66 kernel ticks, 2 user ticks
+Timer: 99 ticks
+Thread: 33 idle ticks, 64 kernel ticks, 3 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 112 reads, 252 writes
 hd1:0: 107 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1079 characters output
+Console: 1078 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

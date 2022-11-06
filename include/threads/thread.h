@@ -103,8 +103,7 @@ struct thread {
 // #endif
 #ifdef VM
 	/* Table for whole virtual memory owned by thread. */
-	struct supplemental_page_table spt;
-	
+	struct supplemental_page_table spt;	
 #endif
 
 	/* Owned by thread.c. */
@@ -130,6 +129,9 @@ struct thread {
 	struct file *running; //P2-5
 	int stdin_num; //P2-extra
 	int stdout_num; //P2-extra
+
+	// start P3-3
+	uintptr_t rsp;
 };
 
 /* If false (default), use round-robin scheduler.

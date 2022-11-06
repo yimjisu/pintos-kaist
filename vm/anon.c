@@ -23,7 +23,8 @@ vm_anon_init (void) {
 	/* TODO: Set up the swap_disk. */
 	swap_disk = NULL;
 	// P3-2
-	//swap_disk = disk_get(0, 0);
+	swap_disk = disk_get(1, 1);
+
 }
 
 /* Initialize the file mapping */
@@ -52,7 +53,8 @@ anon_swap_out (struct page *page) {
 /* Destroy the anonymous page. PAGE will be freed by the caller. */
 static void
 anon_destroy (struct page *page) {
-	struct anon_page *anon_page = &page->anon;
-	free(anon_page);
+	if(page != NULL){
+		free(page);
+	}
 }
 // 3-2 end

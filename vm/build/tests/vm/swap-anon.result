@@ -1,12 +1,51 @@
 FAIL
-Kernel panic in run: PANIC at ../../vm/uninit.c:30 in uninit_new(): assertion `page != NULL' failed.
-Call stack: 0x8004218655 0x8004221bc0 0x80042213e2 0x800421ce00 0x800421c72b 0x800421c0df 0x800421bd3e 0x80042076ff
-Translation of call stack:
-0x0000008004218655: debug_panic (lib/kernel/debug.c:32)
-0x0000008004221bc0: uninit_new (vm/uninit.c:32)
-0x00000080042213e2: vm_alloc_page_with_initializer (vm/vm.c:72)
-0x000000800421ce00: load_segment (userprog/process.c:776)
-0x000000800421c72b: load (userprog/process.c:497)
-0x000000800421c0df: process_exec (userprog/process.c:236)
-0x000000800421bd3e: initd (userprog/process.c:76)
-0x00000080042076ff: kernel_thread (threads/thread.c:481)
+Test output failed to match any acceptable form.
+
+Acceptable output:
+  (swap-anon) begin
+  (swap-anon) write sparsely over page 0
+  (swap-anon) write sparsely over page 512
+  (swap-anon) write sparsely over page 1024
+  (swap-anon) write sparsely over page 1536
+  (swap-anon) write sparsely over page 2048
+  (swap-anon) write sparsely over page 2560
+  (swap-anon) write sparsely over page 3072
+  (swap-anon) write sparsely over page 3584
+  (swap-anon) write sparsely over page 4096
+  (swap-anon) write sparsely over page 4608
+  (swap-anon) check consistency in page 0
+  (swap-anon) check consistency in page 512
+  (swap-anon) check consistency in page 1024
+  (swap-anon) check consistency in page 1536
+  (swap-anon) check consistency in page 2048
+  (swap-anon) check consistency in page 2560
+  (swap-anon) check consistency in page 3072
+  (swap-anon) check consistency in page 3584
+  (swap-anon) check consistency in page 4096
+  (swap-anon) check consistency in page 4608
+  (swap-anon) end
+Differences in `diff -u' format:
+  (swap-anon) begin
+  (swap-anon) write sparsely over page 0
+  (swap-anon) write sparsely over page 512
+  (swap-anon) write sparsely over page 1024
+- (swap-anon) write sparsely over page 1536
+- (swap-anon) write sparsely over page 2048
+- (swap-anon) write sparsely over page 2560
+- (swap-anon) write sparsely over page 3072
+- (swap-anon) write sparsely over page 3584
+- (swap-anon) write sparsely over page 4096
+- (swap-anon) write sparsely over page 4608
+- (swap-anon) check consistency in page 0
+- (swap-anon) check consistency in page 512
+- (swap-anon) check consistency in page 1024
+- (swap-anon) check consistency in page 1536
+- (swap-anon) check consistency in page 2048
+- (swap-anon) check consistency in page 2560
+- (swap-anon) check consistency in page 3072
+- (swap-anon) check consistency in page 3584
+- (swap-anon) check consistency in page 4096
+- (swap-anon) check consistency in page 4608
+- (swap-anon) end
+
+(Process exit codes are excluded for matching purposes.)
