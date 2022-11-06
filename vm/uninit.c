@@ -42,6 +42,7 @@ uninit_new (struct page *page, void *va, vm_initializer *init,
 	};
 }
 
+// 3-2 start
 /* Initalize the page on first fault */
 static bool
 uninit_initialize (struct page *page, void *kva) {
@@ -56,7 +57,6 @@ uninit_initialize (struct page *page, void *kva) {
 		(init ? init (page, aux) : true);
 }
 
-// 3-2 start
 /* Free the resources hold by uninit_page. Although most of pages are transmuted
  * to other page objects, it is possible to have uninit pages when the process
  * exit, which are never referenced during the execution.
