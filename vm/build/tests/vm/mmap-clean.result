@@ -1,25 +1,18 @@
 FAIL
-Test output failed to match any acceptable form.
-
-Acceptable output:
-  (mmap-clean) begin
-  (mmap-clean) open "sample.txt"
-  (mmap-clean) mmap "sample.txt"
-  (mmap-clean) write "sample.txt"
-  (mmap-clean) munmap "sample.txt"
-  (mmap-clean) seek "sample.txt"
-  (mmap-clean) read "sample.txt"
-  (mmap-clean) file change was retained after munmap
-  (mmap-clean) end
-Differences in `diff -u' format:
-  (mmap-clean) begin
-  (mmap-clean) open "sample.txt"
-  (mmap-clean) mmap "sample.txt"
-- (mmap-clean) write "sample.txt"
-- (mmap-clean) munmap "sample.txt"
-- (mmap-clean) seek "sample.txt"
-- (mmap-clean) read "sample.txt"
-- (mmap-clean) file change was retained after munmap
-- (mmap-clean) end
-
-(Process exit codes are excluded for matching purposes.)
+Kernel panic in run: PANIC at ../../threads/palloc.c:321 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
+Call stack: 0x8004218655 0x800420bded 0x800420be3a 0x800420d169 0x800420d1ec 0x800420d26f 0x800420d338 0x800421c341 0x800421c29a 0x80042071df 0x800421d9a0 0x800421d444 0x80042093de 0x80042097fc
+Translation of call stack:
+0x0000008004218655: debug_panic (lib/kernel/debug.c:32)
+0x000000800420bded: palloc_free_multiple (threads/palloc.c:322)
+0x000000800420be3a: palloc_free_page (threads/palloc.c:329)
+0x000000800420d169: pt_destroy (threads/mmu.c:160 (discriminator 2))
+0x000000800420d1ec: pgdir_destroy (threads/mmu.c:170 (discriminator 2))
+0x000000800420d26f: pdpe_destroy (threads/mmu.c:180 (discriminator 2))
+0x000000800420d338: pml4_destroy (threads/mmu.c:199)
+0x000000800421c341: process_cleanup (userprog/process.c:334)
+0x000000800421c29a: process_exit (userprog/process.c:304)
+0x00000080042071df: thread_exit (threads/thread.c:311)
+0x000000800421d9a0: fork (userprog/syscall.c:162)
+0x000000800421d444: page_fault (userprog/exception.c:153)
+0x00000080042093de: intr_handler (threads/interrupt.c:352)
+0x00000080042097fc: intr_entry (threads/intr-stubs.o:?)

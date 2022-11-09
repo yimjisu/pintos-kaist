@@ -9,6 +9,8 @@
         "intrinsic.h": "c",
         "page_cache.h": "c",
         "anon.h": "c",
-        "hash.h": "c"
+        "hash.h": "c",
+        "interrupt.h": "c",
+        "bitmap.h": "c"
     }
 }

@@ -11,6 +11,7 @@
 #include "filesys/file.h" //P2-3
 #include "filesys/filesys.h" //P2-3
 #include "threads/palloc.h" //P2-3
+#include "vm/file.h" // P3-5
 
 void syscall_entry (void);
 void syscall_handler (struct intr_frame *);
@@ -37,6 +38,11 @@ static struct file* lookup_fd(int fd);
 int add_file(struct file *file);
 void remove_file(int fd);
 // end P2-3
+
+// start P3-5
+void *mmap (void *addr, size_t length, int writable, int fd, off_t offset);
+void munmap (void *addr);
+// end P3-5
 
 /* System call.
  *
@@ -121,7 +127,7 @@ syscall_handler (struct intr_frame *f UNUSED) {
 			f->R.rax = dup2(f->R.rdi, f->R.rsi);
 			break;
 		case SYS_MMAP:
-			mmap(f->R.rdi, f->R.rsi, f->R.rdx, f->R.r10);
+			f->R.rax = mmap((void *)f->R.rdi, (size_t)f->R.rsi, (int)f->R.rdx, (int)f->R.r10, (off_t)f->R.r8);
 			break;
 		case SYS_MUNMAP:
 			munmap(f->R.rdi);
@@ -364,10 +370,27 @@ int dup2(int oldfd, int newfd) {
 
 // start P3-5
 void *mmap (void *addr, size_t length, int writable, int fd, off_t offset) {
+	if (addr == NULL 
+	|| !(is_user_vaddr(addr)) 
+	|| pg_ofs(addr) != 0
+	|| length == 0
+	|| offset % PGSIZE != 0) {
+		return NULL;
+	}
+	
+	if(spt_find_page(&thread_current() -> spt, addr)) {
+		return NULL;
+	}
 
+	struct file *open = lookup_fd(fd);
+	if(open == NULL || open == 1 || open == 2) {
+		return NULL;
+	}
+
+	return do_mmap(addr, length, writable, open, offset);
 }
 
 void munmap (void *addr) {
-	
+	do_munmap(addr);
 }
 // end P3-5

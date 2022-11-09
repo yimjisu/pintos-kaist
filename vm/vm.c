@@ -115,6 +115,18 @@ spt_insert_page (struct supplemental_page_table *spt UNUSED,
 }
 // P3-1 end
 
+//P3-5 start
+void
+spt_remove_page (struct supplemental_page_table *spt UNUSED,
+		struct page *page UNUSED) {
+	int succ = false;
+	/* TODO: Fill this function. */
+	if(hash_delete(&spt->spt_hash, &page->hash_elem) != NULL){
+		vm_dealloc_page(page);
+	}
+}
+// P3-5 end
+
 // P3-2 start
 /* Get the struct frame, that will be evicted. */
 static struct frame *
@@ -145,6 +157,7 @@ vm_evict_frame (void) {
 	if(victim == NULL) {
 		return NULL;
 	}
+	list_remove(&victim->frame_elem); // P3-1 주의!!!!!!!!!!!
 	swap_out(victim -> page);
 	return victim;
 }
@@ -187,6 +200,8 @@ vm_stack_growth (void *addr UNUSED) {
 /* Handle the fault on write_protected page */
 static bool
 vm_handle_wp (struct page *page UNUSED) {
+	// P3-5
+	pml4_set_dirty(&thread_current() -> pml4, page->va, true);
 	return false;
 }
 

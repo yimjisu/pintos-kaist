@@ -1,2 +1,2 @@
 FAIL
-run: open "buf2": FAILED
+run: bad value 16 in byte 0: FAILED

@@ -4,8 +4,8 @@ Kernel command line: -q -f put mmap-clean put sample.txt run mmap-clean
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  26,163,200 loops/s.
-hd0:0: detected 329 sector (164 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+Calibrating timer...  47,462,400 loops/s.
+hd0:0: detected 337 sector (168 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 112 sector (56 kB) disk, model "QEMU HARDDISK", serial "QM00003"
 hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
@@ -18,14 +18,21 @@ Executing 'mmap-clean':
 (mmap-clean) open "sample.txt"
 (mmap-clean) mmap "sample.txt"
 mmap-clean: exit(-1)
-Execution of 'mmap-clean' complete.
-Timer: 95 ticks
-Thread: 30 idle ticks, 59 kernel ticks, 6 user ticks
+Kernel PANIC at ../../threads/palloc.c:321 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
+Call stack: 0x8004218655 0x800420bded 0x800420be3a 0x800420d169 0x800420d1ec 0x800420d26f 0x800420d338 0x800421c341 0x800421c29a 0x80042071df 0x800421d9a0 0x800421d444 0x80042093de 0x80042097fcInterrupt 0x0d (#GP General Protection Exception) at rip=8004221d27
+ cr2=000000004747ff50 error=               0
+rax ccccccccccccccb4 rbx 000080042450f800 rcx cccccccccccccccc rdx 0000000000000000
+rsp 0000008004247a68 rbp 0000008004247a90 rsi 0000008004245130 rdi cccccccccccccccc
+rip 0000008004221d27 r8 0000000000000001  r9 000000800421bace r10 0000000000000002
+r11 0000000000000206 r12 0000000000000000 r13 0000800420ab4400 r14 00008004247f1000
+r15 0000010424700000 rflags 00000216
+es: 0010 ds: 0010 cs: 0008 ss: 0010
+Kernel PANIC recursion at ../../userprog/exception.c:97 in kill().
+Timer: 152 ticks
+Thread: 30 idle ticks, 109 kernel ticks, 13 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 115 reads, 262 writes
+hd0:1: 117 reads, 262 writes
 hd1:0: 112 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1061 characters output
-Keyboard: 0 keys pressed
-Exception: 0 page faults
-Powering off...
+Console: 1947 characters output
+Key

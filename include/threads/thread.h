@@ -132,6 +132,7 @@ struct thread {
 
 	// start P3-3
 	uintptr_t rsp;
+	// start P3-5
 };
 
 /* If false (default), use round-robin scheduler.

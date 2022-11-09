@@ -8,4 +8,7 @@ vm/anon.o: ../../vm/anon.c ../../include/vm/vm.h \
  ../../include/lib/inttypes.h ../../include/threads/malloc.h \
  ../../include/lib/kernel/hash.h ../../include/lib/kernel/list.h \
  ../../include/threads/thread.h ../../include/lib/kernel/list.h \
- ../../include/threads/interrupt.h ../../include/threads/synch.h
+ ../../include/threads/interrupt.h ../../include/threads/synch.h \
+ ../../include/lib/kernel/bitmap.h ../../include/threads/vaddr.h \
+ ../../include/threads/loader.h ../../include/threads/mmu.h \
+ ../../include/threads/pte.h

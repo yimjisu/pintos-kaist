@@ -1,1 +1,2 @@
-PASS
+FAIL
+run: wait for child 2: FAILED
