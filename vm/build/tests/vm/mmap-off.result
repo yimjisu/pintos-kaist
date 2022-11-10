@@ -1,1 +1,2 @@
-PASS
+FAIL
+run: validate fail.: FAILED

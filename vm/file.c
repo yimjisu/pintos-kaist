@@ -19,10 +19,20 @@ static const struct page_operations file_ops = {
 	.type = VM_FILE,
 };
 
+
+static struct list mmap_file_list;
+
+struct mmap_file_info{
+	struct list_elem elem;
+	uint64_t start;
+	uint64_t end;
+};
+
 /* The initializer of file vm */
 void
 vm_file_init (void) {
 	struct file* file;
+	list_init(&mmap_file_list);
 }
 
 /* Initialize the file backed page */
@@ -84,9 +94,10 @@ static void
 file_backed_destroy (struct page *page) {
 	struct file_page *file_page UNUSED = &page->file;
 	// P3-5
-	
+	close(file_page -> lazy_aux -> file);
 	file_page->lazy_aux = NULL;	
 }
+/* Do the mmap */
 
 static bool
 lazy_load_file (struct page *page, void *aux) {
@@ -110,18 +121,15 @@ lazy_load_file (struct page *page, void *aux) {
 		return false;
 	}
 
-	pml4_set_dirty(thread_current() -> pml4, page->va, false);
 	memset(page->va + page_read_bytes, 0, page_zero_bytes);
 	return true;
 }
 
-/* Do the mmap */
 void *
 do_mmap (void *addr, size_t length, int writable,
 		struct file *file, off_t offset) {
-	struct file *new_file = file_reopen(file);
 	void *addr_copy = addr;
-	size_t read_bytes = length; // 오류나면 수정하기
+	size_t read_bytes = length <= file_length(file) ? length : file_length(file);
 	size_t zero_bytes = PGSIZE - read_bytes % PGSIZE;
 	while (read_bytes > 0 || zero_bytes > 0) {
 		/* Do calculate how to fill this page.
@@ -132,7 +140,7 @@ do_mmap (void *addr, size_t length, int writable,
 
 		/* TODO: Set up aux to pass information to the lazy_load_file. */
 		struct lazy_aux *aux = malloc(sizeof (struct lazy_aux));
-		aux -> file = new_file;
+		aux -> file = file_reopen(file);
 		aux -> ofs = offset;
 		aux -> page_read_bytes = page_read_bytes;
 		aux -> page_zero_bytes = page_zero_bytes;
@@ -147,26 +155,30 @@ do_mmap (void *addr, size_t length, int writable,
 		addr += PGSIZE;
 		offset += page_read_bytes;
 	}
+
+	struct mmap_file_info* mfi = malloc (sizeof (struct mmap_file_info));
+	mfi->start = (uint64_t) addr;
+	mfi->end = (uint64_t) pg_round_down((uint64_t) addr + length -1);
+	list_push_back(&mmap_file_list, &mfi->elem);
+
 	return addr_copy;
 }
 
 /* Do the munmap */
 void
 do_munmap (void *addr) {
-	// unmaps the mapping for specified address range addr
-	while(true) {
-		struct page *page = spt_find_page(&thread_current() -> spt, addr);
-		if(page == NULL) {
+	if (list_empty (&mmap_file_list)) return;
+	for (struct list_elem* i = list_front (&mmap_file_list); i != list_end (&mmap_file_list); i = list_next (i))
+	{
+		struct mmap_file_info* mfi = list_entry (i, struct mmap_file_info, elem);
+		if (mfi -> start == (uint64_t) addr){
+			for (uint64_t j = (uint64_t)addr; j<= mfi -> end; j += PGSIZE){
+				struct page* page = spt_find_page(&thread_current() -> spt, (void*) j);
+				spt_remove_page(&thread_current()->spt, page);
+			}
+			list_remove(&mfi->elem);
+			free(mfi);
 			return;
 		}
-		struct lazy_aux *aux = page->uninit.aux;
-
-		uint64_t *pml4 = thread_current()->pml4;
-		if(pml4_is_dirty(pml4, page->va)){
-			file_write_at(aux->file, addr, aux->page_read_bytes, aux->ofs);
-			pml4_set_dirty(thread_current() -> pml4, page->va, false);
-		}
-		pml4_clear_page(pml4, page->va);
-		addr += PGSIZE;
 	}
 }

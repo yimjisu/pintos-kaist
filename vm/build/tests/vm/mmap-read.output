@@ -4,7 +4,7 @@ Kernel command line: -q -f put mmap-read put sample.txt run mmap-read
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  31,897,600 loops/s.
+Calibrating timer...  157,081,600 loops/s.
 hd0:0: detected 337 sector (168 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 109 sector (54 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -17,22 +17,16 @@ Executing 'mmap-read':
 (mmap-read) begin
 (mmap-read) open "sample.txt"
 (mmap-read) mmap "sample.txt"
-mmap-read: exit(-1)
-Kernel PANIC at ../../threads/palloc.c:321 in palloc_free_multiple(): assertion `bitmap_all (pool->used_map, page_idx, page_cnt)' failed.
-Call stack: 0x8004218655 0x800420bded 0x800420be3a 0x800420d169 0x800420d1ec 0x800420d26f 0x800420d338 0x800421c341 0x800421c29a 0x80042071df 0x800421d9a0 0x800421d444 0x80042093de 0x80042097fcInterrupt 0x0d (#GP General Protection Exception) at rip=8004221d27
- cr2=000000004747ff60 error=               0
-rax ccccccccccccccb4 rbx 000080042450f800 rcx cccccccccccccccc rdx 0000000000000000
-rsp 0000008004247a68 rbp 0000008004247a90 rsi 0000008004245130 rdi cccccccccccccccc
-rip 0000008004221d27 r8 0000000000000001  r9 000000800421bace r10 0000000000000002
-r11 0000000000000206 r12 0000000000000000 r13 0000800420ab4400 r14 00008004247f1000
-r15 0000010424700000 rflags 00000216
-es: 0010 ds: 0010 cs: 0008 ss: 0010
-Kernel PANIC recursion at ../../userprog/exception.c:97 in kill().
-Timer: 131 ticks
-Thread: 39 idle ticks, 87 kernel ticks, 5 user ticks
+(mmap-read) end
+mmap-read: exit(0)
+Execution of 'mmap-read' complete.
+Timer: 87 ticks
+Thread: 36 idle ticks, 49 kernel ticks, 2 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 123 reads, 256 writes
 hd1:0: 109 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1937 characters output
-Key
+Console: 1068 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
