@@ -94,7 +94,7 @@ spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
 	page = malloc(sizeof(struct page));
 	page->va = pg_round_down(va);
 	struct hash_elem *e = hash_find(&spt->spt_hash, &page->hash_elem);
-
+	free(page);
 	if(e == NULL) {
 		return NULL;
 	}
@@ -201,7 +201,7 @@ vm_stack_growth (void *addr UNUSED) {
 static bool
 vm_handle_wp (struct page *page UNUSED) {
 	// P3-5
-	pml4_set_dirty(&thread_current() -> pml4, page->va, true);
+	//pml4_set_dirty(&thread_current() -> pml4, page->va, true);
 	return false;
 }
 
@@ -212,7 +212,7 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 	struct supplemental_page_table *spt UNUSED = &thread_current()->spt;
 	struct page *page = NULL;
 	/* TODO: Validate the fault */
-	if (is_kernel_vaddr(addr))  {
+	if (addr == NULL || is_kernel_vaddr(addr))  {
 		return false;
 	}
 	// Start P3-4
