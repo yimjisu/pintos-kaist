@@ -18,6 +18,7 @@ void syscall_handler (struct intr_frame *);
 
 void check_address(const uint64_t *uaddr); //P2-2
 
+
 // start P2-3 
 struct lock file_lock;
 void halt (void);
@@ -139,15 +140,6 @@ syscall_handler (struct intr_frame *f UNUSED) {
 	// thread_exit ();
 }
 
-// start 2-2
-void check_address (const uint64_t *addr) {
-	struct thread *curr = thread_current();
-	if (addr == NULL || !(is_user_vaddr(addr))) { // || pml4_walk(curr->pml4, addr, 0) == NULL) {
-		exit(-1);
-	}
-}
-// end 2-2
-
 // start P2-3
 void halt (void) {
 	power_off();
@@ -212,6 +204,8 @@ int filesize (int fd) {
 
 int read(int fd, void *buffer, unsigned size) {
 	check_address(buffer);
+	check_valid_buffer(buffer, size);
+	
 	int read;
 	struct file *open = lookup_fd(fd);
 	if (open == NULL) {
@@ -371,22 +365,22 @@ int dup2(int oldfd, int newfd) {
 // start P3-5
 void *mmap (void *addr, size_t length, int writable, int fd, off_t offset) {
 	if (addr == NULL 
-	|| !(is_user_vaddr(addr)) 
+	|| is_kernel_vaddr(addr) 
 	|| pg_ofs(addr) != 0
 	|| length == 0
-	|| offset % PGSIZE != 0) {
+	|| offset > PGSIZE) {
 		return NULL;
 	}
-	
-	if(spt_find_page(&thread_current() -> spt, addr)) {
-		return NULL;
+	for (int i = 0; i < length; i+= PGSIZE) {
+		if (spt_find_page (&thread_current() -> spt, addr + i) != NULL) {
+			return NULL;
+		}
 	}
 
 	struct file *open = lookup_fd(fd);
 	if(open == NULL || open == 1 || open == 2) {
 		return NULL;
 	}
-
 	return do_mmap(addr, length, writable, open, offset);
 }
 
@@ -394,3 +388,20 @@ void munmap (void *addr) {
 	do_munmap(addr);
 }
 // end P3-5
+
+
+
+// start 2-2
+void check_address (const uint64_t *addr) {
+	struct thread *curr = thread_current();
+	if (addr == NULL || !(is_user_vaddr(addr))) { // || pml4_walk(curr->pml4, addr, 0) == NULL) {
+		exit(-1);
+	}
+}
+// end 2-2
+
+void check_valid_buffer(void *buffer, unsigned size) {
+	struct page *page = spt_find_page(&thread_current() -> spt, buffer);
+	if(page != NULL && page->writable == false)
+		exit(-1);
+}

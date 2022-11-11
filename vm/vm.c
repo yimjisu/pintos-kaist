@@ -76,7 +76,8 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 		p -> writable = writable;
 
 		/* TODO: Insert the page into the spt. */
-		return spt_insert_page(spt, p);
+		spt_insert_page(spt, p);
+		return true;
 	}
 err:
 	return false;
@@ -131,18 +132,16 @@ static struct frame *
 vm_get_victim (void) {
 	struct frame *victim = NULL;
 	 /* TODO: The policy for eviction is up to you. */
-	
 	struct list_elem *e;
 	struct thread *curr = thread_current();
-
-	for(e = list_begin(&frame_list); e < list_end(&frame_list); e = list_next(e)) {
+	for(e = list_begin(&frame_list); e != list_end(&frame_list); e = list_next(e)) {
 		victim = list_entry(e, struct frame, frame_elem);
 		if (!pml4_is_accessed(curr->pml4, victim->page->va)) {
 			break;
 		}
-		pml4_set_accessed(curr->pml4, victim->page->va, false);
+		pml4_set_accessed(curr->pml4, victim->page->va, 0);
 	}
-	
+	list_remove(&victim->frame_elem);
 	return victim;
 }
 
@@ -151,11 +150,11 @@ vm_get_victim (void) {
 static struct frame *
 vm_evict_frame (void) {
 	struct frame *victim UNUSED = vm_get_victim ();
+
 	/* TODO: swap out the victim and return the evicted frame. */
 	if(victim == NULL) {
 		return NULL;
 	}
-	list_remove(&victim->frame_elem); // P3-1 주의!!!!!!!!!!!
 	swap_out(victim -> page);
 	return victim;
 }
@@ -176,11 +175,11 @@ vm_get_frame (void) {
 
 	struct page *p = palloc_get_page(PAL_USER);
 	if (p == NULL) {
-		free(frame);
 		frame = vm_evict_frame();
 	}else {
 		frame -> kva = p;
 	}
+	list_push_back(&frame_list, &frame->frame_elem);
 	
 	return frame;
 }
@@ -215,11 +214,12 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 	}
 	// Start P3-4
 	// Check Whether the page fault is valid case for stack growth or not.
+	
 	void *rsp = f->rsp;
-	if(is_kernel_vaddr(f->rsp)) {
+	if(is_kernel_vaddr(rsp)) {
 		rsp = thread_current() -> rsp;
 	}
-	if (write && rsp - 8 <= addr && addr <= USER_STACK) {
+	if (write && rsp - 8 <= addr && addr < USER_STACK) {
 		vm_stack_growth(addr);
 		return true;
 	}
@@ -234,7 +234,6 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 	if(write && !not_present) {
 		return vm_handle_wp(page);
 	}
-
 	return vm_do_claim_page (page);
 }
 
@@ -268,20 +267,18 @@ vm_claim_page (void *va UNUSED) {
 static bool
 vm_do_claim_page (struct page *page) {
 	struct frame *frame = vm_get_frame ();
-
 	/* Set links */
 	frame->page = page;
 	page->frame = frame;
 
 	/* TODO: Insert page table entry to map page's VA to frame's PA. */
 	struct thread *t = thread_current ();
-	list_push_back(&frame_list, &frame->frame_elem);
 	/* Verify that there's not already a page at that virtual
 	 * address, then map our page there. */
-
 	if (pml4_get_page (t->pml4, page->va) == NULL
-			&& pml4_set_page (t->pml4, page->va, frame->kva, page->writable))
+			&& pml4_set_page (t->pml4, page->va, frame->kva, page->writable)) {
 		return swap_in (page, frame->kva); // WHY??
+	}
 	return false;
 }
 
@@ -315,7 +312,6 @@ supplemental_page_table_init (struct supplemental_page_table *spt UNUSED) {
 bool
 supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
 		struct supplemental_page_table *src UNUSED) {
-
 	struct hash *h = &src->spt_hash;
 	struct hash_iterator i;
 
@@ -364,6 +360,7 @@ void
 supplemental_page_table_kill (struct supplemental_page_table *spt UNUSED) {
 	/* TODO: Destroy all the supplemental_page_table hold by thread and
 	 * TODO: writeback all the modified contents to the storage. */
+	
 	if(hash_empty(&spt->spt_hash)) {
 		return;
 	}

@@ -11,6 +11,7 @@
         "anon.h": "c",
         "hash.h": "c",
         "interrupt.h": "c",
-        "bitmap.h": "c"
+        "bitmap.h": "c",
+        "thread.h": "c"
     }
 }

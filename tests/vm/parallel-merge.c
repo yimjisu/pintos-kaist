@@ -48,7 +48,7 @@ sort_chunks (const char *subprocess, int exit_status)
       int handle;
 
       msg ("sort chunk %zu", i);
-
+      
       /* Write this chunk to a file. */
       snprintf (fn, sizeof fn, "buf%zu", i);
       create (fn, CHUNK_SIZE);
@@ -69,7 +69,6 @@ sort_chunks (const char *subprocess, int exit_status)
     {
       char fn[128];
       int handle;
-
       CHECK (wait (children[i]) == exit_status, "wait for child %zu", i);
 
       /* Read chunk back from file. */

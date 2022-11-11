@@ -31,8 +31,7 @@ vm_anon_init (void) {
 	swap_disk = NULL;
 	// P3-5
 	swap_disk = disk_get(1, 1); // SWAP
-	int bit_len = disk_size(swap_disk) / SECTORS_PER_PAGE; 
-	swap_slot = bitmap_create(bit_len);
+	swap_slot = bitmap_create(disk_size(swap_disk) / SECTORS_PER_PAGE);
 }
 
 /* Initialize the file mapping */
@@ -51,14 +50,16 @@ static bool
 anon_swap_in (struct page *page, void *kva) {
 	struct anon_page *anon_page = &page->anon;
 	size_t swap_slot_idx = anon_page -> swap_slot_idx;
-	printf("swap in");
+	
+	if(swap_slot_idx == BITMAP_ERROR) return false;
+
 	for (int i = 0; i < SECTORS_PER_PAGE; i++) {
 		disk_sector_t sec_no = swap_slot_idx * SECTORS_PER_PAGE + i;
 		void * buffer = kva + i * DISK_SECTOR_SIZE;
 		disk_read(swap_disk, sec_no, buffer);
 	}
 
-	bitmap_flip(swap_slot, swap_slot_idx);
+	bitmap_set(swap_slot, swap_slot_idx, false);
 	anon_page -> swap_slot_idx = BITMAP_ERROR;
 	return true;
 }
@@ -66,6 +67,9 @@ anon_swap_in (struct page *page, void *kva) {
 /* Swap out the page by writing contents to the swap disk. */
 static bool
 anon_swap_out (struct page *page) {
+	if(page == NULL || page->frame == NULL || page -> frame -> kva == NULL) {
+		return false;
+	}
 	struct anon_page *anon_page = &page->anon;
 	// Find free swap slot
 	size_t swap_slot_idx = bitmap_scan_and_flip(swap_slot, 0, 1, false);
@@ -83,6 +87,8 @@ anon_swap_out (struct page *page) {
 	anon_page -> swap_slot_idx = swap_slot_idx;
 
 	pml4_clear_page(thread_current() -> pml4, page->va);
+	pml4_set_dirty(thread_current() -> pml4, page->va, false);
+	
 	page->frame = NULL;
 
 	return true;

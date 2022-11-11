@@ -22,8 +22,8 @@ Executing 'mmap-kernel':
 (mmap-kernel) try to mmap over kernel 2: FAILED
 mmap-kernel: exit(1)
 Execution of 'mmap-kernel' complete.
-Timer: 143 ticks
-Thread: 33 idle ticks, 50 kernel ticks, 60 user ticks
+Timer: 141 ticks
+Thread: 31 idle ticks, 54 kernel ticks, 56 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 112 reads, 252 writes
 hd1:0: 107 reads, 0 writes

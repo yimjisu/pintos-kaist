@@ -18,15 +18,35 @@ Executing 'swap-iter':
 (swap-iter) write sparsely over page 0
 (swap-iter) write sparsely over page 512
 (swap-iter) write sparsely over page 1024
-swap-iter: exit(-1)
+(swap-iter) write sparsely over page 1536
+(swap-iter) write sparsely over page 2048
+(swap-iter) write sparsely over page 2560
+(swap-iter) write sparsely over page 3072
+(swap-iter) write sparsely over page 3584
+(swap-iter) write sparsely over page 4096
+(swap-iter) write sparsely over page 4608
+(swap-iter) open "large.txt"
+(swap-iter) mmap "large.txt"
+(swap-iter) check consistency in page 0
+(swap-iter) check consistency in page 512
+(swap-iter) check consistency in page 1024
+(swap-iter) check consistency in page 1536
+(swap-iter) check consistency in page 2048
+(swap-iter) check consistency in page 2560
+(swap-iter) check consistency in page 3072
+(swap-iter) check consistency in page 3584
+(swap-iter) check consistency in page 4096
+(swap-iter) check consistency in page 4608
+(swap-iter) end
+swap-iter: exit(0)
 Execution of 'swap-iter' complete.
-Timer: 367 ticks
-Thread: 158 idle ticks, 163 kernel ticks, 46 user ticks
+Timer: 2730 ticks
+Thread: 582 idle ticks, 176 kernel ticks, 1972 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 116 reads, 15902 writes
+hd0:1: 11860 reads, 19816 writes
 hd1:0: 7932 reads, 0 writes
-hd1:1: 0 reads, 0 writes
-Console: 1121 characters output
+hd1:1: 45328 reads, 84456 writes
+Console: 1927 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...
