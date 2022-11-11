@@ -20,19 +20,10 @@ static const struct page_operations file_ops = {
 };
 
 
-static struct list mmap_file_list;
-
-struct mmap_file{
-	struct list_elem elem;
-	void * addr;
-	uint64_t length;
-};
-
 /* The initializer of file vm */
 void
 vm_file_init (void) {
 	struct file* file;
-	list_init(&mmap_file_list);
 }
 
 /* Initialize the file backed page */
@@ -58,9 +49,7 @@ file_backed_swap_in (struct page *page, void *kva) {
 	size_t page_read_bytes = file_page->size;
 	size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
-	file_seek(file, ofs);
-	
-	if(file_read(file, kva, page_read_bytes) != (off_t) page_read_bytes) {
+	if(file_read_at(file, kva, page_read_bytes, ofs) != (off_t) page_read_bytes) {
 		palloc_free_page(kva);
 		return false;
 	}
@@ -91,7 +80,6 @@ static void
 file_backed_destroy (struct page *page) {
 	struct file_page *file_page UNUSED = &page->file;
 	// P3-5
-
 	if (pml4_is_dirty (thread_current() -> pml4, page -> va)){
 		file_write_at (file_page->file, page->va, file_page->size, file_page->ofs);
 	}
@@ -155,32 +143,25 @@ do_mmap (void *addr, size_t length, int writable,
 		addr += PGSIZE;
 		offset += page_read_bytes;
 	}
-	struct mmap_file* mmap_file = malloc (sizeof (struct mmap_file));
-	mmap_file->addr = addr;
-	mmap_file->length = length;
-	list_push_back(&mmap_file_list, &mmap_file->elem);
 	return addr_copy;
 }
 
 /* Do the munmap */
 void
 do_munmap (void *addr) {
-	if (list_empty (&mmap_file_list)) {
-		return;
+	while(true) {
+	struct page *page = spt_find_page(&thread_current() -> spt, addr);
+	if(page == NULL) {
+		break;
 	}
 
-	struct list_elem *e;
-	for (e = list_begin (&mmap_file_list); e != list_end (&mmap_file_list); e = list_next (e))
-	{
-		struct mmap_file* mmap_file = list_entry (e, struct mmap_file, elem);
-		if(mmap_file -> addr == addr) {
-			for (int i = 0; i < mmap_file->length; i+= PGSIZE) {
-				struct page *page = spt_find_page(&thread_current() -> spt, addr + i);
-				struct lazy_aux *aux = page->uninit.aux;
-				spt_remove_page(&thread_current() -> spt, page);
-			}
-			list_remove(&mmap_file -> elem);
-			break;
-		}
+	uint64_t pml4 = &thread_current() -> pml4;
+	struct lazy_aux *aux = (struct lazy_aux *) page -> uninit.aux;
+	if(pml4_is_dirty(pml4, addr)) {
+		file_write_at(aux->file, addr, aux->page_read_bytes, aux->ofs);
+		pml4_set_dirty(thread_current() -> pml4, page->va, 0);
+	}
+	pml4_clear_page(pml4, page->va);
+	addr += PGSIZE;
 	}
 }
