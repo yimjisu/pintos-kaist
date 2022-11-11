@@ -21,8 +21,8 @@ Executing 'mmap-write':
 (mmap-write) compare read data against written data: FAILED
 mmap-write: exit(1)
 Execution of 'mmap-write' complete.
-Timer: 86 ticks
-Thread: 33 idle ticks, 49 kernel ticks, 4 user ticks
+Timer: 85 ticks
+Thread: 30 idle ticks, 51 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 120 reads, 256 writes
 hd1:0: 107 reads, 0 writes

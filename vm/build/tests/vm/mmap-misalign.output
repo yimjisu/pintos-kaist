@@ -20,8 +20,8 @@ Executing 'mmap-misalign':
 (mmap-misalign) end
 mmap-misalign: exit(0)
 Execution of 'mmap-misalign' complete.
-Timer: 84 ticks
-Thread: 34 idle ticks, 49 kernel ticks, 1 user ticks
+Timer: 90 ticks
+Thread: 35 idle ticks, 51 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 111 reads, 250 writes
 hd1:0: 106 reads, 0 writes

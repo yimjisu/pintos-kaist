@@ -18,38 +18,33 @@ Executing 'page-merge-par':
 (page-merge-par) init
 (page-merge-par) sort chunk 0
 (page-merge-par) sort chunk 1
-child-sort: exit(123)
+load: child-sort: open failed
+child-sort: exit(-1)
 (page-merge-par) sort chunk 2
 load: child-sort: open failed
 child-sort: exit(-1)
 (page-merge-par) sort chunk 3
-load: child-sort: open failed
-child-sort: exit(-1)
+child-sort: exit(123)
 (page-merge-par) sort chunk 4
 load: child-sort: open failed
 child-sort: exit(-1)
 (page-merge-par) sort chunk 5
 child-sort: exit(123)
 (page-merge-par) sort chunk 6
-load: child-sort: open failed
-child-sort: exit(-1)
+child-sort: exit(123)
 (page-merge-par) sort chunk 7
-load: child-sort: open failed
-child-sort: exit(-1)
+child-sort: exit(123)
 (page-merge-par) wait for child 0
-load: child-sort: open failed
-child-sort: exit(-1)
-(page-merge-par) wait for child 1
-(page-merge-par) wait for child 1: FAILED
+(page-merge-par) wait for child 0: FAILED
 page-merge-par: exit(1)
 Execution of 'page-merge-par' complete.
-Timer: 262 ticks
-Thread: 70 idle ticks, 65 kernel ticks, 127 user ticks
+Timer: 252 ticks
+Thread: 65 idle ticks, 67 kernel ticks, 120 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 1236 reads, 5178 writes
+hd0:1: 1871 reads, 5789 writes
 hd1:0: 218 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1756 characters output
+Console: 1613 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

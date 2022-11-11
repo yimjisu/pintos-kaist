@@ -24,8 +24,8 @@ Executing 'mmap-twice':
 (mmap-twice) end
 mmap-twice: exit(0)
 Execution of 'mmap-twice' complete.
-Timer: 80 ticks
-Thread: 33 idle ticks, 44 kernel ticks, 3 user ticks
+Timer: 91 ticks
+Thread: 35 idle ticks, 52 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 128 reads, 256 writes
 hd1:0: 109 reads, 0 writes

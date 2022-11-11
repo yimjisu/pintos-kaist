@@ -22,7 +22,7 @@ Executing 'priority-donate-sema':
 (priority-donate-sema) end
 Execution of 'priority-donate-sema' complete.
 Timer: 80 ticks
-Thread: 31 idle ticks, 49 kernel ticks, 0 user ticks
+Thread: 30 idle ticks, 50 kernel ticks, 0 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 9 reads, 18 writes
 hd1:1: 0 reads, 0 writes

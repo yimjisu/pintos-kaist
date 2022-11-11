@@ -51,7 +51,7 @@ static bool
 anon_swap_in (struct page *page, void *kva) {
 	struct anon_page *anon_page = &page->anon;
 	size_t swap_slot_idx = anon_page -> swap_slot_idx;
-
+	printf("swap in");
 	for (int i = 0; i < SECTORS_PER_PAGE; i++) {
 		disk_sector_t sec_no = swap_slot_idx * SECTORS_PER_PAGE + i;
 		void * buffer = kva + i * DISK_SECTOR_SIZE;

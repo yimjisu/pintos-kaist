@@ -22,13 +22,13 @@ Executing 'mmap-kernel':
 (mmap-kernel) try to mmap over kernel 2: FAILED
 mmap-kernel: exit(1)
 Execution of 'mmap-kernel' complete.
-Timer: 83 ticks
-Thread: 30 idle ticks, 50 kernel ticks, 3 user ticks
+Timer: 143 ticks
+Thread: 33 idle ticks, 50 kernel ticks, 60 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 112 reads, 252 writes
 hd1:0: 107 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1206 characters output
+Console: 1208 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...
