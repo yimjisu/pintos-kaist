@@ -29,10 +29,8 @@ Differences in `diff -u' format:
   (page-merge-stk) init
   (page-merge-stk) sort chunk 0
   (page-merge-stk) sort chunk 1
-+ load: child-qsort: open failed
-  (page-merge-stk) sort chunk 2
-+ load: child-qsort: open failed
-  (page-merge-stk) sort chunk 3
+- (page-merge-stk) sort chunk 2
+- (page-merge-stk) sort chunk 3
 - (page-merge-stk) sort chunk 4
 - (page-merge-stk) sort chunk 5
 - (page-merge-stk) sort chunk 6
