@@ -83,7 +83,7 @@ pass tests/vm/mmap-overlap
 pass tests/vm/mmap-twice
 FAIL tests/vm/mmap-write
 pass tests/vm/mmap-ro
-FAIL tests/vm/mmap-exit
+pass tests/vm/mmap-exit
 pass tests/vm/mmap-shuffle
 pass tests/vm/mmap-bad-fd
 pass tests/vm/mmap-clean

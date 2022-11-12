@@ -50,7 +50,6 @@ struct page {
 	// P3-1 start
 	struct hash_elem hash_elem;
 	bool writable;
-	int page_cnt;
 	// P3-1 end
 
 	/* Per-type data are binded into the union.

@@ -86,9 +86,9 @@ anon_swap_out (struct page *page) {
 
 	anon_page -> swap_slot_idx = swap_slot_idx;
 
-	pml4_clear_page(thread_current() -> pml4, page->va);
 	pml4_set_dirty(thread_current() -> pml4, page->va, false);
-	
+	pml4_clear_page(thread_current() -> pml4, page->va);
+	page->frame->page = NULL;
 	page->frame = NULL;
 
 	return true;

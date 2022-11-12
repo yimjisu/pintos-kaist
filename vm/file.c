@@ -149,19 +149,19 @@ do_mmap (void *addr, size_t length, int writable,
 /* Do the munmap */
 void
 do_munmap (void *addr) {
-	while(true) {
-	struct page *page = spt_find_page(&thread_current() -> spt, addr);
-	if(page == NULL) {
-		break;
+	uint64_t pml4 = &thread_current() -> pml4;
+
+	while (true) {
+		struct page *page = spt_find_page(&thread_current() -> spt, addr);
+		if(page == NULL) {
+			return;
+		}
+		struct lazy_aux *aux = page->uninit.aux;
+		if (pml4_is_dirty(pml4, addr)){
+			file_write_at(aux->file, addr, aux->page_read_bytes, aux->ofs);
+			pml4_set_dirty(pml4, addr, false);
+		}
+		addr += PGSIZE;
 	}
 
-	uint64_t pml4 = &thread_current() -> pml4;
-	struct lazy_aux *aux = (struct lazy_aux *) page -> uninit.aux;
-	if(pml4_is_dirty(pml4, addr)) {
-		file_write_at(aux->file, addr, aux->page_read_bytes, aux->ofs);
-		pml4_set_dirty(thread_current() -> pml4, page->va, 0);
-	}
-	pml4_clear_page(pml4, page->va);
-	addr += PGSIZE;
-	}
 }

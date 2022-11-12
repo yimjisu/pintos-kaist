@@ -141,7 +141,6 @@ vm_get_victim (void) {
 		}
 		pml4_set_accessed(curr->pml4, victim->page->va, 0);
 	}
-	list_remove(&victim->frame_elem);
 	return victim;
 }
 
@@ -156,6 +155,7 @@ vm_evict_frame (void) {
 		return NULL;
 	}
 	swap_out(victim -> page);
+	victim->page = NULL;
 	return victim;
 }
 
@@ -167,20 +167,21 @@ static struct frame *
 vm_get_frame (void) {
 	struct frame *frame = NULL;
 	/* TODO: Fill this function. */
-	frame = malloc(sizeof(struct frame));	
-	frame->page = NULL;
+	frame = (struct frame *)malloc(sizeof(struct frame));	
+	// ASSERT (frame != NULL);
+	// ASSERT (frame->page == NULL);
 
-	ASSERT (frame != NULL);
-	ASSERT (frame->page == NULL);
-
-	struct page *p = palloc_get_page(PAL_USER);
+	struct page *p = palloc_get_page(PAL_USER); // user pool
 	if (p == NULL) {
 		frame = vm_evict_frame();
-	}else {
-		frame -> kva = p;
+		frame -> page = NULL;
+		return;
 	}
+	frame -> kva = p;
+	frame->page = NULL;
+
 	list_push_back(&frame_list, &frame->frame_elem);
-	
+
 	return frame;
 }
 
@@ -198,7 +199,6 @@ vm_stack_growth (void *addr UNUSED) {
 static bool
 vm_handle_wp (struct page *page UNUSED) {
 	// P3-5
-	//pml4_set_dirty(&thread_current() -> pml4, page->va, true);
 	return false;
 }
 
@@ -219,7 +219,7 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 	if(is_kernel_vaddr(rsp)) {
 		rsp = thread_current() -> rsp;
 	}
-	if (write && rsp - 8 <= addr && addr < USER_STACK) {
+	if (rsp - 8 <= addr && addr < USER_STACK) {
 		vm_stack_growth(addr);
 		return true;
 	}
@@ -230,8 +230,12 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 	if(page == NULL) {
 		return false;
 	}
+
+	if(is_kernel_vaddr(page->va)) {
+		return false;
+	}
 	
-	if(write && !not_present) {
+	if(write && !not_present && !page->writable) {
 		return vm_handle_wp(page);
 	}
 	return vm_do_claim_page (page);
@@ -331,6 +335,7 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
 				if(!vm_alloc_page_with_initializer(type, upage, writable, init, aux)){
 					return false;
 				};
+				// P3-extra
 			}
 		}else if(page->operations->type == VM_ANON){
 			if(!vm_alloc_page(type, upage, writable)) {

@@ -366,6 +366,7 @@ int dup2(int oldfd, int newfd) {
 void *mmap (void *addr, size_t length, int writable, int fd, off_t offset) {
 	if (addr == NULL 
 	|| is_kernel_vaddr(addr) 
+	|| is_kernel_vaddr(addr + length)
 	|| pg_ofs(addr) != 0
 	|| length == 0
 	|| offset > PGSIZE) {
