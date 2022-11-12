@@ -231,10 +231,14 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 		return false;
 	}
 
+	// is user process should not expect any data at address
+	// page-merge-par
+	// if page lies within kernel virtual memory
 	if(is_kernel_vaddr(page->va)) {
 		return false;
 	}
 	
+	// is access is an attempt to write to a read-only page
 	if(write && !not_present && !page->writable) {
 		return vm_handle_wp(page);
 	}
@@ -279,8 +283,7 @@ vm_do_claim_page (struct page *page) {
 	struct thread *t = thread_current ();
 	/* Verify that there's not already a page at that virtual
 	 * address, then map our page there. */
-	if (pml4_get_page (t->pml4, page->va) == NULL
-			&& pml4_set_page (t->pml4, page->va, frame->kva, page->writable)) {
+	if (pml4_set_page (t->pml4, page->va, frame->kva, page->writable)) {
 		return swap_in (page, frame->kva); // WHY??
 	}
 	return false;
