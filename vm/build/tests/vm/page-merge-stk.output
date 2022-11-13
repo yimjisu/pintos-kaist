@@ -20,8 +20,8 @@ Executing 'page-merge-stk':
 (page-merge-stk) sort chunk 1
 page-merge-stk: exit(-1)
 Execution of 'page-merge-stk' complete.
-Timer: 137 ticks
-Thread: 39 idle ticks, 54 kernel ticks, 44 user ticks
+Timer: 127 ticks
+Thread: 43 idle ticks, 51 kernel ticks, 33 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 461 reads, 1278 writes
 hd1:0: 224 reads, 0 writes

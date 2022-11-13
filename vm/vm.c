@@ -98,7 +98,6 @@ spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
 		return NULL;
 	}
 	return hash_entry(e, struct page, hash_elem);
-	
 }
 
 /* Insert PAGE into spt with validation. */
@@ -189,7 +188,6 @@ vm_get_frame (void) {
 static void
 vm_stack_growth (void *addr UNUSED) {
 	void* stack_bottom = pg_round_down(addr);
-	
 	if(vm_alloc_page(VM_ANON | VM_MARKER_0, stack_bottom, true)) {
 		vm_claim_page(stack_bottom);
 	}
@@ -198,8 +196,15 @@ vm_stack_growth (void *addr UNUSED) {
 /* Handle the fault on write_protected page */
 static bool
 vm_handle_wp (struct page *page UNUSED) {
-	// P3-5
-	return false;
+	// P3-extra
+	void *kva = page->frame->kva;
+	page->frame->kva = palloc_get_page(PAL_USER);
+	memcpy(page->frame->kva, kva, PGSIZE);
+
+	struct thread *t = thread_current();
+	pml4_set_page (t->pml4, page->va, page->frame->kva, page->parent_writable);
+
+	return true;
 }
 
 /* Return true on success */
@@ -212,36 +217,34 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED,
 	if (addr == NULL || is_kernel_vaddr(addr))  {
 		return false;
 	}
-	// Start P3-4
-	// Check Whether the page fault is valid case for stack growth or not.
-	
-	void *rsp = f->rsp;
-	if(is_kernel_vaddr(rsp)) {
-		rsp = thread_current() -> rsp;
-	}
-	if (rsp - 8 <= addr && addr < USER_STACK) {
-		vm_stack_growth(addr);
-		return true;
-	}
-	// End P3-4
-
 	/* TODO: Your code goes here */
 	page = spt_find_page(spt, addr);
 	if(page == NULL) {
+		// Start P3-4
+		// Check Whether the page fault is valid case for stack growth or not.
+		void *rsp = thread_current() -> rsp;
+		if (write && rsp-8 <= addr && addr < USER_STACK) {
+			vm_stack_growth(addr);
+			return true;
+		}
+		// End P3-4
 		return false;
 	}
-
+	
 	// is user process should not expect any data at address
-	// page-merge-par
 	// if page lies within kernel virtual memory
 	if(is_kernel_vaddr(page->va)) {
 		return false;
 	}
 	
 	// is access is an attempt to write to a read-only page
-	if(write && !not_present && !page->writable) {
+	if(write && !not_present && page->parent_writable) {
 		return vm_handle_wp(page);
 	}
+	if(write && !page->writable) {
+		return false;
+	}
+	
 	return vm_do_claim_page (page);
 }
 
@@ -315,6 +318,27 @@ supplemental_page_table_init (struct supplemental_page_table *spt UNUSED) {
 // P3-1 end
 
 // P3-2 start
+
+/* Claim (allocate physical frame) the PAGE and set up the mmu. */
+static bool
+vm_do_claim_page_copy (struct page *page, void *kva, bool writable) {
+	struct frame *frame = vm_get_frame();
+	/* Set links */
+	frame->page = page;
+	page->frame = frame;
+
+	page->parent_writable = writable;
+	frame->kva = kva;
+
+	/* TODO: Insert page table entry to map page's VA to frame's PA. */
+	struct thread *t = thread_current ();
+	// set writable false
+	if (pml4_set_page (t->pml4, page->va, frame->kva, 0)) {
+		return swap_in (page, frame->kva); // WHY??
+	}
+	return false;
+}
+
 /* Copy supplemental page table from src to dst */
 bool
 supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
@@ -330,27 +354,45 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
 		enum vm_type type = page_get_type(page);
 		void *upage = page->va;
 		bool writable = page->writable;
+		vm_initializer *init = page->uninit.init;
+		void *aux = page->uninit.aux;
 
-		if(page->operations->type == VM_UNINIT) {
-			vm_initializer *init = page->uninit.init;
-			void *aux = page->uninit.aux;
-			if(page->uninit.type & VM_ANON) {
-				if(!vm_alloc_page_with_initializer(type, upage, writable, init, aux)){
+		switch(page->operations->type) {
+			case(VM_UNINIT):
+				if(page->uninit.type & VM_ANON) {
+
+					if(!vm_alloc_page_with_initializer(type, upage, writable, init, aux)){
+						return false;
+					};
+					// P3-extra
+				}
+				break;
+			case(VM_ANON):
+				if(!vm_alloc_page(type, upage, writable)) {
 					return false;
-				};
-				// P3-extra
-			}
-		}else if(page->operations->type == VM_ANON){
-			if(!vm_alloc_page(type, upage, writable)) {
-				return false;
-			}
-			if(!vm_claim_page(upage)){
-				return false;
-			}
-			struct page *new_page = spt_find_page(dst, upage);
-			memcpy(new_page->frame->kva, page->frame->kva, PGSIZE);
+				}
+				// if(!vm_claim_page(upage)){
+				// 	return false;
+				// }
+				// struct page *new_page = spt_find_page(dst, upage);
+				// if(new_page == NULL) {
+				// 	return NULL;
+				// }
+				// memcpy(new_page->frame->kva, page->frame->kva, PGSIZE);
+
+				// start P3-extra
+				struct page *new_page = NULL;
+				/* TODO: Fill this function */
+				struct thread *curr = thread_current();
+
+				new_page = spt_find_page(&curr->spt, upage);
+				if(new_page == NULL) {
+					return false;
+				}
+				vm_do_claim_page_copy (new_page, page->frame->kva, page->writable);
+				// end P3-extra
+				break;
 		}
-		
 	}
 	return true;
 }

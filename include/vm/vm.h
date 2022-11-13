@@ -51,6 +51,8 @@ struct page {
 	struct hash_elem hash_elem;
 	bool writable;
 	// P3-1 end
+	bool parent_writable; // P3-extra
+
 
 	/* Per-type data are binded into the union.
 	 * Each function automatically detects the current union */
