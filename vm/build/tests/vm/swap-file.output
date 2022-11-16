@@ -20,8 +20,8 @@ Executing 'swap-file':
 (swap-file) end
 swap-file: exit(0)
 Execution of 'swap-file' complete.
-Timer: 493 ticks
-Thread: 243 idle ticks, 166 kernel ticks, 84 user ticks
+Timer: 437 ticks
+Thread: 174 idle ticks, 173 kernel ticks, 90 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 7946 reads, 19813 writes
 hd1:0: 7931 reads, 0 writes

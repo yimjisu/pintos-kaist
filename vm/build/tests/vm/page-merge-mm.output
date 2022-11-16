@@ -20,16 +20,18 @@ Executing 'page-merge-mm':
 (page-merge-mm) sort chunk 1
 child-qsort-mm: exit(80)
 (page-merge-mm) sort chunk 2
-(page-merge-mm) open "buf2": FAILED
+child-qsort-mm: exit(80)
+(page-merge-mm) sort chunk 3
+(page-merge-mm) open "buf3": FAILED
 page-merge-mm: exit(1)
 Execution of 'page-merge-mm' complete.
-Timer: 148 ticks
-Thread: 49 idle ticks, 49 kernel ticks, 50 user ticks
+Timer: 179 ticks
+Thread: 59 idle ticks, 53 kernel ticks, 68 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 465 reads, 2062 writes
+hd0:1: 790 reads, 2842 writes
 hd1:0: 224 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1202 characters output
+Console: 1256 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

@@ -20,8 +20,8 @@ Executing 'mmap-null':
 (mmap-null) end
 mmap-null: exit(0)
 Execution of 'mmap-null' complete.
-Timer: 84 ticks
-Thread: 36 idle ticks, 46 kernel ticks, 2 user ticks
+Timer: 79 ticks
+Thread: 30 idle ticks, 47 kernel ticks, 2 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 111 reads, 250 writes
 hd1:0: 106 reads, 0 writes
