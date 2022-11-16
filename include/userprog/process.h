@@ -12,4 +12,13 @@ void process_activate (struct thread *next);
 
 struct thread *get_child_tid(tid_t tid); // P2-3
 
+// P3-2 start
+struct lazy_aux {
+    struct file *file;
+    off_t ofs;
+    size_t page_read_bytes;
+    size_t page_zero_bytes;
+};
+// P3-2 end
+
 #endif /* userprog/process.h */

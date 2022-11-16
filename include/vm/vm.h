@@ -27,6 +27,7 @@ enum vm_type {
 #include "vm/uninit.h"
 #include "vm/anon.h"
 #include "vm/file.h"
+#include "hash.h"
 #ifdef EFILESYS
 #include "filesys/page_cache.h"
 #endif
@@ -46,6 +47,12 @@ struct page {
 	struct frame *frame;   /* Back reference for frame */
 
 	/* Your implementation */
+	// P3-1 start
+	struct hash_elem hash_elem;
+	bool writable;
+	// P3-1 end
+	bool parent_writable; // P3-extra
+
 
 	/* Per-type data are binded into the union.
 	 * Each function automatically detects the current union */
@@ -61,8 +68,9 @@ struct page {
 
 /* The representation of "frame" */
 struct frame {
-	void *kva;
+	void *kva; // kernel virtual address
 	struct page *page;
+	struct list_elem frame_elem;
 };
 
 /* The function table for page operations.
@@ -81,11 +89,14 @@ struct page_operations {
 #define destroy(page) \
 	if ((page)->operations->destroy) (page)->operations->destroy (page)
 
+// 3-1 start
 /* Representation of current process's memory space.
  * We don't want to force you to obey any specific design for this struct.
  * All designs up to you for this. */
 struct supplemental_page_table {
+	struct hash spt_hash;
 };
+// 3-1 end
 
 #include "threads/thread.h"
 void supplemental_page_table_init (struct supplemental_page_table *spt);

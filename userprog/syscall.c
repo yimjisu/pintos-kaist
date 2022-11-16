@@ -11,11 +11,13 @@
 #include "filesys/file.h" //P2-3
 #include "filesys/filesys.h" //P2-3
 #include "threads/palloc.h" //P2-3
+#include "vm/file.h" // P3-5
 
 void syscall_entry (void);
 void syscall_handler (struct intr_frame *);
 
 void check_address(const uint64_t *uaddr); //P2-2
+
 
 // start P2-3 
 struct lock file_lock;
@@ -37,6 +39,11 @@ static struct file* lookup_fd(int fd);
 int add_file(struct file *file);
 void remove_file(int fd);
 // end P2-3
+
+// start P3-5
+void *mmap (void *addr, size_t length, int writable, int fd, off_t offset);
+void munmap (void *addr);
+// end P3-5
 
 /* System call.
  *
@@ -71,7 +78,6 @@ syscall_handler (struct intr_frame *f UNUSED) {
 	// TODO: Your implementation goes here.
 	// %rax : syscall num
 	// arg 순서 : %rdi, %rsi, %rdx, %r10, %r8, %r9
-	// printf ("system call!\n");
 	switch(f->R.rax) { 
 		case SYS_HALT:
 			halt();
@@ -121,21 +127,18 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		case SYS_DUP2:
 			f->R.rax = dup2(f->R.rdi, f->R.rsi);
 			break;
+		case SYS_MMAP:
+			f->R.rax = mmap((void *)f->R.rdi, (size_t)f->R.rsi, (int)f->R.rdx, (int)f->R.r10, (off_t)f->R.r8);
+			break;
+		case SYS_MUNMAP:
+			munmap(f->R.rdi);
+			break;
 		default:
 			exit(-1);
 			break;
 	}
 	// thread_exit ();
 }
-
-// start 2-2
-void check_address (const uint64_t *addr) {
-	struct thread *curr = thread_current();
-	if (addr == NULL || !(is_user_vaddr(addr)) || pml4_get_page(curr->pml4, addr) == NULL) {
-		exit(-1);
-	}
-}
-// end 2-2
 
 // start P2-3
 void halt (void) {
@@ -155,7 +158,6 @@ tid_t fork(const char *thread_name) {
 
 int exec(const char *cmd_line) {
 	check_address(cmd_line);
-
 	char *fn_copy = palloc_get_page(PAL_ZERO);
 	if (fn_copy == NULL) {
 		exit(-1);
@@ -202,17 +204,18 @@ int filesize (int fd) {
 
 int read(int fd, void *buffer, unsigned size) {
 	check_address(buffer);
+	check_valid_buffer(buffer, size);
+	
 	int read;
 	struct file *open = lookup_fd(fd);
-
 	if (open == NULL) {
 		return -1;
 	}
 
 	struct thread *curr = thread_current();
-
 	if (open == 1) { //stdin
 		if(curr->stdin_num == 0) { // stdin is closed. do nothing.
+			remove_file(fd);
 			return -1;
 		}
 		*(char *)buffer = input_getc();
@@ -357,4 +360,52 @@ int dup2(int oldfd, int newfd) {
 
 	cur->files[newfd] = open;
 	return newfd;
+}
+
+// start P3-5
+void *mmap (void *addr, size_t length, int writable, int fd, off_t offset) {
+	if (pg_ofs(addr) != 0
+	|| length == 0
+	|| offset > PGSIZE) {
+		return NULL;
+	}
+
+	for (int i = 0; i <= length; i++) {
+		if(addr+i == NULL|| is_kernel_vaddr(addr+i)) {
+			return NULL;
+		}
+	}
+	for (int i = 0; i <= length; i+= PGSIZE) {
+		if (spt_find_page (&thread_current() -> spt, addr + i) != NULL) {
+			return NULL;
+		}
+	}
+
+	struct file *open = lookup_fd(fd);
+	if(open == NULL || open == 1 || open == 2) {
+		return NULL;
+	}
+	return do_mmap(addr, length, writable, open, offset);
+}
+
+void munmap (void *addr) {
+	do_munmap(addr);
+}
+// end P3-5
+
+
+
+// start 2-2
+void check_address (const uint64_t *addr) {
+	struct thread *curr = thread_current();
+	if (addr == NULL || !(is_user_vaddr(addr))) { // || pml4_walk(curr->pml4, addr, 0) == NULL) {
+		exit(-1);
+	}
+}
+// end 2-2
+
+void check_valid_buffer(void *buffer, unsigned size) {
+	struct page *page = spt_find_page(&thread_current() -> spt, buffer);
+	if(page != NULL && page->writable == false)
+		exit(-1);
 }

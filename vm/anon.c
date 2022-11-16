@@ -2,12 +2,19 @@
 
 #include "vm/vm.h"
 #include "devices/disk.h"
+#include "bitmap.h" // P3-5
+#include "threads/vaddr.h" // P3-5
+#include <bitmap.h>
+#include "threads/mmu.h"
 
 /* DO NOT MODIFY BELOW LINE */
 static struct disk *swap_disk;
 static bool anon_swap_in (struct page *page, void *kva);
 static bool anon_swap_out (struct page *page);
 static void anon_destroy (struct page *page);
+
+struct bitmap *swap_slot; //P3-5
+const size_t SECTORS_PER_PAGE = PGSIZE / DISK_SECTOR_SIZE;
 
 /* DO NOT MODIFY this struct */
 static const struct page_operations anon_ops = {
@@ -22,6 +29,9 @@ void
 vm_anon_init (void) {
 	/* TODO: Set up the swap_disk. */
 	swap_disk = NULL;
+	// P3-5
+	swap_disk = disk_get(1, 1); // SWAP
+	swap_slot = bitmap_create(disk_size(swap_disk) / SECTORS_PER_PAGE);
 }
 
 /* Initialize the file mapping */
@@ -29,24 +39,68 @@ bool
 anon_initializer (struct page *page, enum vm_type type, void *kva) {
 	/* Set up the handler */
 	page->operations = &anon_ops;
-
+	
 	struct anon_page *anon_page = &page->anon;
+	anon_page -> swap_slot_idx = BITMAP_ERROR;
+	return true;
 }
 
 /* Swap in the page by read contents from the swap disk. */
 static bool
 anon_swap_in (struct page *page, void *kva) {
 	struct anon_page *anon_page = &page->anon;
+	size_t swap_slot_idx = anon_page -> swap_slot_idx;
+	
+	if(swap_slot_idx == BITMAP_ERROR) return false;
+
+	for (int i = 0; i < SECTORS_PER_PAGE; i++) {
+		disk_sector_t sec_no = swap_slot_idx * SECTORS_PER_PAGE + i;
+		void * buffer = kva + i * DISK_SECTOR_SIZE;
+		disk_read(swap_disk, sec_no, buffer);
+	}
+
+	bitmap_set(swap_slot, swap_slot_idx, false);
+	anon_page -> swap_slot_idx = BITMAP_ERROR;
+	return true;
 }
 
 /* Swap out the page by writing contents to the swap disk. */
 static bool
 anon_swap_out (struct page *page) {
+	if(page == NULL || page->frame == NULL || page -> frame -> kva == NULL) {
+		return false;
+	}
 	struct anon_page *anon_page = &page->anon;
+	// Find free swap slot
+	size_t swap_slot_idx = bitmap_scan_and_flip(swap_slot, 0, 1, false);
+
+	if(swap_slot_idx == BITMAP_ERROR) {
+		PANIC("No Free Swap Slot!");
+	}
+
+	for (int i = 0; i < SECTORS_PER_PAGE; i++) {
+		disk_sector_t sec_no = swap_slot_idx * SECTORS_PER_PAGE + i;
+		void * buffer = page->frame->kva + i * DISK_SECTOR_SIZE;
+		disk_write(swap_disk, sec_no, buffer);
+	}
+
+	anon_page -> swap_slot_idx = swap_slot_idx;
+
+	pml4_set_dirty(thread_current() -> pml4, page->va, false);
+	pml4_clear_page(thread_current() -> pml4, page->va);
+	page->frame->page = NULL;
+	page->frame = NULL;
+
+	return true;
 }
 
+
+// 3-2 start
 /* Destroy the anonymous page. PAGE will be freed by the caller. */
 static void
 anon_destroy (struct page *page) {
-	struct anon_page *anon_page = &page->anon;
+	if(page != NULL){
+		free(page);
+	}
 }
+// 3-2 end

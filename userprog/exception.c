@@ -140,12 +140,19 @@ page_fault (struct intr_frame *f) {
 	write = (f->error_code & PF_W) != 0;
 	user = (f->error_code & PF_U) != 0;
 
+	// P3-4 start
+	if (user) {
+		// Save stack pointer when an exception causes a switch from user to kernel mode
+		thread_current() -> rsp = f -> rsp;
+	}
+	// P3-4 end
+
 #ifdef VM
 	/* For project 3 and later. */
 	if (vm_try_handle_fault (f, fault_addr, user, write, not_present))
 		return;
 #endif
-
+	exit(-1);
 	/* Count page faults. */
 	page_fault_cnt++;
 
