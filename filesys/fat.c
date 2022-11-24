@@ -133,6 +133,7 @@ fat_create (void) {
       PANIC ("FAT create failed due to OOM");
    disk_write (filesys_disk, cluster_to_sector (ROOT_DIR_CLUSTER), buf);
    free (buf);
+
 }
 
 void
@@ -157,6 +158,7 @@ fat_fs_init (void) {
    struct fat_boot bs = fat_fs -> bs;
    fat_fs->fat_length = bs.total_sectors / bs.sectors_per_cluster;
    fat_fs->data_start = bs.fat_start + bs.fat_sectors;
+   lock_init(&fat_fs->write_lock);
    //P4-1 end
 }
 
@@ -171,7 +173,7 @@ cluster_t
 fat_create_chain (cluster_t clst) {
    /* TODO: Your code goes here. */
    //P4-1 start
-   cluster_t new_clst = clst < fat_fs->data_start ? fat_fs->data_start : clst;
+   cluster_t new_clst = fat_fs->bs.fat_start;
    while(fat_get(new_clst) != 0 && new_clst < fat_fs->fat_length) {
       new_clst += 1;
    }
@@ -180,13 +182,15 @@ fat_create_chain (cluster_t clst) {
       return 0;
    }
 
-   if(clst != 0) {
-      while(fat_get(clst) != EOChain) {
-         clst = fat_get(clst);
-      }
-      fat_put(clst, new_clst);
+   if(clst == 0) {
+      fat_put(new_clst, EOChain);
+      return new_clst;
    }
 
+   while(fat_get(clst) != EOChain) {
+      clst = fat_get(clst);
+   }
+   fat_put(clst, new_clst);
    fat_put(new_clst, EOChain);
    return new_clst;
    //P4-1 end
@@ -199,9 +203,14 @@ fat_remove_chain (cluster_t clst, cluster_t pclst) {
    /* TODO: Your code goes here. */
    //P4-1 start
    cluster_t new_clst = clst;
-   while(fat_get(new_clst) != EOChain) {
+   cluster_t temp;
+   while(true) {
+      temp = fat_get(new_clst);
       fat_put(new_clst, 0);
-      new_clst = clst;
+      if(temp == EOChain) {
+         break;
+      }
+      new_clst = temp;
    }
 
    if(pclst != 0) {
@@ -214,6 +223,10 @@ fat_remove_chain (cluster_t clst, cluster_t pclst) {
 void
 fat_put (cluster_t clst, cluster_t val) {
    /* TODO: Your code goes here. */
+   cluster_t next_cluster = fat_get(clst);
+   if(next_cluster != 0 && next_cluster != EOChain) {
+      fat_fs->fat[val] = next_cluster;
+   }
    fat_fs->fat[clst] = val;//P4-1
 }
 
