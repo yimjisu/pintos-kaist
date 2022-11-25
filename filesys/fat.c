@@ -171,7 +171,8 @@ cluster_t
 fat_create_chain (cluster_t clst) {
    /* TODO: Your code goes here. */
    //P4-1 start
-   cluster_t new_clst = clst < fat_fs->data_start ? fat_fs->data_start : clst;
+   // cluster_t new_clst = clst < fat_fs->data_start ? fat_fs->data_start : clst;
+   cluster_t new_clst = clst;
    while(fat_get(new_clst) != 0 && new_clst < fat_fs->fat_length) {
       new_clst += 1;
    }
@@ -198,14 +199,14 @@ void
 fat_remove_chain (cluster_t clst, cluster_t pclst) {
    /* TODO: Your code goes here. */
    //P4-1 start
-   cluster_t new_clst = clst;
-   while(fat_get(new_clst) != EOChain) {
-      fat_put(new_clst, 0);
-      new_clst = clst;
-   }
-
    if(pclst != 0) {
       fat_put(pclst, EOChain);
+   }
+   cluster_t next_clst = clst;
+   while(clst != EOChain) {
+      next_clst = fat_get(clst);
+      fat_put(clst, 0);
+      clst = next_clst;
    }
    //P4-1 end
 }

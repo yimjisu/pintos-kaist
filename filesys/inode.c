@@ -6,6 +6,7 @@
 #include "filesys/filesys.h"
 #include "filesys/free-map.h"
 #include "threads/malloc.h"
+#include "filesys/fat.h"
 
 /* Identifies an inode. */
 #define INODE_MAGIC 0x494e4f44
@@ -16,7 +17,7 @@ struct inode_disk {
 	disk_sector_t start;                /* First data sector. */
 	off_t length;                       /* File size in bytes. */
 	unsigned magic;                     /* Magic number. */
-	uint32_t unused[125];               /* Not used. */
+	uint32_t unused[125];               /* Not used. */ //500으로 바꿔야 할수도?
 };
 
 /* Returns the number of sectors to allocate for an inode SIZE
@@ -43,8 +44,14 @@ struct inode {
 static disk_sector_t
 byte_to_sector (const struct inode *inode, off_t pos) {
 	ASSERT (inode != NULL);
-	if (pos < inode->data.length)
-		return inode->data.start + pos / DISK_SECTOR_SIZE;
+	if (pos < inode->data.length) {
+		cluster_t clst = inode->data.start;
+		uint32_t clst_num = pos / DISK_SECTOR_SIZE;
+		for (int i = 0; i < clst_num; i++) {
+			clst = fat_get(clst);
+		}
+		return clst;
+	}
 	else
 		return -1;
 }
@@ -80,17 +87,36 @@ inode_create (disk_sector_t sector, off_t length) {
 		size_t sectors = bytes_to_sectors (length);
 		disk_inode->length = length;
 		disk_inode->magic = INODE_MAGIC;
-		if (free_map_allocate (sectors, &disk_inode->start)) {
-			disk_write (filesys_disk, sector, disk_inode);
-			if (sectors > 0) {
-				static char zeros[DISK_SECTOR_SIZE];
-				size_t i;
 
-				for (i = 0; i < sectors; i++) 
-					disk_write (filesys_disk, disk_inode->start + i, zeros); 
+		//P4-1 start
+		disk_write (filesys_disk, cluster_to_sector(sector), disk_inode);
+		if (sectors > 0) {
+			disk_inode->start = fat_create_chain(0);
+			disk_sector_t curr_sector = disk_inode->start;
+			static char buff[DISK_SECTOR_SIZE];
+			for (int i = 1; i < sectors; i++) {
+				if (curr_sector == 0) {
+					success = false;
+					free (disk_inode);
+					return success;
+				}
+				disk_write(filesys_disk, cluster_to_sector(curr_sector), buff);
+				curr_sector = fat_create_chain(curr_sector);
 			}
-			success = true; 
-		} 
+		}
+		//P4-1 end
+		// if (free_map_allocate (sectors, &disk_inode->start)) {
+		// 	disk_write (filesys_disk, sector, disk_inode);
+		// 	if (sectors > 0) {
+		// 		static char zeros[DISK_SECTOR_SIZE];
+		// 		size_t i;
+
+		// 		for (i = 0; i < sectors; i++) 
+		// 			disk_write (filesys_disk, disk_inode->start + i, zeros); 
+		// 	}
+		// 	success = true; 
+		// } 
+		success = true;
 		free (disk_inode);
 	}
 	return success;
@@ -239,6 +265,31 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size,
 
 	if (inode->deny_write_cnt)
 		return 0;
+
+	if (offset > inode->data.length) {
+		// 0으로 채우기
+	}
+
+	if (offset + size > inode->data.length) {
+		off_t inode_sector_end = inode->data.length - inode->data.length % DISK_SECTOR_SIZE + DISK_SECTOR_SIZE;
+
+		if (offset + size > inode_sector_end) {
+			// chain 연장
+			inode->data.length = inode_sector_end;
+			int num = (offset + size - inode_sector_end) / DISK_SECTOR_SIZE + 1;
+			cluster_t new_clst;
+			for (int i = 0; i < num; i++) {
+				new_clst = fat_create_chain(inode->data.start);
+				if (new_clst == 0) {
+					break;
+				}
+				inode->data.length += DISK_SECTOR_SIZE;
+			}
+		}
+		if (inode->data.length > offset + size) {
+			inode->data.length = offset + size;
+		}
+	}
 
 	while (size > 0) {
 		/* Sector to write, starting byte offset within sector. */
