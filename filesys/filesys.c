@@ -61,17 +61,22 @@ bool
 filesys_create (const char *name, off_t initial_size) {
 	disk_sector_t inode_sector = 0;
 	struct dir *dir = dir_open_root ();
-	
 	// P4-1 start
+	bool success = false;
 	if(dir != NULL) {
 		inode_sector = fat_create_chain(inode_sector);
+		if(inode_sector == 0) {
+			success = false;
+		}else {
+			success = (
+				inode_create (inode_sector, initial_size)
+				&& dir_add (dir, name, inode_sector)
+			);
+		}
 	}
-	bool success = (
-			inode_create (inode_sector, initial_size)
-			&& dir_add (dir, name, inode_sector));
-	if (!success && inode_sector != 0)
+	if (!success && inode_sector != 0) {
 		fat_remove_chain(inode_sector, 0); // P4-1
-		//free_map_release (inode_sector, 1);
+	}
 	// P4-1 end
 	dir_close (dir);
 

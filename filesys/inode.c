@@ -218,7 +218,7 @@ inode_read_at (struct inode *inode, void *buffer_, off_t size, off_t offset) {
 		/* Disk sector to read, starting byte offset within sector. */
 		disk_sector_t sector_idx = byte_to_sector (inode, offset);
 		// P4-1 start
-		if(sector_idx == -1) {
+		if(sector_idx == -1 || sector_idx > EOChain || sector_idx == 0) {
 			break;
 		}
 		// P4-1 end
@@ -283,11 +283,13 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size,
 			inode->data.length = inode_sector_end;
 			int num = (offset + size - inode_sector_end) / DISK_SECTOR_SIZE + 1;
 			cluster_t new_clst;
+			static char zeros[DISK_SECTOR_SIZE];
 			for (int i = 0; i < num; i++) {
 				new_clst = fat_create_chain(inode->data.start);
 				if (new_clst == 0) {
 					break;
 				}
+				disk_write (filesys_disk, cluster_to_sector(new_clst), zeros);
 				inode->data.length += DISK_SECTOR_SIZE;
 			}
 		}
@@ -301,7 +303,7 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size,
 		/* Sector to write, starting byte offset within sector. */
 		disk_sector_t sector_idx = byte_to_sector (inode, offset);
 		// P4-1 start
-		if(sector_idx == -1) {
+		if(sector_idx == -1 || sector_idx > EOChain || sector_idx == 0) {
 			break;
 		}
 		// P4-1 end
