@@ -202,15 +202,11 @@ void
 fat_remove_chain (cluster_t clst, cluster_t pclst) {
    /* TODO: Your code goes here. */
    //P4-1 start
-   cluster_t new_clst = clst;
-   cluster_t temp;
-   while(true) {
-      temp = fat_get(new_clst);
-      fat_put(new_clst, 0);
-      if(temp == EOChain) {
-         break;
-      }
-      new_clst = temp;
+   cluster_t next_cluster;
+   while(clst != EOChain) {
+      next_cluster = fat_get(clst);
+      fat_put(clst, 0);
+      clst = next_cluster;
    }
 
    if(pclst != 0) {
