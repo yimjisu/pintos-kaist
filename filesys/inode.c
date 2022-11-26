@@ -99,7 +99,8 @@ inode_create (disk_sector_t sector, off_t length) {
 
 		// start P4-1
 		disk_write (filesys_disk, cluster_to_sector(sector), disk_inode);
-		cluster_t cluster = fat_create_chain(0);
+		
+		cluster_t cluster = fat_create_chain(sector);
 		if(cluster > 0) {
 			disk_inode->start = cluster;
 			disk_write (filesys_disk, sector, disk_inode);
