@@ -172,7 +172,7 @@ fat_create_chain (cluster_t clst) {
    /* TODO: Your code goes here. */
    //P4-1 start
    // cluster_t new_clst = clst < fat_fs->data_start ? fat_fs->data_start : clst;
-   cluster_t new_clst = clst;
+   cluster_t new_clst = ROOT_DIR_CLUSTER + 1;
    while(fat_get(new_clst) != 0 && new_clst < fat_fs->fat_length) {
       new_clst += 1;
    }
@@ -236,3 +236,10 @@ cluster_to_sector (cluster_t clst) {
    /* TODO: Your code goes here. */
    return fat_fs->data_start + clst * fat_fs->bs.sectors_per_cluster;//P4-1
 }
+
+//P4-1 start
+/* Covert a sector number to a cluster #. */
+cluster_t sector_to_cluster (disk_sector_t sector) {
+   return (sector - fat_fs->data_start) / fat_fs->bs.sectors_per_cluster;
+}
+//P4-1 end

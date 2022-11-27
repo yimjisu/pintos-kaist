@@ -12,6 +12,8 @@
         "hash.h": "c",
         "interrupt.h": "c",
         "bitmap.h": "c",
-        "thread.h": "c"
+        "thread.h": "c",
+        "filesys.h": "c",
+        "disk.h": "c"
     }
 }
