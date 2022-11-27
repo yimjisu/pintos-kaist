@@ -18,6 +18,7 @@ struct inode_disk {
 	off_t length;                       /* File size in bytes. */
 	unsigned magic;                     /* Magic number. */
 	uint32_t unused[125];               /* Not used. */ //500으로 바꿔야 할수도?
+	// bool is_dir; //P4-2
 };
 
 /* Returns the number of sectors to allocate for an inode SIZE
@@ -94,26 +95,30 @@ inode_create (disk_sector_t sector, off_t length) {
 		disk_inode->magic = INODE_MAGIC;
 
 		//P4-1 start
-		// disk_write (filesys_disk, cluster_to_sector(sector), disk_inode);
-		
-		cluster_t cluster = fat_create_chain(sector);
-		if(cluster > 0) {
-			disk_inode->start = cluster;
-			disk_write (filesys_disk, sector, disk_inode);
-			if (sectors > 0) {
-				static char zeros[DISK_SECTOR_SIZE];
-				size_t i;
-				for (i = 1; i < sectors; i++) {
-					disk_write (filesys_disk, cluster_to_sector(cluster), zeros);
-					cluster = fat_create_chain(cluster);					 
-					if(cluster == 0) {
-						free (disk_inode);
-						return false;
-					}
+		cluster_t cluster = sector;
+
+		if (sectors > 0) {
+			for (int i = 0; i < sectors; i++) {
+				cluster = fat_create_chain(cluster);
+				if(cluster == 0) {
+					fat_remove_chain(sector, 0);
+					free (disk_inode);
+					return false;
 				}
 			}
-			success = true; 
 		}
+		cluster = fat_get(sector);
+		disk_inode->start = cluster;
+		disk_write (filesys_disk, cluster_to_sector(sector), disk_inode);
+
+		if (sectors > 0) {
+			static char buff[DISK_SECTOR_SIZE];
+			for (int i = 1; i < sectors; i++) {
+				disk_write (filesys_disk, cluster_to_sector(cluster), buff);
+				cluster = fat_get(cluster);					 
+			}
+		}
+		success = true; 
 		//P4-1 end
 
 		free (disk_inode);

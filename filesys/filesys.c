@@ -70,7 +70,7 @@ filesys_create (const char *name, off_t initial_size) {
 		}else {
 			success = (
 				inode_create (inode_sector, initial_size)
-				&& dir_add (dir, name, inode_sector)
+				&& dir_add (dir, name, cluster_to_sector(inode_sector))
 			);
 		}
 	}
