@@ -48,8 +48,6 @@ byte_to_sector (const struct inode *inode, off_t pos) {
 		//P4-1 start
 		cluster_t clst = inode->data.start;
 		uint32_t clst_num = pos / DISK_SECTOR_SIZE;
-		printf("start : %d\n", inode->data.start);
-		printf("clst_num : %d\n", clst_num);
 		for (int i = 0; i < clst_num; i++) {
 			clst = fat_get(clst);
 			if (clst==0) {
@@ -96,45 +94,29 @@ inode_create (disk_sector_t sector, off_t length) {
 		disk_inode->magic = INODE_MAGIC;
 
 		//P4-1 start
-		// disk_write (filesys_disk, sector, disk_inode);
-		cluster_t clst = fat_create_chain(sector);
-		disk_inode->start = clst;
-
-		if (sectors > 0) {
-			for (int i = 1; i < sectors; i++) {
-				clst = fat_create_chain(clst);
-				if (clst == 0) {
-					fat_remove_chain(sector, 0);
-					free(disk_inode);
-					return false;
+		// disk_write (filesys_disk, cluster_to_sector(sector), disk_inode);
+		
+		cluster_t cluster = fat_create_chain(sector);
+		if(cluster > 0) {
+			disk_inode->start = cluster;
+			disk_write (filesys_disk, sector, disk_inode);
+			if (sectors > 0) {
+				static char zeros[DISK_SECTOR_SIZE];
+				size_t i;
+				for (i = 1; i < sectors; i++) {
+					disk_write (filesys_disk, cluster_to_sector(cluster), zeros);
+					cluster = fat_create_chain(cluster);					 
+					if(cluster == 0) {
+						free (disk_inode);
+						return false;
+					}
 				}
 			}
+			success = true; 
 		}
-
-		disk_write (filesys_disk, cluster_to_sector(sector), disk_inode);
-
-		if (sectors > 0) {
-			static char buff[DISK_SECTOR_SIZE];
-			clst = fat_get(clst);
-			for (int i = 0; i < sectors; i++) {
-				disk_write(filesys_disk, cluster_to_sector(clst), buff);
-				clst = fat_get(clst);
-			}
-		}
-		success = true;
-		free (disk_inode);
 		//P4-1 end
-		// if (free_map_allocate (sectors, &disk_inode->start)) {
-		// 	disk_write (filesys_disk, sector, disk_inode);
-		// 	if (sectors > 0) {
-		// 		static char zeros[DISK_SECTOR_SIZE];
-		// 		size_t i;
 
-		// 		for (i = 0; i < sectors; i++) 
-		// 			disk_write (filesys_disk, disk_inode->start + i, zeros); 
-		// 	}
-		// 	success = true; 
-		// } 
+		free (disk_inode);
 	}
 	return success;
 }
@@ -202,12 +184,8 @@ inode_close (struct inode *inode) {
 
 		/* Deallocate blocks if removed. */
 		if (inode->removed) {
-			// free_map_release (inode->sector, 1);
-			// free_map_release (inode->data.start,
-			// 		bytes_to_sectors (inode->data.length)); 
 			//P4-1 start
 			fat_remove_chain(inode->sector, 0);
-            fat_remove_chain(inode->data.start, 0);
 			//P4-1 end
 		}
 
@@ -314,11 +292,12 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size,
 			inode->data.length = offset + size;
 		}
 	}
-	// P4-1 end
+	// P4-1 end 
 
 	while (size > 0) {
 		/* Sector to write, starting byte offset within sector. */
 		disk_sector_t sector_idx = byte_to_sector (inode, offset);
+		// printf("sector idx : %d\n", sector_idx);
 		// P4-1 start
 		if(sector_idx == -1 || sector_idx > EOChain || sector_idx == 0) {
 			break;
