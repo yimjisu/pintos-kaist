@@ -171,8 +171,7 @@ cluster_t
 fat_create_chain (cluster_t clst) {
    /* TODO: Your code goes here. */
    //P4-1 start
-   // cluster_t new_clst = clst < fat_fs->data_start ? fat_fs->data_start : clst;
-   cluster_t new_clst = ROOT_DIR_CLUSTER + 1;
+   cluster_t new_clst = fat_fs->bs.fat_start;
    while(fat_get(new_clst) != 0 && new_clst < fat_fs->fat_length) {
       new_clst += 1;
    }
@@ -181,13 +180,15 @@ fat_create_chain (cluster_t clst) {
       return 0;
    }
 
-   if(clst != 0) {
-      while(fat_get(clst) != EOChain) {
-         clst = fat_get(clst);
-      }
-      fat_put(clst, new_clst);
+   if(clst == 0) {
+      fat_put(new_clst, EOChain);
+      return new_clst;
    }
 
+   while(fat_get(clst) != EOChain) {
+      clst = fat_get(clst);
+   }
+   fat_put(clst, new_clst);
    fat_put(new_clst, EOChain);
    return new_clst;
    //P4-1 end
@@ -199,14 +200,15 @@ void
 fat_remove_chain (cluster_t clst, cluster_t pclst) {
    /* TODO: Your code goes here. */
    //P4-1 start
+   cluster_t next_cluster;
+   while(clst != EOChain) {
+      next_cluster = fat_get(clst);
+      fat_put(clst, 0);
+      clst = next_cluster;
+   }
+
    if(pclst != 0) {
       fat_put(pclst, EOChain);
-   }
-   cluster_t next_clst = clst;
-   while(clst != EOChain) {
-      next_clst = fat_get(clst);
-      fat_put(clst, 0);
-      clst = next_clst;
    }
    //P4-1 end
 }
@@ -215,6 +217,10 @@ fat_remove_chain (cluster_t clst, cluster_t pclst) {
 void
 fat_put (cluster_t clst, cluster_t val) {
    /* TODO: Your code goes here. */
+   cluster_t next_cluster = fat_get(clst);
+   if(next_cluster != 0 && next_cluster != EOChain) {
+      fat_fs->fat[val] = next_cluster;
+   }
    fat_fs->fat[clst] = val;//P4-1
 }
 

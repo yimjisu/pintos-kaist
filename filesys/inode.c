@@ -6,7 +6,7 @@
 #include "filesys/filesys.h"
 #include "filesys/free-map.h"
 #include "threads/malloc.h"
-#include "filesys/fat.h"
+#include "filesys/fat.h"//P4-1
 
 /* Identifies an inode. */
 #define INODE_MAGIC 0x494e4f44
@@ -97,23 +97,21 @@ inode_create (disk_sector_t sector, off_t length) {
 
 		//P4-1 start
 		// disk_write (filesys_disk, sector, disk_inode);
-		cluster_t clst = sector;
-		cluster_t clst_temp = clst;
-		disk_inode->start = fat_create_chain(clst);
-		printf("start : %d\n", disk_inode->start);
+		cluster_t clst = fat_create_chain(sector);
+		disk_inode->start = clst;
 
 		if (sectors > 0) {
-			for (int i = 0; i < sectors; i++) {
-				clst_temp = fat_create_chain(clst_temp);
-				if (clst_temp == 0) {
-					fat_remove_chain(clst, 0);
+			for (int i = 1; i < sectors; i++) {
+				clst = fat_create_chain(clst);
+				if (clst == 0) {
+					fat_remove_chain(sector, 0);
 					free(disk_inode);
 					return false;
 				}
 			}
 		}
-		printf("write clst : %d\n", clst);
-		disk_write (filesys_disk, cluster_to_sector(clst), disk_inode);
+
+		disk_write (filesys_disk, cluster_to_sector(sector), disk_inode);
 
 		if (sectors > 0) {
 			static char buff[DISK_SECTOR_SIZE];
@@ -233,10 +231,14 @@ inode_read_at (struct inode *inode, void *buffer_, off_t size, off_t offset) {
 	uint8_t *buffer = buffer_;
 	off_t bytes_read = 0;
 	uint8_t *bounce = NULL;
-	printf("inode_start : %d\n",inode->data.start);
 	while (size > 0) {
 		/* Disk sector to read, starting byte offset within sector. */
 		disk_sector_t sector_idx = byte_to_sector (inode, offset);
+		// P4-1 start
+		if(sector_idx == -1 || sector_idx > EOChain || sector_idx == 0) {
+			break;
+		}
+		// P4-1 end
 		int sector_ofs = offset % DISK_SECTOR_SIZE;
 
 		/* Bytes left in inode, bytes left in sector, lesser of the two. */
@@ -286,37 +288,42 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size,
 	off_t bytes_written = 0;
 	uint8_t *bounce = NULL;
 
-	// if (inode->deny_write_cnt)
-	// 	return 0;
+	if (inode->deny_write_cnt)
+		return 0;
+	
+	// P4-1 start
+	if (offset + size > inode->data.length) {
+		off_t inode_sector_end = inode->data.length - inode->data.length % DISK_SECTOR_SIZE + DISK_SECTOR_SIZE;
 
-	// if (offset > inode->data.length) {
-	// 	// 0으로 채우기
-	// }
-
-	// if (offset + size > inode->data.length) {
-	// 	off_t inode_sector_end = inode->data.length - inode->data.length % DISK_SECTOR_SIZE + DISK_SECTOR_SIZE;
-
-	// 	if (offset + size > inode_sector_end) {
-	// 		// chain 연장
-	// 		inode->data.length = inode_sector_end;
-	// 		int num = (offset + size - inode_sector_end) / DISK_SECTOR_SIZE + 1;
-	// 		cluster_t new_clst;
-	// 		for (int i = 0; i < num; i++) {
-	// 			new_clst = fat_create_chain(inode->data.start);
-	// 			if (new_clst == 0) {
-	// 				break;
-	// 			}
-	// 			inode->data.length += DISK_SECTOR_SIZE;
-	// 		}
-	// 	}
-	// 	if (inode->data.length > offset + size) {
-	// 		inode->data.length = offset + size;
-	// 	}
-	// }
+		if (offset + size > inode_sector_end) {
+			// chain 연장
+			inode->data.length = inode_sector_end;
+			int num = (offset + size - inode_sector_end) / DISK_SECTOR_SIZE + 1;
+			cluster_t new_clst;
+			static char zeros[DISK_SECTOR_SIZE];
+			for (int i = 0; i < num; i++) {
+				new_clst = fat_create_chain(inode->data.start);
+				if (new_clst == 0) {
+					break;
+				}
+				disk_write (filesys_disk, cluster_to_sector(new_clst), zeros);
+				inode->data.length += DISK_SECTOR_SIZE;
+			}
+		}
+		if (inode->data.length > offset + size) {
+			inode->data.length = offset + size;
+		}
+	}
+	// P4-1 end
 
 	while (size > 0) {
 		/* Sector to write, starting byte offset within sector. */
 		disk_sector_t sector_idx = byte_to_sector (inode, offset);
+		// P4-1 start
+		if(sector_idx == -1 || sector_idx > EOChain || sector_idx == 0) {
+			break;
+		}
+		// P4-1 end
 		int sector_ofs = offset % DISK_SECTOR_SIZE;
 
 		/* Bytes left in inode, bytes left in sector, lesser of the two. */
