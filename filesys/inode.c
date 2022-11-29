@@ -271,7 +271,6 @@ inode_read_at (struct inode *inode, void *buffer_, off_t size, off_t offset) {
 		bytes_read += chunk_size;
 	}
 	free (bounce);
-
 	return bytes_read;
 }
 
@@ -391,8 +390,6 @@ inode_length (const struct inode *inode) {
 //P4-2 start
 bool
 inode_isdir(const struct inode *inode) {
-	struct inode_disk *disk_inode = calloc(1, sizeof *disk_inode);
-	disk_read(filesys_disk, cluster_to_sector(inode->sector), disk_inode);
-	return (disk_inode->isdir == 1);
+	return inode->data.isdir;
 }
 //P4-2 start

@@ -15,6 +15,18 @@
         "thread.h": "c",
         "filesys.h": "c",
         "disk.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "malloc.h": "c",
+        "string_view": "c",
+        "main.h": "c",
+        "*.tcc": "c",
+        "exception": "c",
+        "fstream": "c",
+        "iosfwd": "c",
+        "new": "c",
+        "ostream": "c",
+        "sstream": "c",
+        "streambuf": "c",
+        "inode.h": "c"
     }
 }
