@@ -300,6 +300,7 @@ process_exit (void) {
 	file_close(curr->running); //P2-5
 
 	process_cleanup ();
+	dir_close(curr->working_dir);//P4-2
 	// wake up parent
 	sema_up(&curr->sema_wait);
 	// wait until parent receives exit status 

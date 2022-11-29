@@ -133,6 +133,7 @@ struct thread {
 	// start P3-3
 	uintptr_t rsp;
 	// start P3-5
+	struct dir *working_dir; //P4-2
 };
 
 /* If false (default), use round-robin scheduler.

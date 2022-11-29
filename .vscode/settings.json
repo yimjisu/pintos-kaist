@@ -14,6 +14,7 @@
         "bitmap.h": "c",
         "thread.h": "c",
         "filesys.h": "c",
-        "disk.h": "c"
+        "disk.h": "c",
+        "string.h": "c"
     }
 }

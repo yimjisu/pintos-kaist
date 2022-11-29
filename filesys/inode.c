@@ -11,32 +11,12 @@
 /* Identifies an inode. */
 #define INODE_MAGIC 0x494e4f44
 
-/* On-disk inode.
- * Must be exactly DISK_SECTOR_SIZE bytes long. */
-struct inode_disk {
-	disk_sector_t start;                /* First data sector. */
-	off_t length;                       /* File size in bytes. */
-	unsigned magic;                     /* Magic number. */
-	uint32_t unused[125];               /* Not used. */ //500으로 바꿔야 할수도?
-	// bool is_dir; //P4-2
-};
-
 /* Returns the number of sectors to allocate for an inode SIZE
  * bytes long. */
 static inline size_t
 bytes_to_sectors (off_t size) {
 	return DIV_ROUND_UP (size, DISK_SECTOR_SIZE);
 }
-
-/* In-memory inode. */
-struct inode {
-	struct list_elem elem;              /* Element in inode list. */
-	disk_sector_t sector;               /* Sector number of disk location. */
-	int open_cnt;                       /* Number of openers. */
-	bool removed;                       /* True if deleted, false otherwise. */
-	int deny_write_cnt;                 /* 0: writes ok, >0: deny writes. */
-	struct inode_disk data;             /* Inode content. */
-};
 
 /* Returns the disk sector that contains byte offset POS within
  * INODE.
@@ -78,7 +58,7 @@ inode_init (void) {
  * Returns true if successful.
  * Returns false if memory or disk allocation fails. */
 bool
-inode_create (disk_sector_t sector, off_t length) {
+inode_create (disk_sector_t sector, off_t length, uint32_t isdir) {
 	struct inode_disk *disk_inode = NULL;
 	bool success = false;
 
@@ -93,7 +73,8 @@ inode_create (disk_sector_t sector, off_t length) {
 		size_t sectors = bytes_to_sectors (length);
 		disk_inode->length = length;
 		disk_inode->magic = INODE_MAGIC;
-
+		disk_inode->isdir = isdir;
+		disk_inode->islink = 0;
 		//P4-1 start
 		cluster_t cluster = sector;
 
@@ -120,11 +101,46 @@ inode_create (disk_sector_t sector, off_t length) {
 		}
 		success = true; 
 		//P4-1 end
-
 		free (disk_inode);
 	}
 	return success;
 }
+
+//P4-2 start
+bool
+link_inode_create (disk_sector_t sector, char* path_name) {
+
+	struct inode_disk *disk_inode = NULL;
+	bool success = false;
+
+	ASSERT (strlen(path_name) >= 0);
+
+	/* If this assertion fails, the inode structure is not exactly
+	 * one sector in size, and you should fix that. */
+	ASSERT (sizeof *disk_inode == DISK_SECTOR_SIZE);
+
+	disk_inode = calloc (1, sizeof *disk_inode);
+	if (disk_inode != NULL) {
+		disk_inode->length = strlen(path_name) + 1;
+		disk_inode->magic = INODE_MAGIC;
+
+        disk_inode->isdir = 0;
+        disk_inode->islink = 1;
+
+        strlcpy(disk_inode->link, path_name, strlen(path_name) + 1);
+
+        cluster_t cluster = fat_create_chain(sector);
+        if(cluster)
+        {
+            disk_inode->start = cluster;
+            disk_write (filesys_disk, cluster_to_sector(sector), disk_inode);
+            success = true;
+        }
+		free (disk_inode);
+	}
+	return success;
+}
+//P4-2 end
 
 /* Reads an inode from SECTOR
  * and returns a `struct inode' that contains it.
@@ -280,29 +296,24 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size,
 
 		if (offset + size > inode_sector_end) {
 			// chain 연장
-			inode->data.length = inode_sector_end;
-			int num = (offset + size - inode_sector_end) / DISK_SECTOR_SIZE + 1;
+			int num = (offset + size - inode_sector_end - 1) / DISK_SECTOR_SIZE + 1;
 			cluster_t new_clst;
-			static char zeros[DISK_SECTOR_SIZE];
+			static char buff[DISK_SECTOR_SIZE];
 			for (int i = 0; i < num; i++) {
 				new_clst = fat_create_chain(inode->data.start);
 				if (new_clst == 0) {
 					break;
 				}
-				disk_write (filesys_disk, cluster_to_sector(new_clst), zeros);
-				inode->data.length += DISK_SECTOR_SIZE;
+				disk_write (filesys_disk, cluster_to_sector(new_clst), buff);
 			}
 		}
-		if (inode->data.length > offset + size) {
-			inode->data.length = offset + size;
-		}
+		inode->data.length = offset + size;
 	}
 	// P4-1 end 
 
 	while (size > 0) {
 		/* Sector to write, starting byte offset within sector. */
 		disk_sector_t sector_idx = byte_to_sector (inode, offset);
-		// printf("sector idx : %d\n", sector_idx);
 		// P4-1 start
 		if(sector_idx == -1 || sector_idx > EOChain || sector_idx == 0) {
 			break;
@@ -376,3 +387,12 @@ off_t
 inode_length (const struct inode *inode) {
 	return inode->data.length;
 }
+
+//P4-2 start
+bool
+inode_isdir(const struct inode *inode) {
+	struct inode_disk *disk_inode = calloc(1, sizeof *disk_inode);
+	disk_read(filesys_disk, cluster_to_sector(inode->sector), disk_inode);
+	return (disk_inode->isdir == 1);
+}
+//P4-2 start

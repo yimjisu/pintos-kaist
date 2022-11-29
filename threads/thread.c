@@ -15,6 +15,7 @@
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
+#include "filesys/directory.h"
 
 /* Random value for struct thread's `magic' member.
    Used to detect stack overflow.  See the big comment at the top
@@ -119,6 +120,7 @@ thread_init (void) {
 	init_thread (initial_thread, "main", PRI_DEFAULT);
 	initial_thread->status = THREAD_RUNNING;
 	initial_thread->tid = allocate_tid ();
+	initial_thread->working_dir = NULL;//P4-2
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -211,6 +213,7 @@ thread_create (const char *name, int priority,
 
 	// start P2-3
 	struct thread *curr = thread_current ();
+	if (curr->working_dir != NULL) t->working_dir = dir_reopen(curr->working_dir);//P4-2
 	list_push_back(&curr->child, &t->child_elem);
 	// t->files = palloc_get_page(PAL_ZERO); // page 1개 만들기
 	t->files = palloc_get_multiple(PAL_ZERO, FDT_PAGES);

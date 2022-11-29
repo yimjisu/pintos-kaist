@@ -11,7 +11,10 @@
 #include "filesys/file.h" //P2-3
 #include "filesys/filesys.h" //P2-3
 #include "threads/palloc.h" //P2-3
-#include "vm/file.h" // P3-5
+#include "vm/file.h" //P3-5
+#include "filesys/inode.h" //P4-2
+#include "filesys/directory.h" //P4-2
+#include "filesys/fat.h" //P4-2
 
 void syscall_entry (void);
 void syscall_handler (struct intr_frame *);
@@ -44,6 +47,15 @@ void remove_file(int fd);
 void *mmap (void *addr, size_t length, int writable, int fd, off_t offset);
 void munmap (void *addr);
 // end P3-5
+
+//P4-2 start
+bool sys_chdir(const char *dir);
+bool sys_mkdir(const char *dir);
+bool sys_readdir(int fd, char *dir);
+bool is_dir(int fd);
+struct cluster_t *sys_inumber(int fd);
+int symlink (const char *target, const char *link);
+//P4-2 end
 
 /* System call.
  *
@@ -133,6 +145,26 @@ syscall_handler (struct intr_frame *f UNUSED) {
 		case SYS_MUNMAP:
 			munmap(f->R.rdi);
 			break;
+		//P4-2 start
+		case SYS_CHDIR:
+			f->R.rax = sys_chdir(f->R.rdi);
+			break;
+		case SYS_MKDIR:
+			f->R.rax = sys_mkdir(f->R.rdi);
+			break;
+		case SYS_READDIR:
+			f->R.rax = sys_readdir(f->R.rdi, f->R.rsi);
+			break;
+		case SYS_ISDIR:
+			f->R.rax = is_dir(f->R.rdi);
+			break;
+		case SYS_INUMBER:
+			f->R.rax = sys_inumber(f->R.rdi);
+			break;
+		case SYS_SYMLINK:
+			f->R.rax = symlink(f->R.rdi, f->R.rsi);
+			break;
+		//P4-2 end
 		default:
 			exit(-1);
 			break;
@@ -392,6 +424,105 @@ void munmap (void *addr) {
 	do_munmap(addr);
 }
 // end P3-5
+
+//P4-2 start
+bool sys_chdir(const char *dir) {
+	struct thread *curr = thread_current();
+    if (dir == NULL) return false;
+
+    char *dir_copy = (char *)malloc(strlen(dir) + 1);
+    strlcpy(dir_copy, dir, strlen(dir) + 1);
+
+    struct dir *chdir = NULL;
+
+    if (dir_copy[0] == '/') { //절대경로
+        chdir = dir_open_root();
+    }
+    else { //상대경로
+        chdir = dir_reopen(curr->working_dir);
+	}
+
+    char *token, *saveptr;
+    token = strtok_r(dir_copy, "/", &saveptr);
+
+    struct inode *inode = NULL;
+    while (token != NULL) {
+        if (!dir_lookup(chdir, token, &inode)) {
+            dir_close(chdir);
+            return false;
+        }
+        if (!inode_isdir(inode)) { //file인 경우
+            dir_close(chdir);
+            return false;
+        }
+        dir_close(chdir);
+        chdir = dir_open(inode);
+        token = strtok_r(NULL, "/", &saveptr);
+    }
+
+    dir_close(curr->working_dir);
+	curr->working_dir = chdir;
+    return true;
+}
+
+bool sys_mkdir(const char *dir) {
+	lock_acquire(&file_lock);
+    bool new_dir = filesys_create_dir(dir);
+    lock_release(&file_lock);
+    return new_dir;
+}
+bool sys_readdir(int fd, char *dir) {
+	if (dir == NULL) return false;
+
+	struct file *open = lookup_fd(fd);
+	if (open == NULL) return false;
+
+	if (!inode_isdir(file_get_inode(open))) return false;
+
+	struct dir *file_dir = open;
+    if (file_dir->pos == 0) {
+        dir_seek(file_dir, 2 * sizeof(struct dir_entry));
+	}
+
+	return dir_readdir(file_dir, dir);
+}
+bool is_dir(int fd) {
+	struct file *open = lookup_fd(fd);
+
+	if (open==NULL) return false;
+
+    return inode_isdir(file_get_inode(open));
+}
+struct cluster_t *sys_inumber(int fd) {
+	struct file *open = lookup_fd(fd);
+
+	if (open==NULL) return false;
+
+    return inode_get_inumber(file_get_inode(open));
+}
+int symlink (const char *target, const char *link) {
+    bool success = false;
+    char* cp_link = (char *)malloc(strlen(link) + 1);
+    strlcpy(cp_link, link, strlen(link) + 1);
+
+    char* file_link = (char *)malloc(strlen(cp_link) + 1);
+    struct dir* dir = parse_path(cp_link, file_link);
+
+    cluster_t inode_cluster = fat_create_chain(0);
+
+    success = (dir != NULL
+               && link_inode_create(inode_cluster, target)
+               && dir_add(dir, file_link, cluster_to_sector(inode_cluster)));
+
+    if (!success && inode_cluster != 0) {
+        fat_remove_chain(inode_cluster, 0);
+	}
+    
+    dir_close(dir);
+    return success - 1;
+}
+
+//P4-2 end
 
 
 
