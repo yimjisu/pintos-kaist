@@ -49,11 +49,11 @@ void munmap (void *addr);
 // end P3-5
 
 //P4-2 start
-bool sys_chdir(const char *dir);
-bool sys_mkdir(const char *dir);
-bool sys_readdir(int fd, char *dir);
-bool is_dir(int fd);
-struct cluster_t *sys_inumber(int fd);
+bool chdir(const char *dir);
+bool mkdir(const char *dir);
+bool readdir(int fd, char *dir);
+bool isdir(int fd);
+struct cluster_t * inumber(int fd);
 int symlink (const char *target, const char *link);
 //P4-2 end
 
@@ -147,19 +147,19 @@ syscall_handler (struct intr_frame *f UNUSED) {
 			break;
 		//P4-2 start
 		case SYS_CHDIR:
-			f->R.rax = sys_chdir(f->R.rdi);
+			f->R.rax = chdir(f->R.rdi);
 			break;
 		case SYS_MKDIR:
-			f->R.rax = sys_mkdir(f->R.rdi);
+			f->R.rax = mkdir(f->R.rdi);
 			break;
 		case SYS_READDIR:
-			f->R.rax = sys_readdir(f->R.rdi, f->R.rsi);
+			f->R.rax = readdir(f->R.rdi, f->R.rsi);
 			break;
 		case SYS_ISDIR:
-			f->R.rax = is_dir(f->R.rdi);
+			f->R.rax =  isdir(f->R.rdi);
 			break;
 		case SYS_INUMBER:
-			f->R.rax = sys_inumber(f->R.rdi);
+			f->R.rax = inumber(f->R.rdi);
 			break;
 		case SYS_SYMLINK:
 			f->R.rax = symlink(f->R.rdi, f->R.rsi);
@@ -428,21 +428,21 @@ void munmap (void *addr) {
 // end P3-5
 
 //P4-2 start
-bool sys_chdir(const char *dir) {
-	bool res;
+bool chdir(const char *dir) {
 	lock_acquire(&file_lock);
-	res = filesys_chdir(dir);
+	bool res = filesys_chdir(dir);
 	lock_release(&file_lock);
     return res;
 }
 
-bool sys_mkdir(const char *dir) {
+bool mkdir(const char *dir) {
 	lock_acquire(&file_lock);
-    bool new_dir = filesys_create_dir(dir);
+    bool res = filesys_create_dir(dir);
     lock_release(&file_lock);
-    return new_dir;
+    return res;
 }
-bool sys_readdir(int fd, char *dir) {
+
+bool readdir(int fd, char *dir) {
 	lock_acquire(&file_lock);
 	if (dir == NULL) return false;
 
@@ -458,7 +458,7 @@ bool sys_readdir(int fd, char *dir) {
 	lock_release(&file_lock);
 	return dir_readdir(file_dir, dir);
 }
-bool is_dir(int fd) {
+bool isdir(int fd) {
 	lock_release(&file_lock);
 	struct file *open = lookup_fd(fd);
 
@@ -466,7 +466,7 @@ bool is_dir(int fd) {
 	lock_release(&file_lock);
     return inode_isdir(file_get_inode(open));
 }
-struct cluster_t *sys_inumber(int fd) {
+struct cluster_t * inumber(int fd) {
 	lock_release(&file_lock);
 	struct file *open = lookup_fd(fd);
 
