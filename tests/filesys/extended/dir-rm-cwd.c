@@ -11,7 +11,6 @@ wrap_open (const char *name)
 {
   static int fds[8], fd_cnt;
   int fd, i;
-
   CHECK ((fd = open (name)) > 1, "open \"%s\"", name);
   for (i = 0; i < fd_cnt; i++)
     if (fds[i] == fd)
@@ -25,7 +24,6 @@ test_main (void)
 {
   int root_fd, a_fd0;
   char name[READDIR_MAX_LEN + 1];
-
   root_fd = wrap_open ("/");
   CHECK (mkdir ("a"), "mkdir \"a\"");
 

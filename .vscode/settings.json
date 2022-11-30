@@ -27,6 +27,7 @@
         "ostream": "c",
         "sstream": "c",
         "streambuf": "c",
-        "inode.h": "c"
+        "inode.h": "c",
+        "atomic": "c"
     }
 }

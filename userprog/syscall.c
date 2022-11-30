@@ -459,7 +459,7 @@ bool readdir(int fd, char *dir) {
 	return dir_readdir(file_dir, dir);
 }
 bool isdir(int fd) {
-	lock_release(&file_lock);
+	lock_acquire(&file_lock);
 	struct file *open = lookup_fd(fd);
 
 	if (open==NULL) return false;
@@ -467,7 +467,7 @@ bool isdir(int fd) {
     return inode_isdir(file_get_inode(open));
 }
 struct cluster_t * inumber(int fd) {
-	lock_release(&file_lock);
+	lock_acquire(&file_lock);
 	struct file *open = lookup_fd(fd);
 
 	if (open==NULL) return false;
@@ -475,7 +475,7 @@ struct cluster_t * inumber(int fd) {
     return inode_get_inumber(file_get_inode(open));
 }
 int symlink (const char *target, const char *link) {
-	lock_release(&file_lock);
+	lock_acquire(&file_lock);
     bool success = false;
     char* cp_link = (char *)malloc(strlen(link) + 1);
     strlcpy(cp_link, link, strlen(link) + 1);

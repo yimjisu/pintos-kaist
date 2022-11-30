@@ -170,6 +170,15 @@ dir_remove (struct dir *dir, const char *name) {
 	if (inode == NULL)
 		goto done;
 
+	//P4-2 start
+	if (inode_isdir(inode)) {
+		struct dir *target_dir = dir_open(inode);
+		bool empty = dir_empty(target_dir);
+		dir_close(target_dir);
+		if (!empty) goto done;
+	}
+	//P4-2 end
+
 	/* Erase directory entry. */
 	e.in_use = false;
 	if (inode_write_at (dir->inode, &e, sizeof e, ofs) != sizeof e)
@@ -208,4 +217,18 @@ dir_seek (struct dir *dir, off_t new_pos) {
 	ASSERT (new_pos >= 0);
 	dir->pos = new_pos;
 }
+
+bool
+dir_empty (const struct dir *dir) {
+	struct dir_entry e;
+	size_t ofs;
+
+	for (ofs = sizeof e; inode_read_at (dir->inode, &e, sizeof e, ofs) == sizeof e;
+		 ofs += sizeof e) {
+		if (e.in_use) return false;
+
+	}
+	return true;
+}
+
 //P4-2 end

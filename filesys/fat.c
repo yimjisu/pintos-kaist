@@ -201,7 +201,8 @@ fat_remove_chain (cluster_t clst, cluster_t pclst) {
    /* TODO: Your code goes here. */
    //P4-1 start
    cluster_t next_cluster;
-   while(clst != EOChain) {
+
+   while(clst != EOChain && clst != 0) {
       next_cluster = fat_get(clst);
       fat_put(clst, 0);
       clst = next_cluster;
