@@ -119,7 +119,7 @@ dir_add (struct dir *dir, const char *name, disk_sector_t inode_sector) {
 	ASSERT (name != NULL);
 
 	/* Check NAME for validity. */
-	if (*name == '\0' || strlen (name) > NAME_MAX)
+	if (*name == '\0' || strlen (name) > NAME_MAX || strlen (name) == 0) //P4-2
 		return false;
 
 	/* Check that NAME is not in use. */

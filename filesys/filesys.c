@@ -211,7 +211,7 @@ struct dir *parse_path(char *path_name, char *file_name) {
     if (path_name == NULL || file_name == NULL) return NULL;
 
     if (strlen(path_name) == 0) {
-        file_name = path_name;
+        strlcpy(file_name, path_name, strlen(path_name) + 1);
         dir = dir_open_root();
         return dir;
     }
