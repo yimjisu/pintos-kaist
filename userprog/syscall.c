@@ -258,7 +258,8 @@ int read(int fd, void *buffer, unsigned size) {
 	}
 	else {
 		lock_acquire(&file_lock);
-		read = file_read(open, buffer, size);
+		if (!inode_isdir(open->inode)) read = file_read(open, buffer, size);//P4-2
+		else read = -1;
 		lock_release(&file_lock);
 	}
 	return read;
@@ -284,7 +285,8 @@ int write (int fd, const void *buffer, unsigned size) {
 	}
 	else {
 		lock_acquire(&file_lock);
-		write = file_write(open, buffer, size);
+		if (!inode_isdir(open->inode)) write = file_write(open, buffer, size);//P4-2
+		else write = -1;
 		lock_release(&file_lock);
 	}
 	return write;
@@ -426,6 +428,7 @@ void munmap (void *addr) {
 // end P3-5
 
 //P4-2 start
+<<<<<<< HEAD
 bool chdir(const char *dir) {
 	struct thread *curr = thread_current();
     if (dir == NULL) return false;
@@ -463,6 +466,14 @@ bool chdir(const char *dir) {
     dir_close(curr->working_dir);
 	curr->working_dir = chdir;
     return true;
+=======
+bool sys_chdir(const char *dir) {
+	bool res;
+	lock_acquire(&file_lock);
+	res = filesys_chdir(dir);
+	lock_release(&file_lock);
+    return res;
+>>>>>>> e3e70534e6dbf8e9eea645a6c4bbbde15e341e7b
 }
 
 bool mkdir(const char *dir) {
@@ -471,7 +482,12 @@ bool mkdir(const char *dir) {
     lock_release(&file_lock);
     return new_dir;
 }
+<<<<<<< HEAD
 bool readdir(int fd, char *dir) {
+=======
+bool sys_readdir(int fd, char *dir) {
+	lock_acquire(&file_lock);
+>>>>>>> e3e70534e6dbf8e9eea645a6c4bbbde15e341e7b
 	if (dir == NULL) return false;
 
 	struct file *open = lookup_fd(fd);
@@ -483,12 +499,18 @@ bool readdir(int fd, char *dir) {
     if (file_dir->pos == 0) {
         dir_seek(file_dir, 2 * sizeof(struct dir_entry));
 	}
-
+	lock_release(&file_lock);
 	return dir_readdir(file_dir, dir);
 }
+<<<<<<< HEAD
 bool isdir(int fd) {
+=======
+bool is_dir(int fd) {
+	lock_release(&file_lock);
+>>>>>>> e3e70534e6dbf8e9eea645a6c4bbbde15e341e7b
 	struct file *open = lookup_fd(fd);
 	if (open==NULL) return false;
+<<<<<<< HEAD
 	return inode_isdir(open->inode);
 }
 
@@ -498,9 +520,22 @@ int *inumber(int fd) {
 	if (open==NULL) return false;
 
     return open->inode->sector;
+=======
+	lock_release(&file_lock);
+    return inode_isdir(file_get_inode(open));
+}
+struct cluster_t *sys_inumber(int fd) {
+	lock_release(&file_lock);
+	struct file *open = lookup_fd(fd);
+
+	if (open==NULL) return false;
+	lock_release(&file_lock);
+    return inode_get_inumber(file_get_inode(open));
+>>>>>>> e3e70534e6dbf8e9eea645a6c4bbbde15e341e7b
 }
 
 int symlink (const char *target, const char *link) {
+	lock_release(&file_lock);
     bool success = false;
     char* cp_link = (char *)malloc(strlen(link) + 1);
     strlcpy(cp_link, link, strlen(link) + 1);
@@ -519,6 +554,7 @@ int symlink (const char *target, const char *link) {
 	}
     
     dir_close(dir);
+	lock_release(&file_lock);
     return success - 1;
 }
 
