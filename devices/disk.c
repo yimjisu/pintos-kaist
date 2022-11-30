@@ -185,9 +185,9 @@ disk_print_stats (void) {
 struct disk *
 disk_get (int chan_no, int dev_no) {
 	ASSERT (dev_no == 0 || dev_no == 1);
-
 	if (chan_no < (int) CHANNEL_CNT) {
 		struct disk *d = &channels[chan_no].devices[dev_no];
+		printf("%d\n", d->is_ata);
 		if (d->is_ata)
 			return d;
 	}
