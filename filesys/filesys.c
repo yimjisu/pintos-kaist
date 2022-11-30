@@ -166,15 +166,12 @@ filesys_remove (const char *name) {
     char* file_name = (char *)malloc(strlen(name) + 1);
     struct dir* dir = parse_path(path_name, file_name);
 
-    struct inode *inode = NULL;
     bool success = false;
 
     if (dir != NULL) {
         success = dir_remove(dir, file_name);
     }
     //P4-2 end
-	// struct dir *dir = dir_open_root ();
-	// bool success = dir != NULL && dir_remove (dir, name);
 	dir_close (dir);
 	return success;
 }

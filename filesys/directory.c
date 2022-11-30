@@ -161,6 +161,9 @@ dir_remove (struct dir *dir, const char *name) {
 	ASSERT (dir != NULL);
 	ASSERT (name != NULL);
 
+	if (!(strcmp(name, ".")&&strcmp(name, "..")))
+		goto done;
+
 	/* Find directory entry. */
 	if (!lookup (dir, name, &e, &ofs))
 		goto done;
@@ -178,7 +181,6 @@ dir_remove (struct dir *dir, const char *name) {
 		if (!empty) goto done;
 	}
 	//P4-2 end
-
 	/* Erase directory entry. */
 	e.in_use = false;
 	if (inode_write_at (dir->inode, &e, sizeof e, ofs) != sizeof e)
@@ -223,7 +225,7 @@ dir_empty (const struct dir *dir) {
 	struct dir_entry e;
 	size_t ofs;
 
-	for (ofs = sizeof e; inode_read_at (dir->inode, &e, sizeof e, ofs) == sizeof e;
+	for (ofs = 2 * sizeof e; inode_read_at (dir->inode, &e, sizeof e, ofs) == sizeof e; // 봐야할 부분
 		 ofs += sizeof e) {
 		if (e.in_use) return false;
 
