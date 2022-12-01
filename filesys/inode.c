@@ -392,4 +392,9 @@ bool
 inode_isdir(const struct inode *inode) {
 	return inode->data.isdir;
 }
+
+bool
+inode_isremoved (const struct inode *inode) {
+  	return inode->removed;
+}
 //P4-2 start

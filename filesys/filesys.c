@@ -42,10 +42,10 @@ filesys_init (bool format) {
 
 	free_map_open ();
 #endif
-    struct dir* root_dir = dir_open_root();
-    dir_add(root_dir, ".", ROOT_DIR_SECTOR);
-    dir_add(root_dir, "..", ROOT_DIR_SECTOR);
-    dir_close(root_dir);
+    // struct dir* root_dir = dir_open_root();
+    // dir_add(root_dir, ".", ROOT_DIR_SECTOR);
+    // dir_add(root_dir, "..", ROOT_DIR_SECTOR);
+    // dir_close(root_dir);
 }
 
 /* Shuts down the file system module, writing any unwritten data
@@ -112,8 +112,8 @@ filesys_create_dir(const char* name) {
             	&& dir_create(inode_sector, 16)
             	&& dir_add(dir, file_name, cluster_to_sector(inode_sector))
             	&& dir_lookup(dir, file_name, &sub_dir_inode)
-            	&& dir_add(sub_dir = dir_open(sub_dir_inode), ".", cluster_to_sector(inode_sector))
-            	&& dir_add(sub_dir, "..", cluster_to_sector(inode_get_inumber(dir_get_inode(dir))))
+            	// && dir_add(sub_dir = dir_open(sub_dir_inode), ".", cluster_to_sector(inode_sector))
+            	// && dir_add(sub_dir, "..", cluster_to_sector(inode_get_inumber(dir_get_inode(dir))))
             );
 
     if (!success && inode_sector != 0) {
@@ -142,12 +142,11 @@ filesys_open (const char *name) {
 
     while (true) {
         dir = parse_path(path_name, file_name);
-        if (dir != NULL) {
-            dir_lookup(dir, file_name, &inode);
-            dir_close(dir);
-            if(!(inode && inode->data.islink)) break;
-            path_name = inode->data.link;
-        }
+        if (dir == NULL) break;
+        dir_lookup(dir, file_name, &inode);
+        dir_close(dir);
+        if(!(inode && inode->data.islink)) break;
+        path_name = inode->data.link;
     }
     //P4-2 end
 	return file_open (inode);
@@ -201,6 +200,56 @@ do_format (void) {
 }
 
 //P4-2 start
+// struct dir *parse_name (const char *name, char *file_name) {
+//     char *path = (char *)malloc(strlen(name) + 1);
+//     strlcpy(path, name, strlen(name) + 1);
+
+//     struct dir *dir = NULL;
+//     struct thread *t = NULL;
+
+//     if (path[0] == '/') { //절대경로
+//         dir = dir_open_root();
+//     }
+//     else { //상대경로
+//         t = thread_current();
+//         if (t->working_dir == NULL) dir = dir_open_root;
+//         else dir = dir_reopen(t->working_dir);
+//     }
+
+//     struct inode* inode;
+
+//     char *token, *token_next, *saveptr;
+//     token = strtok_r(path, "/", &saveptr);
+
+//     while (true) {
+//         if (!dir_lookup(dir, token, &inode)) {
+//             dir_close(dir);
+//             return NULL;
+//         }
+
+//         token_next = strtok_r(NULL, "/", &saveptr);
+//         if (token_next == NULL) {
+//             dir_close(dir);
+//             break;
+//         }
+
+//         if(!inode_isdir(inode)) {
+//             dir_close(dir);
+//             inode_close(inode);
+//             return NULL;
+//         }
+
+//         dir_close(dir);
+//         dir = dir_open(inode);
+
+//         token = token_next;
+//     }
+//     strlcpy (file_name, token, strlen(token) + 1);
+//     return dir;
+// }
+
+
+
 struct dir *parse_path(char *path_name, char *file_name) {
     struct dir *dir = NULL;
 	struct thread *curr = thread_current();
@@ -279,8 +328,12 @@ struct dir *parse_path(char *path_name, char *file_name) {
         else break;
     }
 
-    strlcpy (file_name, token, strlen(token) + 1);
+    if (inode_isremoved (dir_get_inode(dir))) {
+        dir_close(dir);
+        dir = NULL;
+    }
 
+    strlcpy (file_name, token, strlen(token) + 1);
     return dir;
 }
 

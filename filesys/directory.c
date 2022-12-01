@@ -96,7 +96,17 @@ dir_lookup (const struct dir *dir, const char *name,
 	ASSERT (dir != NULL);
 	ASSERT (name != NULL);
 
-	if (lookup (dir, name, &e, NULL))
+	//P4-2 start
+	if (strcmp (name, ".") == 0) {
+		*inode = inode_reopen(dir->inode);
+	}
+	else if (strcmp (name, "..") == 0) {
+		inode_read_at (dir->inode, &e, sizeof e, 0);
+		*inode = inode_open(e.inode_sector);
+	}
+	//P4-2 end
+
+	else if (lookup (dir, name, &e, NULL))
 		*inode = inode_open (e.inode_sector);
 	else
 		*inode = NULL;
