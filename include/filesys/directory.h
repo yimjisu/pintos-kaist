@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include "devices/disk.h"
 #include "filesys/off_t.h"
+#include "threads/thread.h"
 
 /* Maximum length of a file name component.
  * This is the traditional UNIX maximum length.
@@ -37,10 +38,10 @@ struct inode *dir_get_inode (struct dir *);
 
 /* Reading and writing. */
 bool dir_lookup (const struct dir *, const char *name, struct inode **);
-bool dir_add (struct dir *, const char *name, disk_sector_t);
+bool dir_add (struct dir *, const char *name, disk_sector_t, bool);
 bool dir_remove (struct dir *, const char *name);
 bool dir_readdir (struct dir *, char name[NAME_MAX + 1]);
 void dir_seek (struct dir *, off_t);//P4-2
 bool dir_empty (const struct dir *);//P4-2
-
+struct dir *parse_path(char *path_name, char *file_name); //P4-2
 #endif /* filesys/directory.h */

@@ -1,4 +1,5 @@
 #include "filesys/file.h"
+#include "filesys/directory.h"
 
 // /* An open file. */
 // struct file {
@@ -18,6 +19,14 @@ file_open (struct inode *inode) {
 		file->pos = 0;
 		file->deny_write = false;
 		file->dup_num = 0;
+		//P4-2 start
+		if (inode_isdir(inode)) {
+			file->dir = dir_open(inode_reopen(inode));
+		}
+		else {
+			file->dir = NULL;
+		}
+		//P4-2 end
 		return file;
 	} else {
 		inode_close (inode);

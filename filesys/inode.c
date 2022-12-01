@@ -76,10 +76,10 @@ inode_create (disk_sector_t sector, off_t length, uint32_t isdir) {
 		disk_inode->isdir = isdir;
 		disk_inode->islink = 0;
 		//P4-1 start
-		cluster_t cluster = sector;
+		cluster_t cluster = fat_create_chain(sector);
 
 		if (sectors > 0) {
-			for (int i = 0; i < sectors; i++) {
+			for (int i = 1; i < sectors; i++) {
 				cluster = fat_create_chain(cluster);
 				if(cluster == 0) {
 					fat_remove_chain(sector, 0);

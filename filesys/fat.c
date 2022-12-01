@@ -172,13 +172,13 @@ fat_create_chain (cluster_t clst) {
    /* TODO: Your code goes here. */
    //P4-1 start
    cluster_t new_clst = fat_fs->bs.fat_start;
-   while(fat_get(new_clst) != 0 && new_clst < fat_fs->fat_length) {
+   while(fat_get(new_clst) != 0 && cluster_to_sector(new_clst) < fat_fs->fat_length) {
       new_clst += 1;
    }
+
+   if (new_clst == 0) return 0;
    
-   if(new_clst == fat_fs->fat_length) {
-      return 0;
-   }
+   if(cluster_to_sector(new_clst) >= fat_fs->fat_length) return 0;
 
    if(clst == 0) {
       fat_put(new_clst, EOChain);

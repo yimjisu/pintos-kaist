@@ -120,7 +120,7 @@ dir_lookup (const struct dir *dir, const char *name,
  * Fails if NAME is invalid (i.e. too long) or a disk or memory
  * error occurs. */
 bool
-dir_add (struct dir *dir, const char *name, disk_sector_t inode_sector) {
+dir_add (struct dir *dir, const char *name, disk_sector_t inode_sector, bool isdir) { //P4-2 : add isdir
 	struct dir_entry e;
 	off_t ofs;
 	bool success = false;
@@ -136,6 +136,19 @@ dir_add (struct dir *dir, const char *name, disk_sector_t inode_sector) {
 	if (lookup (dir, name, NULL, NULL))
 		goto done;
 
+	//P4-2 start
+	if (isdir)
+	{
+		struct dir *child_dir = dir_open( inode_open(inode_sector) );
+		if(child_dir == NULL) goto done;
+		e.inode_sector = inode_get_inumber( dir_get_inode(dir) );
+		if (inode_write_at(child_dir->inode, &e, sizeof e, 0) != sizeof e) {
+		dir_close (child_dir);
+		goto done;
+		}
+		dir_close (child_dir);
+	}
+	//P4-2 end
 	/* Set OFS to offset of free slot.
 	 * If there are no free slots, then it will be set to the
 	 * current end-of-file.
@@ -235,7 +248,7 @@ dir_empty (const struct dir *dir) {
 	struct dir_entry e;
 	size_t ofs;
 
-	for (ofs = 2 * sizeof e; inode_read_at (dir->inode, &e, sizeof e, ofs) == sizeof e; // 봐야할 부분
+	for (ofs = 0; inode_read_at (dir->inode, &e, sizeof e, ofs) == sizeof e; // 봐야할 부분
 		 ofs += sizeof e) {
 		if (e.in_use) return false;
 
@@ -243,4 +256,94 @@ dir_empty (const struct dir *dir) {
 	return true;
 }
 
+struct dir*
+parse_path(char *path_name, char *file_name) {
+    struct dir *dir = NULL;
+	struct thread *curr = thread_current();
+
+    if (path_name == NULL || file_name == NULL) return NULL;
+
+    if (strlen(path_name) == 0) {
+        strlcpy(file_name, path_name, strlen(path_name) + 1);
+        dir = dir_open_root();
+        return dir;
+    }
+
+    if(path_name[0] == '/') { //절대경로
+        dir = dir_open_root();
+    }
+    else { //상대경로
+        if (thread_current()->working_dir == NULL) {
+			dir = dir_open_root();
+		}
+        else dir = dir_reopen(thread_current()->working_dir);
+	}
+
+
+    char *token, *token_next, *saveptr;
+    token = strtok_r(path_name, "/", &saveptr);
+    token_next = strtok_r(NULL, "/", &saveptr);
+
+    // "/"인 경우
+    if(token == NULL) {
+        token = (char*)malloc(2);
+        strlcpy(token, ".", 2);
+    }
+
+    struct inode *inode;
+    while (token != NULL && token_next != NULL) {
+        if (!dir_lookup(dir, token, &inode)) {
+            dir_close(dir);
+            return NULL;
+        }
+
+        if(inode->data.islink) {
+            char* new_path = (char*)malloc(sizeof(strlen(inode->data.link)) + 1);
+            strlcpy(new_path, inode->data.link, strlen(inode->data.link) + 1);
+
+            strlcpy(path_name, new_path, strlen(new_path) + 1);
+            free(new_path);
+ 
+            strlcat(path_name, "/", strlen(path_name) + 2);
+            strlcat(path_name, token_next, strlen(path_name) + strlen(token_next) + 1);
+            strlcat(path_name, saveptr, strlen(path_name) + strlen(saveptr) + 1);
+
+            dir_close(dir);
+
+            if(path_name[0] == '/') {
+                dir = dir_open_root();
+            }
+            else {
+                dir = dir_reopen(curr->working_dir);
+            }
+
+            token = strtok_r(path_name, "/", &saveptr);
+            token_next = strtok_r(NULL, "/", &saveptr);
+            continue;
+        }
+        
+        dir_close(dir);
+        dir = dir_open(inode);
+
+        token = token_next;
+        token_next = strtok_r(NULL, "/", &saveptr);
+        
+        if (token_next != NULL) {
+            if(!inode_isdir(inode)) {
+                dir_close(dir);
+                inode_close(inode);
+                return NULL;
+            }
+        }
+        else break;
+    }
+
+    if (inode_isremoved (dir_get_inode(dir))) {
+        dir_close(dir);
+        dir = NULL;
+    }
+
+    strlcpy (file_name, token, strlen(token) + 1);
+    return dir;
+}
 //P4-2 end

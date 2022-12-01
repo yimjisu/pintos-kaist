@@ -442,21 +442,22 @@ bool mkdir(const char *dir) {
     return res;
 }
 
-bool readdir(int fd, char *dir) {
+bool readdir(int fd, char *name) {
 	lock_acquire(&file_lock);
-	if (dir == NULL) return false;
-
 	struct file *open = lookup_fd(fd);
 	if (open == NULL) return false;
+	struct inode *inode = file_get_inode(open);
+	if (inode == NULL) return false;
+	if (!inode_isdir(inode)) return false;
 
-	if (!inode_isdir(file_get_inode(open))) return false;
-
-	struct dir *file_dir = open;
-    if (file_dir->pos == 0) {
-        dir_seek(file_dir, 2 * sizeof(struct dir_entry));
-	}
+	// struct dir *dir = thread_current()->working_dir;
+	struct dir *dir = open->dir;
+    // if (dir->pos == 0) {
+    //     dir_seek(dir, 2 * sizeof(struct dir_entry));
+	// }
+	bool ret = dir_readdir(dir, name);
 	lock_release(&file_lock);
-	return dir_readdir(file_dir, dir);
+	return ret;
 }
 bool isdir(int fd) {
 	lock_acquire(&file_lock);
@@ -487,7 +488,7 @@ int symlink (const char *target, const char *link) {
 
     success = (dir != NULL
                && link_inode_create(inode_cluster, target)
-               && dir_add(dir, file_link, cluster_to_sector(inode_cluster)));
+               && dir_add(dir, file_link, cluster_to_sector(inode_cluster), 0));
 
     if (!success && inode_cluster != 0) {
         fat_remove_chain(inode_cluster, 0);
