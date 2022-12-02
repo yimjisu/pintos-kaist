@@ -100,8 +100,9 @@ filesys_create_dir(const char* name) {
     cluster_t inode_cluster = 0;
     inode_cluster = fat_create_chain(inode_cluster);
     if (inode_cluster == 0) return false;
-  
-    bool success = (dir_create(inode_cluster, 16) && dir_add(dir, file_name, cluster_to_sector(inode_cluster), 1));
+    
+    // TODO : 50이 아니라 0으로 시작해서 늘려야됨
+    bool success = (dir_create(inode_cluster, 50) && dir_add(dir, file_name, cluster_to_sector(inode_cluster), 1));
     
     if (!success) fat_remove_chain(inode_cluster, 0);
 	// P4-1 end

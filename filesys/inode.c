@@ -307,6 +307,7 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size,
 			}
 		}
 		inode->data.length = offset + size;
+		disk_write (filesys_disk, inode->sector, &inode->data);
 	}
 	// P4-1 end 
 

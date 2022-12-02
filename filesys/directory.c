@@ -248,7 +248,7 @@ dir_empty (const struct dir *dir) {
 	struct dir_entry e;
 	size_t ofs;
 
-	for (ofs = 0; inode_read_at (dir->inode, &e, sizeof e, ofs) == sizeof e; // 봐야할 부분
+	for (ofs = 0; inode_read_at (dir->inode, &e, sizeof e, ofs) == sizeof e;
 		 ofs += sizeof e) {
 		if (e.in_use) return false;
 
