@@ -28,6 +28,8 @@
         "sstream": "c",
         "streambuf": "c",
         "inode.h": "c",
-        "atomic": "c"
+        "atomic": "c",
+        "fat.h": "c",
+        "gdt.h": "c"
     }
 }

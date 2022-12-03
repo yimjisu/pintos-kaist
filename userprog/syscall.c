@@ -213,8 +213,10 @@ bool remove (const char *file) {
 
 int open (const char *file) {
 	check_address(file);
-
+	
+	lock_acquire(&file_lock);
 	struct file *open = filesys_open(file);
+	lock_release(&file_lock);
 	if (open == NULL) {
 		return -1;
 	}
@@ -451,36 +453,38 @@ bool readdir(int fd, char *name) {
 	if (inode == NULL) return false;
 	if (!inode_isdir(inode)) return false;
 
-	// struct dir *dir = thread_current()->working_dir;
 	struct dir *dir = open->dir;
-    // if (dir->pos == 0) {
-    //     dir_seek(dir, 2 * sizeof(struct dir_entry));
-	// }
 	bool ret = dir_readdir(dir, name);
 	lock_release(&file_lock);
 	return ret;
 }
+
 bool isdir(int fd) {
 	lock_acquire(&file_lock);
 	struct file *open = lookup_fd(fd);
+	lock_release(&file_lock);
 
 	if (open==NULL) return false;
-	lock_release(&file_lock);
     return inode_isdir(file_get_inode(open));
 }
+
 struct cluster_t * inumber(int fd) {
 	lock_acquire(&file_lock);
 	struct file *open = lookup_fd(fd);
+	lock_release(&file_lock);
 
 	if (open==NULL) return false;
-	lock_release(&file_lock);
     return inode_get_inumber(file_get_inode(open));
 }
+
 int symlink (const char *target, const char *link) {
 	lock_acquire(&file_lock);
     bool success = false;
-    char* file_link = (char *)malloc(strlen(link) + 1);
-    struct dir* dir = parse_path(link, file_link);
+    char* cp_link = (char *)malloc(strlen(link) + 1);
+    strlcpy(cp_link, link, strlen(link) + 1);
+
+    char* file_link = (char *)malloc(strlen(cp_link) + 1);
+    struct dir* dir = parse_path(cp_link, file_link);
 
     cluster_t inode_cluster = fat_create_chain(0);
 
