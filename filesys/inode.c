@@ -32,9 +32,10 @@ byte_to_sector (const struct inode *inode, off_t pos) {
 			clst = fat_get(inode->sector);
 		}
 		uint32_t clst_num = pos / DISK_SECTOR_SIZE;
+		
 		for (int i = 0; i < clst_num; i++) {
 			clst = fat_get(clst);
-			if (clst==0) {
+			if (clst==0 || clst == EOChain) {
 				return -1;
 			}
 		}
@@ -339,10 +340,13 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size,
 
 	if (inode->deny_write_cnt)
 		return 0;
-	
 	// P4-1 start
 	if (offset + size > inode->data.length) {
-		off_t inode_sector_end = inode->data.length - inode->data.length % DISK_SECTOR_SIZE + DISK_SECTOR_SIZE;
+		off_t inode_sector_end = inode->data.length;
+		if(inode_sector_end % DISK_SECTOR_SIZE != 0) {
+			inode_sector_end -= inode->data.length % DISK_SECTOR_SIZE;
+			inode_sector_end += DISK_SECTOR_SIZE;
+		}
 
 		if (offset + size > inode_sector_end) {
 			// chain 연장
@@ -369,7 +373,6 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size,
 	while (size > 0) {
 		/* Sector to write, starting byte offset within sector. */
 		disk_sector_t sector_idx = byte_to_sector (inode, offset);
-		// printf("ERROR : %d\n", sector_idx);
 		// P4-1 start
 		if(sector_idx == -1 || sector_idx > EOChain || sector_idx == 0) {
 			break;

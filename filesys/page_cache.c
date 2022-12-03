@@ -47,4 +47,6 @@ page_cache_destroy (struct page *page) {
 /* Worker thread for page cache */
 static void
 page_cache_kworkerd (void *aux) {
+	struct thread *curr = thread_current();
+	
 }

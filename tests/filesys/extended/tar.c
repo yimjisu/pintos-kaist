@@ -60,12 +60,13 @@ make_tar_archive (const char *archive_name, char *files[], size_t file_cnt)
       return false;
     }
   archive_fd = open (archive_name);
+  printf("OPEN");
   if (archive_fd < 0)
     {
       printf ("%s: open failed\n", archive_name);
       return false;
     }
-
+  printf("READ");
   for (i = 0; i < file_cnt; i++) 
     {
       char file_name[128];
@@ -75,11 +76,11 @@ make_tar_archive (const char *archive_name, char *files[], size_t file_cnt)
                          archive_fd, &write_error))
         success = false;
     }
-
+  printf("WRITE");
   if (!do_write (archive_fd, zeros, 512, &write_error)
       || !do_write (archive_fd, zeros, 512, &write_error)) 
     success = false;
-
+  printf("CLOSE");
   close (archive_fd);
 
   return success;

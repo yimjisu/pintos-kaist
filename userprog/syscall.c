@@ -213,6 +213,7 @@ bool remove (const char *file) {
 
 int open (const char *file) {
 	check_address(file);
+
 	struct file *open = filesys_open(file);
 	if (open == NULL) {
 		return -1;
@@ -478,11 +479,8 @@ struct cluster_t * inumber(int fd) {
 int symlink (const char *target, const char *link) {
 	lock_acquire(&file_lock);
     bool success = false;
-    char* cp_link = (char *)malloc(strlen(link) + 1);
-    strlcpy(cp_link, link, strlen(link) + 1);
-
-    char* file_link = (char *)malloc(strlen(cp_link) + 1);
-    struct dir* dir = parse_path(cp_link, file_link);
+    char* file_link = (char *)malloc(strlen(link) + 1);
+    struct dir* dir = parse_path(link, file_link);
 
     cluster_t inode_cluster = fat_create_chain(0);
 

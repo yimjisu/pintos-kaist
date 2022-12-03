@@ -63,11 +63,8 @@ filesys_done (void) {
 bool
 filesys_create (const char *name, off_t initial_size) {
     //P4-2 start
-    char *path_name = (char *)malloc(strlen(name) + 1);
-    strlcpy(path_name, name, strlen(name) + 1);
-
     char *file_name = (char *)malloc(strlen(name) + 1);
-    struct dir *dir = parse_path(path_name, file_name);
+    struct dir *dir = parse_path(name, file_name);
     if (dir == NULL) return false;
     //P4-2 end
 	
@@ -88,11 +85,8 @@ filesys_create (const char *name, off_t initial_size) {
 bool
 filesys_create_dir(const char* name) {
     //P4-2 start
-    char *path_name = (char *)malloc(strlen(name) + 1);
-    strlcpy(path_name, name, strlen(name) + 1);
-
     char *file_name = (char *)malloc(strlen(name) + 1);
-    struct dir *dir = parse_path(path_name, file_name);
+    struct dir *dir = parse_path(name, file_name);
     if (dir == NULL) return false;
     //P4-2 end
 	
@@ -102,7 +96,9 @@ filesys_create_dir(const char* name) {
     if (inode_cluster == 0) return false;
     
     // TODO : 50이 아니라 0으로 시작해서 늘려야됨
-    bool success = (dir_create(inode_cluster, 50) && dir_add(dir, file_name, cluster_to_sector(inode_cluster), 1));
+    bool success = (
+        dir_create(inode_cluster, 0)
+        && dir_add(dir, file_name, cluster_to_sector(inode_cluster), 1));
     
     if (!success) fat_remove_chain(inode_cluster, 0);
 	// P4-1 end
@@ -119,8 +115,10 @@ filesys_create_dir(const char* name) {
 struct file *
 filesys_open (const char *name) {
     //P4-2 start
+    
     char* path_name = (char *)malloc(strlen(name) + 1);
     strlcpy(path_name, name, strlen(name) + 1);
+
     char* file_name = (char *)malloc(strlen(name) + 1);
 
     struct dir* dir = NULL;
@@ -131,6 +129,7 @@ filesys_open (const char *name) {
         if (dir == NULL) break;
         dir_lookup(dir, file_name, &inode);
         dir_close(dir);
+        
         if(!(inode && inode->data.islink)) break;
         path_name = inode->data.link;
     }
@@ -145,11 +144,8 @@ filesys_open (const char *name) {
 bool
 filesys_remove (const char *name) {
     //P4-2 start
-    char* path_name = (char *)malloc(strlen(name) + 1);
-    strlcpy(path_name, name, strlen(name) + 1);
-
     char* file_name = (char *)malloc(strlen(name) + 1);
-    struct dir* dir = parse_path(path_name, file_name);
+    struct dir* dir = parse_path(name, file_name);
 
     bool success = false;
 

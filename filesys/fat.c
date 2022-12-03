@@ -140,11 +140,12 @@ fat_boot_create (void) {
    unsigned int fat_sectors =
        (disk_size (filesys_disk) - 1)
        / (DISK_SECTOR_SIZE / sizeof (cluster_t) * SECTORS_PER_CLUSTER + 1) + 1;
+   
    fat_fs->bs = (struct fat_boot){
        .magic = FAT_MAGIC,
        .sectors_per_cluster = SECTORS_PER_CLUSTER,
        .total_sectors = disk_size (filesys_disk),
-       .fat_start = 1,
+       .fat_start = 2,
        .fat_sectors = fat_sectors,
        .root_dir_cluster = ROOT_DIR_CLUSTER,
    };
@@ -155,6 +156,7 @@ fat_fs_init (void) {
    /* TODO: Your code goes here. */
    //P4-1 start
    struct fat_boot bs = fat_fs -> bs;
+   
    fat_fs->fat_length = bs.total_sectors / bs.sectors_per_cluster;
    fat_fs->data_start = bs.fat_start + bs.fat_sectors;
    //P4-1 end

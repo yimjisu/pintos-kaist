@@ -257,15 +257,20 @@ dir_empty (const struct dir *dir) {
 }
 
 struct dir*
-parse_path(char *path_name, char *file_name) {
+parse_path(char *name, char *file_name) {
+	
+    char* path_name = (char *)malloc(strlen(name) + 1);
+    strlcpy(path_name, name, strlen(name) + 1);
+
     struct dir *dir = NULL;
 	struct thread *curr = thread_current();
 
-    if (path_name == NULL || file_name == NULL) return NULL;
+    if (name == NULL || file_name == NULL) return NULL;
 
     if (strlen(path_name) == 0) {
         strlcpy(file_name, path_name, strlen(path_name) + 1);
         dir = dir_open_root();
+		free(path_name);
         return dir;
     }
 
@@ -344,6 +349,7 @@ parse_path(char *path_name, char *file_name) {
     }
 
     strlcpy (file_name, token, strlen(token) + 1);
+	free(path_name);
     return dir;
 }
 //P4-2 end

@@ -72,7 +72,6 @@ initd (void *f_name) {
 #endif
 
 	process_init ();
-
 	if (process_exec (f_name) < 0)
 		PANIC("Fail to launch initd\n");
 	NOT_REACHED ();
@@ -234,10 +233,8 @@ process_exec (void *f_name) {
 	// P3-2 start
 	supplemental_page_table_init(&thread_current() -> spt);
 	// P3-2 end
-
 	/* And then load the binary */
 	success = load (file_name, &_if);
-
 	/* If load failed, quit. */
 	
 	//palloc_free_page (file_name);
@@ -411,6 +408,7 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
  * Returns true if successful, false otherwise. */
 static bool
 load (const char *file_name, struct intr_frame *if_) {
+	//printf("FILENAME %s\n", file_name);
 	//start P2-1
 	char * file_name_copy = malloc(strlen(file_name)+1);
 	memcpy(file_name_copy, file_name, strlen(file_name)+1);
