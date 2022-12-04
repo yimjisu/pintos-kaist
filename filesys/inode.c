@@ -34,7 +34,7 @@ byte_to_sector (const struct inode *inode, off_t pos) {
 		uint32_t clst_num = pos / DISK_SECTOR_SIZE;
 		for (int i = 0; i < clst_num; i++) {
 			clst = fat_get(clst);
-			if (clst==0) {
+			if (clst==0 || clst == EOChain) {
 				return -1;
 			}
 		}
