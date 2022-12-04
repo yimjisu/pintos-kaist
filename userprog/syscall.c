@@ -53,7 +53,7 @@ bool chdir(const char *dir);
 bool mkdir(const char *dir);
 bool readdir(int fd, char *dir);
 bool isdir(int fd);
-struct cluster_t * inumber(int fd);
+int inumber(int fd);
 int symlink (const char *target, const char *link);
 //P4-2 end
 
@@ -450,7 +450,6 @@ bool readdir(int fd, char *name) {
 	if (inode == NULL) return false;
 	if (!inode_isdir(inode)) return false;
 
-	// struct dir *dir = thread_current()->working_dir;
 	struct dir *dir = open->dir;
     // if (dir->pos == 0) {
     //     dir_seek(dir, 2 * sizeof(struct dir_entry));
@@ -459,36 +458,39 @@ bool readdir(int fd, char *name) {
 	lock_release(&file_lock);
 	return ret;
 }
+
 bool isdir(int fd) {
 	lock_acquire(&file_lock);
 	struct file *open = lookup_fd(fd);
-
 	if (open==NULL) return false;
+	bool res = inode_isdir(file_get_inode(open));
 	lock_release(&file_lock);
-    return inode_isdir(file_get_inode(open));
+    return res;
 }
-struct cluster_t * inumber(int fd) {
+
+int inumber(int fd) {
 	lock_acquire(&file_lock);
 	struct file *open = lookup_fd(fd);
-
 	if (open==NULL) return false;
+	bool res = inode_get_inumber(file_get_inode(open));
 	lock_release(&file_lock);
-    return inode_get_inumber(file_get_inode(open));
+    return res;
 }
+
 int symlink (const char *target, const char *link) {
 	lock_acquire(&file_lock);
     bool success = false;
-    char* cp_link = (char *)malloc(strlen(link) + 1);
-    strlcpy(cp_link, link, strlen(link) + 1);
+	char* link_copy = (char *)malloc(strlen(link) + 1);
+    strlcpy(link_copy, link, strlen(link) + 1); 
 
-    char* file_link = (char *)malloc(strlen(cp_link) + 1);
-    struct dir* dir = parse_path(cp_link, file_link);
+    char* link_file = (char *)malloc(strlen(link_copy) + 1);
+    struct dir* dir = parse_path(link_copy, link_file);
 
     cluster_t inode_cluster = fat_create_chain(0);
 
     success = (dir != NULL
                && link_inode_create(inode_cluster, target)
-               && dir_add(dir, file_link, cluster_to_sector(inode_cluster), 0));
+               && dir_add(dir, link_file, cluster_to_sector(inode_cluster), 0));
 
     if (!success && inode_cluster != 0) {
         fat_remove_chain(inode_cluster, 0);

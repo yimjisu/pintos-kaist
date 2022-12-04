@@ -145,6 +145,7 @@ filesys_open (const char *name) {
 bool
 filesys_remove (const char *name) {
     //P4-2 start
+    // inode_open
     char* path_name = (char *)malloc(strlen(name) + 1);
     strlcpy(path_name, name, strlen(name) + 1);
 

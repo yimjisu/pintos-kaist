@@ -35,4 +35,14 @@ make tests/userprog/args-single.result
 ###
 rm -f tmp.dsk
 pintos-mkdisk tmp.dsk 2
-pintos -v -k -T 60 -m 20   --fs-disk=tmp.dsk -p tests/filesys/extended/syn-rw:syn-rw -p tests/filesys/extended/tar:tar -p tests/filesys/extended/child-syn-rw:child-syn-rw --swap-disk=4 -- -q   -f run syn-rw < /dev/null 2> tests/filesys/extended/syn-rw.errors
+pintos -v -k -T 60 -m 20   --fs-disk=tmp.dsk -p tests/filesys/extended/dir-empty-name:dir-empty-name -p tests/filesys/extended/tar:tar --swap-disk=4 -- -q   -f run dir-empty-name < /dev/null 2> tests/filesys/extended/dir-empty-name.errors > tests/filesys/extended/dir-empty-name.output
+pintos -v -k -T 120   --fs-disk=tmp.dsk -g fs.tar:tests/filesys/extended/dir-empty-name.tar --swap-disk=4 -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/dir-empty-name-persistence.errors > tests/filesys/extended/dir-empty-name-persistence.output
+rm -f tmp.dsk
+rm -f tmp.dsk
+pintos-mkdisk tmp.dsk 2
+pintos -v -k -T 60 -m 20   --fs-disk=10 -p tests/filesys/extended/dir-empty-name.output:dir-empty-name.output --swap-disk=4 -- -q   -f run dir-empty-name-persistence < /dev/null 2> .errors > .output
+pintos -v -k -T 120   --fs-disk=10 -g fs.tar:.tar --swap-disk=4 -- -q  run 'tar fs.tar /' < /dev/null 2> -persistence.errors > -persistence.output
+rm -f tmp.dsk
+
+pintos -v -k -T 60 -m 20   --fs-disk=tmp.dsk -p tests/filesys/extended/dir-empty-name:dir-empty-name -p tests/filesys/extended/tar:tar --swap-disk=4 -- -q   -f run dir-empty-name < /dev/null 2> tests/filesys/extended/dir-empty-name.errors
+pintos -v -k -T 120   --fs-disk=tmp.dsk -g fs.tar:tests/filesys/extended/dir-empty-name.tar --swap-disk=4 -- -q  run 'tar fs.tar /' < /dev/null 2> tests/filesys/extended/dir-empty-name-persistence.errors > tests/filesys/extended/dir-empty-name-persistence.output
