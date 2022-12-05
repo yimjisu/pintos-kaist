@@ -482,28 +482,30 @@ int inumber(int fd) {
     return res;
 }
 
-int symlink (const char *target, const char *link) {
+int symlink (const char *target, const char *linkpath) {
 	lock_acquire(&file_lock);
-    bool success = false;
-	char* link_copy = (char *)malloc(strlen(link) + 1);
-    strlcpy(link_copy, link, strlen(link) + 1); 
 
-    char* link_file = (char *)malloc(strlen(link_copy) + 1);
-    struct dir* dir = parse_path(link_copy, link_file);
+	char* linkpath_copy = (char *)malloc(strlen(linkpath) + 1);
+	strlcpy(linkpath_copy, linkpath, strlen(linkpath) + 1);
 
-    cluster_t inode_cluster = fat_create_chain(0);
+	char* link_dir = (char *)malloc(strlen(linkpath_copy) + 1);
+	char* link_file = (char *)malloc(strlen(linkpath_copy) + 1);
+	
+	parse_name(linkpath_copy, link_dir, link_file);
+	struct dir* dir = get_dir(link_dir);
+	if (dir == NULL) return -1;
 
-    success = (dir != NULL
-               && link_inode_create(inode_cluster, target)
-               && dir_add(dir, link_file, cluster_to_sector(inode_cluster), 0));
+	cluster_t inode_cluster = 0;
+    inode_cluster = fat_create_chain(inode_cluster);
+    if (inode_cluster == 0) return -1;
 
-    if (!success && inode_cluster != 0) {
-        fat_remove_chain(inode_cluster, 0);
-	}
-    
-    dir_close(dir);
+	int res = (inode_create_link(inode_cluster, target) && dir_add(dir, link_file, cluster_to_sector(inode_cluster), 0));
+
+	if (!res) fat_remove_chain(inode_cluster, 0);
+
+	dir_close(dir);
 	lock_release(&file_lock);
-    return success - 1;
+    return res - 1;
 }
 
 //P4-2 end

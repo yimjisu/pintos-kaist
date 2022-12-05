@@ -159,8 +159,7 @@ inode_create_root (disk_sector_t sector, off_t length) {
 
 //P4-2 start
 bool
-link_inode_create (disk_sector_t sector, char* path_name) {
-
+inode_create_link (disk_sector_t sector, char* path_name) {
 	struct inode_disk *disk_inode = NULL;
 	bool success = false;
 
@@ -174,15 +173,12 @@ link_inode_create (disk_sector_t sector, char* path_name) {
 	if (disk_inode != NULL) {
 		disk_inode->length = strlen(path_name) + 1;
 		disk_inode->magic = INODE_MAGIC;
-
         disk_inode->isdir = 0;
         disk_inode->islink = 1;
-
         strlcpy(disk_inode->link, path_name, strlen(path_name) + 1);
 
         cluster_t cluster = fat_create_chain(sector);
-        if(cluster)
-        {
+        if (cluster) {
             disk_inode->start = cluster;
             disk_write (filesys_disk, cluster_to_sector(sector), disk_inode);
             success = true;

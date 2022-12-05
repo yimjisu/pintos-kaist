@@ -33,6 +33,7 @@ struct inode {
 void inode_init (void);
 bool inode_create (disk_sector_t, off_t, uint32_t);
 bool inode_create_root (disk_sector_t, off_t);//P4-2
+bool inode_create_link (disk_sector_t, char* path_name);//P4-2
 struct inode *inode_open (disk_sector_t);
 struct inode *inode_reopen (struct inode *);
 disk_sector_t inode_get_inumber (const struct inode *);

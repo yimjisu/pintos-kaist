@@ -65,14 +65,14 @@ fat_open (void) {
    for (unsigned i = 0; i < fat_fs->bs.fat_sectors; i++) {
       bytes_left = fat_size_in_bytes - bytes_read;
       if (bytes_left >= DISK_SECTOR_SIZE) {
-         disk_read (filesys_disk, fat_fs->bs.fat_start +  i,
+         disk_read (filesys_disk, fat_fs->bs.fat_start + i + 1,
                     buffer + bytes_read);
          bytes_read += DISK_SECTOR_SIZE;
       } else {
          uint8_t *bounce = malloc (DISK_SECTOR_SIZE);
          if (bounce == NULL)
             PANIC ("FAT load failed");
-         disk_read (filesys_disk, fat_fs->bs.fat_start +  i, bounce);
+         disk_read (filesys_disk, fat_fs->bs.fat_start + i + 1, bounce);
          memcpy (buffer + bytes_read, bounce, bytes_left);
          bytes_read += bytes_left;
          free (bounce);
@@ -101,7 +101,7 @@ fat_close (void) {
       bytes_left = fat_size_in_bytes - bytes_wrote;
       if (bytes_left >= DISK_SECTOR_SIZE) {
          lock_acquire(&fat_fs->write_lock);
-         disk_write (filesys_disk, fat_fs->bs.fat_start + i,
+         disk_write (filesys_disk, fat_fs->bs.fat_start + i + 1,
                      buffer + bytes_wrote);
          lock_release(&fat_fs->write_lock);
          bytes_wrote += DISK_SECTOR_SIZE;
@@ -111,7 +111,7 @@ fat_close (void) {
             PANIC ("FAT close failed");
          memcpy (bounce, buffer + bytes_wrote, bytes_left);
          lock_acquire(&fat_fs->write_lock);
-         disk_write (filesys_disk, fat_fs->bs.fat_start + i, bounce);
+         disk_write (filesys_disk, fat_fs->bs.fat_start + i + 1, bounce);
          lock_release(&fat_fs->write_lock);
          bytes_wrote += bytes_left;
          free (bounce);
@@ -152,7 +152,7 @@ fat_boot_create (void) {
        .magic = FAT_MAGIC,
        .sectors_per_cluster = SECTORS_PER_CLUSTER,
        .total_sectors = disk_size (filesys_disk),
-       .fat_start = 2,
+       .fat_start = 1,
        .fat_sectors = fat_sectors,
        .root_dir_cluster = ROOT_DIR_CLUSTER,
    };
@@ -176,7 +176,7 @@ fat_fs_init (void) {
 //P4-2 start
 cluster_t
 fat_get_empty () {
-   cluster_t clst = fat_fs->bs.fat_start;
+   cluster_t clst = fat_fs->bs.fat_start + 1;
    while(fat_get(clst) != 0 && cluster_to_sector(clst) < fat_fs->fat_length) {
       clst += 1;
    }
@@ -192,10 +192,6 @@ cluster_t
 fat_create_chain (cluster_t clst) {
    /* TODO: Your code goes here. */
    //P4-1 start
-   // cluster_t new_clst = fat_fs->bs.fat_start;
-   // while(fat_get(new_clst) != 0 && cluster_to_sector(new_clst) < fat_fs->fat_length) {
-   //    new_clst += 1;
-   // }
    cluster_t new_clst = fat_get_empty();
 
    if (new_clst == 0) return 0;
