@@ -458,4 +458,9 @@ bool
 inode_isremoved (const struct inode *inode) {
   	return inode->removed;
 }
+
+bool
+inode_islink (const struct inode *inode) {
+  	return inode->data.islink;
+}
 //P4-2 start

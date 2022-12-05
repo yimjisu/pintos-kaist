@@ -472,7 +472,7 @@ int inumber(int fd) {
 	lock_acquire(&file_lock);
 	struct file *open = lookup_fd(fd);
 	if (open==NULL) return false;
-	bool res = inode_get_inumber(file_get_inode(open));
+	int res = inode_get_inumber(file_get_inode(open));
 	lock_release(&file_lock);
     return res;
 }

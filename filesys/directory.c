@@ -346,4 +346,107 @@ parse_path(char *path_name, char *file_name) {
     strlcpy (file_name, token, strlen(token) + 1);
     return dir;
 }
+
+void parse_name (const char *name, char *dir_name, char *file_name) {
+	char *name_copy = (char *)malloc(strlen(name) + 1);
+    strlcpy(name_copy, name, strlen(name) + 1);
+
+	if (strlen(name_copy) == 0) {
+		strlcpy(dir_name, "", 1);
+        strlcpy (file_name, "", 1);
+        return;
+	}
+
+	char *token, *token_next, *saveptr;
+    token = strtok_r(name_copy, "/", &saveptr);
+    token_next = strtok_r(NULL, "/", &saveptr);
+
+	if (token == NULL) {
+        strlcpy(dir_name, "/", 2);
+        strlcpy (file_name, ".", 2);
+        return;
+	}
+
+	while(true) {
+		if (token_next == NULL) break;
+		token = token_next;
+		token_next = strtok_r(NULL, "/", &saveptr);
+	}
+
+	strlcpy (file_name, token, strlen(token) + 1);
+	int dir_len = strlen(name) - strlen(token);
+
+	if (dir_len == 0) {
+		strlcpy (dir_name, "", 1);
+	}
+	else if (dir_len == 1) {
+		strlcpy (dir_name, "/", 2);
+	}
+	else {
+		strlcpy (dir_name, name, dir_len);
+	}
+    return;
+}
+
+struct dir* get_dir(char *dir_name) {
+	char* temp_dir_name = (char*)malloc(sizeof(dir_name) + 1);
+	strlcpy(temp_dir_name, dir_name, strlen(dir_name) + 1);
+
+	struct dir *dir = NULL;
+	struct thread *curr = thread_current();
+	char *token, *saveptr;
+	struct inode *inode;
+
+	while (true) {
+		if(temp_dir_name[0] == '/') { //절대경로
+			dir = dir_open_root();
+		}
+		else { //상대경로
+			if (thread_current()->working_dir == NULL) {
+				dir = dir_open_root();
+			}
+			else dir = dir_reopen(thread_current()->working_dir);
+		} 
+
+		token = strtok_r (temp_dir_name, "/", &saveptr);
+
+		while (token != NULL) {
+			if (!dir_lookup(dir, token, &inode)) {
+				dir_close(dir);
+				return NULL;
+			}
+
+			if(!inode_isdir(inode)) {
+				dir_close(dir);
+				inode_close(inode);
+				return NULL;
+			}
+
+			if(inode_islink(inode)) {
+				strlcpy(temp_dir_name, inode->data.link, strlen(inode->data.link) + 1);
+	
+				strlcat(temp_dir_name, "/", strlen(temp_dir_name) + 2);
+				strlcat(temp_dir_name, saveptr, strlen(temp_dir_name) + strlen(saveptr) + 1);
+
+				dir_close(dir);
+				break;
+			}
+
+			else {
+				dir_close(dir);
+				dir = dir_open(inode);
+				token = strtok_r(NULL, "/", &saveptr);
+			}
+		}
+		strlcpy(dir_name, temp_dir_name, strlen(temp_dir_name) + 1);
+		break;
+	}
+
+
+	if (inode_isremoved (dir_get_inode(dir))) {
+		dir_close(dir);
+		dir = NULL;
+	}
+	return dir;
+}
 //P4-2 end
