@@ -28,6 +28,7 @@ void halt (void);
 void exit (int status);
 tid_t fork (const char *thread_name);
 int exec (const char *cmd_line);
+int wait (tid_t tid);
 bool create(const char *file, unsigned initial_size);
 bool remove(const char *file);
 int open(const char *file);
@@ -107,7 +108,7 @@ syscall_handler (struct intr_frame *f UNUSED) {
 			}
 			break;
 		case SYS_WAIT:
-			f->R.rax = process_wait(f->R.rdi);
+			f->R.rax = wait(f->R.rdi);
 			break;
 		case SYS_CREATE:
 			f->R.rax = create(f->R.rdi, f->R.rsi);
@@ -199,6 +200,10 @@ int exec(const char *cmd_line) {
 	if (process_exec(fn_copy) == -1) {
 		return -1;
 	}
+}
+
+int wait(tid_t tid) {
+	process_wait(tid);
 }
 
 bool create(const char *file, unsigned initial_size) {
