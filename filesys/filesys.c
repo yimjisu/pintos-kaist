@@ -170,9 +170,6 @@ do_format (void) {
 	/* Create FAT and save it to the disk. */
 	fat_create ();
     //P4-2 start
-    // if (!dir_create(ROOT_DIR_SECTOR, 16)) {
-    //     PANIC("root directory creation failed");
-    // }
     if (!inode_create_root(ROOT_DIR_SECTOR, 16)) {
         PANIC("root directory creation failed");
     }

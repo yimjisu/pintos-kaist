@@ -138,10 +138,13 @@ dir_add (struct dir *dir, const char *name, disk_sector_t inode_sector, bool isd
 
 	//P4-2 start
 	if (isdir) {
-		struct dir *child_dir = dir_open( inode_open(inode_sector) );
-		if(child_dir == NULL) goto done;
-		e.inode_sector = inode_get_inumber( dir_get_inode(dir) );
-		if (inode_write_at(child_dir->inode, &e, sizeof e, 0) != sizeof e) {
+		struct dir *child_dir = dir_open(inode_open(inode_sector));
+		if(child_dir == NULL) {
+			goto done;
+		}
+		e.inode_sector = inode_get_inumber(dir_get_inode(dir));
+
+		if (inode_write_at(dir_get_inode(child_dir), &e, sizeof e, 0) != sizeof e) {
 			dir_close (child_dir);
 			goto done;
 		}
@@ -197,9 +200,9 @@ dir_remove (struct dir *dir, const char *name) {
 
 	//P4-2 start
 	if (inode_isdir(inode)) {
-		struct dir *target_dir = dir_open(inode);
-		bool empty = dir_empty(target_dir);
-		dir_close(target_dir);
+		struct dir *remove_dir = dir_open(inode);
+		bool empty = dir_empty(remove_dir);
+		dir_close(remove_dir);
 		if (!empty) goto done;
 	}
 	//P4-2 end
@@ -235,19 +238,12 @@ dir_readdir (struct dir *dir, char name[NAME_MAX + 1]) {
 }
 
 //P4-2 start
-void
-dir_seek (struct dir *dir, off_t new_pos) {
-	ASSERT (dir != NULL);
-	ASSERT (new_pos >= 0);
-	dir->pos = new_pos;
-}
-
 bool
 dir_empty (const struct dir *dir) {
 	struct dir_entry e;
 	size_t ofs;
 
-	for (ofs = 0; inode_read_at (dir->inode, &e, sizeof e, ofs) == sizeof e;
+	for (ofs = 0; inode_read_at (dir_get_inode(dir), &e, sizeof e, ofs) == sizeof e;
 		 ofs += sizeof e) {
 		if (e.in_use) return false;
 

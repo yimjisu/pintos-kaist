@@ -41,7 +41,6 @@ bool dir_lookup (const struct dir *, const char *name, struct inode **);
 bool dir_add (struct dir *, const char *name, disk_sector_t, bool);
 bool dir_remove (struct dir *, const char *name);
 bool dir_readdir (struct dir *, char name[NAME_MAX + 1]);
-void dir_seek (struct dir *, off_t);//P4-2
 bool dir_empty (const struct dir *);//P4-2
 void parse_name (const char *name, char *dir_name, char *file_name); //P4-2
 struct dir* get_dir(char *dir_name); //P4-2
