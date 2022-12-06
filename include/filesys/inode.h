@@ -30,6 +30,8 @@ struct inode {
 	struct inode_disk data;             /* Inode content. */
 };
 
+
+
 void inode_init (void);
 bool inode_create (disk_sector_t, off_t, uint32_t);
 bool inode_create_root (disk_sector_t, off_t);//P4-2

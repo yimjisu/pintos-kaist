@@ -48,7 +48,6 @@ file_backed_swap_in (struct page *page, void *kva) {
 	off_t ofs = file_page ->ofs;
 	size_t page_read_bytes = file_page->size;
 	size_t page_zero_bytes = PGSIZE - page_read_bytes;
-
 	if(file_read_at(file, kva, page_read_bytes, ofs) != (off_t) page_read_bytes) {
 		palloc_free_page(kva);
 		return false;
@@ -62,7 +61,6 @@ file_backed_swap_in (struct page *page, void *kva) {
 static bool
 file_backed_swap_out (struct page *page) {
 	struct file_page *file_page UNUSED = &page->file;
-
 	uint64_t *pml4 = thread_current()->pml4;
 	if(pml4_is_dirty(pml4, page -> va)) {
 		file_write_at(file_page->file, page->va, file_page->size, file_page->ofs);

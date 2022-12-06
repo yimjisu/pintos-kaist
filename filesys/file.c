@@ -1,6 +1,6 @@
 #include "filesys/file.h"
 #include "filesys/directory.h"
-
+ 
 // /* An open file. */
 // struct file {
 // 	struct inode *inode;        /* File's inode. */
