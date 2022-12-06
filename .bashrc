@@ -4,7 +4,7 @@ source ./activate
 # cd build
 # pintos -v -k -T 180 -m 8   --fs-disk=10 -p tests/vm/swap-file:swap-file -p ../../tests/vm/large.txt:large.txt --swap-disk=10 -- -q   -f run swap-file
 
-cd vm
+cd filesys
 make
 cd build
 
@@ -55,5 +55,4 @@ make tests/vm/lazy-anon.result
 make tests/vm/swap-file.result
 make tests/vm/swap-anon.result
 make tests/vm/swap-iter.result
-make tests/vm/swap-fork
-make tests/vm/cow/cow-simple
+make tests/vm/swap-fork.result
