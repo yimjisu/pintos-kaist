@@ -456,9 +456,9 @@ bool readdir(int fd, char *name) {
 	if (!inode_isdir(inode)) return false;
 
 	struct dir *dir = open->dir;
-    // if (dir->pos == 0) {
-    //     dir_seek(dir, 2 * sizeof(struct dir_entry));
-	// }
+    if (dir->pos == 0) {
+		dir->pos = sizeof(struct dir_entry);
+	}
 	bool ret = dir_readdir(dir, name);
 	lock_release(&file_lock);
 	return ret;

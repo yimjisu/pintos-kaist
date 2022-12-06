@@ -147,12 +147,10 @@ filesys_open (const char *name) {
 bool
 filesys_remove (const char *name) {
     //P4-2 start
-    // inode_open
     char *dir_name = (char *)malloc(strlen(name) + 1);
     char *file_name = (char *)malloc(strlen(name) + 1);
     parse_name(name, dir_name, file_name);
     struct dir* dir = get_dir(dir_name);
-
     bool success = false;
 
     if (dir != NULL) {
